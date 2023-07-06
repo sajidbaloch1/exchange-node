@@ -6,6 +6,8 @@ import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 
+app.use(corsMiddleware);
+
 app.get("/", (req, res) => {
   res.json({
     message: "Hello from CA Exchange API!",
@@ -15,9 +17,7 @@ app.get("/", (req, res) => {
     },
   });
 });
-app.use(corsMiddleware);
 
-//Routes
 app.use("/users", userRoutes);
 
 app.listen(appConfig.PORT, () => {

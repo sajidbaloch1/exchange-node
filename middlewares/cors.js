@@ -1,7 +1,7 @@
 import { appConfig } from "../config/app.js";
 
 export default function corsMiddleware(req, res, next) {
-  if (!appConfig?.CORS_ALLOWED_ORIGINS?.length) {
+  if (appConfig?.CORS_ALLOWED_ORIGINS?.length) {
     next();
   }
 
@@ -28,4 +28,6 @@ export default function corsMiddleware(req, res, next) {
       next();
     }
   }
+
+  next();
 }

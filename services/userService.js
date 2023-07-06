@@ -20,7 +20,6 @@ const fetchUserId = async (id) => {
  * create user in the database
  */
 const addUser = async () => {
-  console.log(".......>");
   const newUser = await User.create(req.body);
   return newUser;
 };

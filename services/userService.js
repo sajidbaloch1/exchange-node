@@ -19,16 +19,23 @@ const fetchUserId = async (id) => {
 /**
  * create user in the database
  */
-const addUser = async () => {
-  const newUser = await User.create(req.body);
+const addUser = async ({ username, password, rate, role }) => {
+  const newUserObj = {
+    username: username,
+    password: password,
+    rate: rate,
+    role: role,
+    forcePasswordChange: true,
+  };
+  const newUser = await User.create(newUserObj);
   return newUser;
 };
 
 /**
  * update user in the database
  */
-const modifyUser = async (id) => {
-  const user = await User.findByIdAndUpdate(id, req.body);
+const modifyUser = async (body) => {
+  const user = await User.findByIdAndUpdate(body._id, body);
   return user;
 };
 

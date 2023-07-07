@@ -7,16 +7,16 @@ const router = express.Router();
 //find all user
 route(router, "get", "/getAllUsers", userController.getAllUser);
 
-//find product with id
-router.get("/:id", userController.getUserById);
+//find user with id
+router.post("/getUserById", userController.getUserById);
 
 //create a new user
-router.post("/", userController.createUser);
+router.post("/createUser", userController.createUser);
 
 // update a user
-router.put("/:id", userController.updateUser);
+router.post("/updateUserById", userController.updateUser);
 
 // Route to delete a user
-router.delete("/:id", userController.deleteUser);
+router.post("/deleteUserId", userController.deleteUser);
 
 export default router;

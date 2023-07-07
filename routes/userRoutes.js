@@ -1,10 +1,11 @@
 import express from "express";
 import userController from "../controllers/userControlles.js";
+import { route } from "../lib/routes-error-boundary.js";
 
 const router = express.Router();
 
 //find all user
-router.get("/", userController.getAllUser);
+route(router, "get", "/getAllUsers", userController.getAllUser);
 
 //find product with id
 router.get("/:id", userController.getUserById);

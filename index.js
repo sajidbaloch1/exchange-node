@@ -3,10 +3,13 @@ import moment from "moment";
 import { appConfig } from "./config/app.js";
 import corsMiddleware from "./middlewares/cors.js";
 import userRoutes from "./routes/userRoutes.js";
+import dbConnection from "./utils/db-connection.js";
 
 const app = express();
 
 app.use(corsMiddleware);
+
+app.use("/users", userRoutes);
 
 app.get("/", (req, res) => {
   res.json({
@@ -18,7 +21,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use("/users", userRoutes);
+dbConnection();
 
 app.listen(appConfig.PORT, () => {
   console.log(`Server running on port: ${appConfig.PORT}`);

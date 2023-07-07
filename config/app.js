@@ -18,4 +18,6 @@ export const appConfig = {
   PORT: env.PORT,
 
   CORS_ALLOWED_ORIGINS: [env.USER_CLIENT_URL, env.ADMIN_CLIENT_URL],
+
+  MONGO_URL: env.MONGO_URL,
 };

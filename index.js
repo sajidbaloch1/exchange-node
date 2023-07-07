@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import moment from "moment";
 import { appConfig } from "./config/app.js";
-import corsMiddleware from "./middlewares/cors.js";
+import corsMiddleware from "./middlewares/corsMiddleware.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import dbConnection from "./lib/db-connection.js";

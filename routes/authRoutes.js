@@ -1,9 +1,10 @@
 import express from "express";
 import authController from "../controllers/authController.js";
+import { route } from "../lib/routes-error-boundary.js";
 
 const router = express.Router();
 
-router.post("/register", authController.register);
-router.post("/login", authController.login);
+route(router, "post", "/register", authController.register, false);
+route(router, "post", "/login", authController.login, false);
 
 export default router;

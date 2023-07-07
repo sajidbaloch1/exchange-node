@@ -1,11 +1,15 @@
 import express from "express";
 import moment from "moment";
+import bodyParser from "body-parser";
 import { appConfig } from "./config/app.js";
 import corsMiddleware from "./middlewares/cors.js";
 import userRoutes from "./routes/userRoutes.js";
 import dbConnection from "./utils/db-connection.js";
 
 const app = express();
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.use(corsMiddleware);
 

@@ -7,10 +7,10 @@ import userService from "../services/userService.js";
 const getAllUser = async (req, res) => {
   try {
     const users = await userService.fetchAllUsers();
-    res.status(200).json({ data: users });
+    return res.status(200).json({ data: users });
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -19,8 +19,9 @@ const getAllUser = async (req, res) => {
  */
 const getUserById = async (req, res) => {
   try {
-    const { id } = req.params;
-    if (id !== null) {
+    console.log(".............");
+    const { id } = req.body;
+    if (id == null) {
       throw new Error("id is required");
     }
     const user = await userService.fetchUserId(id);
@@ -36,8 +37,22 @@ const getUserById = async (req, res) => {
  */
 const createUser = async (req, res) => {
   try {
-    const newuser = await userService.addUser();
-    res.status(201).json(newuser);
+    console.log(req.body);
+    const username = req.body.username || null;
+    const password = req.body.password || null;
+    const rate = req.body.rate || null;
+    const role = req.body.role || null;
+    if (!username && password && rate && role) {
+      return res.status(400).json({ error: "field is required" });
+    }
+    const newuser = await userService.addUser({
+      username,
+      password,
+      rate,
+      role,
+    });
+    res.status(201).json({ data: newuser });
+    // res.status(201).json({ data: "sss" });
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -49,19 +64,13 @@ const createUser = async (req, res) => {
  */
 const updateUser = async (req, res) => {
   try {
-    const { id } = req.params;
-    if (id !== null) {
+    const { _id } = req.body;
+    const user = await userService.modifyUser(req.body);
+    if (_id == null) {
       throw new Error("id is required");
     }
-    const user = await userService.modifyUser();
-    //can not find any user in database
-    if (!user) {
-      return res
-        .status(409)
-        .json({ message: `can not find any user with ID ${id}` });
-    }
-    const updatedUser = await User.findById(id);
-    res.status(200).json({ data: updatedUser });
+
+    res.status(200).json({ data: user });
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: error.message });
@@ -73,11 +82,12 @@ const updateUser = async (req, res) => {
  */
 const deleteUser = async (req, res) => {
   try {
-    const { id } = req.params;
-    if (id !== null) {
+    // console.log(req.body);
+    const { _id } = req.body;
+    if (_id == null) {
       throw new Error("id is required");
     }
-    const user = await User.findByIdAndDelete(id);
+    const user = await userService.removeUser(_id);
     //can not find any user in database
     if (!user) {
       return res

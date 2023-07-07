@@ -1,7 +1,7 @@
 import { appConfig } from "../config/app.js";
 
 export default function corsMiddleware(req, res, next) {
-  if (appConfig?.CORS_ALLOWED_ORIGINS?.length) {
+  if (!appConfig?.CORS_ALLOWED_ORIGINS?.length) {
     next();
   }
 
@@ -23,7 +23,7 @@ export default function corsMiddleware(req, res, next) {
 
     // Check if it's a preflight request
     if (req.method === "OPTIONS") {
-      res.status(200).end();
+      return res.status(200).end();
     } else {
       next();
     }

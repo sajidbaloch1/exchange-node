@@ -32,7 +32,7 @@ const getUserById = async (req, res) => {
 
   const user = await userService.fetchUserId(_id);
 
-  res.status(200).json({ success: true, data: user });
+  res.status(200).json({ success: true, data: { details: user } });
 };
 
 // Create a new user
@@ -70,7 +70,7 @@ const createUser = async (req, res) => {
     role,
   });
 
-  res.status(201).json({ success: true, data: newuser });
+  res.status(201).json({ success: true, data: { details: newuser } });
 };
 
 // Update a user
@@ -98,7 +98,7 @@ const updateUser = async (req, res) => {
     password,
   });
 
-  res.status(200).json({ success: true, data: updatedUser });
+  res.status(200).json({ success: true, data: { details: updatedUser } });
 };
 
 // Delete a user
@@ -111,7 +111,7 @@ const deleteUser = async (req, res) => {
 
   const deletedUser = await userService.removeUser(_id);
 
-  res.status(200).json({ success: true, data: deletedUser });
+  res.status(200).json({ success: true, data: { details: deletedUser } });
 };
 
 export default {

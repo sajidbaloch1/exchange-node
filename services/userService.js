@@ -2,23 +2,47 @@ import { generatePaginationQueries } from "../lib/pagination-helper.js";
 import User, { USER_ACCESSIBLE_ROLES } from "../models/User.js";
 
 // Fetch all users from the database
-const fetchAllUsers = async ({ page, perPage, sortBy, direction }) => {
+const fetchAllUsers = async ({
+  page,
+  perPage,
+  sortBy,
+  direction,
+  showDeleted,
+}) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
 
     const paginationQueries = generatePaginationQueries(page, perPage);
 
+    const filters = {
+      isDeleted: showDeleted,
+    };
+
     const users = await User.aggregate([
       {
-        $project: {
-          username: 1,
-          rate: 1,
-          role: 1,
-          balance: 1,
-          exposureLimit: 1,
-          createdAt: 1,
-          status: 1,
+        $match: filters,
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "parentId",
+          foreignField: "_id",
+          as: "parentUser",
+          pipeline: [
+            {
+              $project: { username: 1 },
+            },
+          ],
         },
+      },
+      {
+        $unwind: {
+          path: "$parentUser",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unset: ["__v", "password"],
       },
       {
         $facet: {
@@ -134,9 +158,14 @@ const modifyUser = async ({ _id, rate, balance, status, password }) => {
 /**
  * delete user in the database
  */
-const removeUser = async (id) => {
-  const user = await User.findByIdAndDelete(id);
-  return user;
+const removeUser = async (_id) => {
+  try {
+    const deletedUser = await User.findByIdAndUpdate(_id, { isDeleted: true });
+
+    return deletedUser;
+  } catch (e) {
+    throw new Error(e.message);
+  }
 };
 
 export default {

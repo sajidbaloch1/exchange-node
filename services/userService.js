@@ -1,10 +1,7 @@
-import { encryptPassword } from "../lib/auth-helpers.js";
 import { generatePaginationQueries } from "../lib/pagination-helper.js";
 import User, { USER_ACCESSIBLE_ROLES } from "../models/User.js";
 
-/**
- * Fetch all users from the database
- */
+// Fetch all users from the database
 const fetchAllUsers = async ({ page, perPage, sortBy, direction }) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -13,17 +10,14 @@ const fetchAllUsers = async ({ page, perPage, sortBy, direction }) => {
 
     const users = await User.aggregate([
       {
-        $match: {
-          isActive: true,
-        },
-      },
-      {
         $project: {
           username: 1,
           rate: 1,
           role: 1,
           balance: 1,
           exposureLimit: 1,
+          createdAt: 1,
+          status: 1,
         },
       },
       {
@@ -73,7 +67,7 @@ const fetchUserId = async (_id) => {
 /**
  * create user in the database
  */
-const addUser = async ({ user, username, password, rate, role }) => {
+const addUser = async ({ user, username, password, rate, balance, role }) => {
   try {
     const existingUser = await User.findOne({ username: username });
     if (existingUser) {
@@ -88,6 +82,10 @@ const addUser = async ({ user, username, password, rate, role }) => {
 
     if (rate) {
       newUserObj.rate = rate;
+    }
+
+    if (balance) {
+      newUserObj.balance = balance;
     }
 
     // Set Parent
@@ -116,9 +114,21 @@ const addUser = async ({ user, username, password, rate, role }) => {
 /**
  * update user in the database
  */
-const modifyUser = async (body) => {
-  const user = await User.findByIdAndUpdate(body._id, body);
-  return user;
+const modifyUser = async ({ _id, rate, balance, status, password }) => {
+  try {
+    const user = await User.findById(_id);
+
+    user.status = status;
+    user.password = password;
+    user.rate = rate;
+    user.balance = balance;
+
+    await user.save();
+
+    return user;
+  } catch (e) {
+    throw new Error(e.message);
+  }
 };
 
 /**

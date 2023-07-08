@@ -1,9 +1,7 @@
 import User, { USER_ROLE } from "../models/User.js";
 import userService from "../services/userService.js";
 
-/**
- * Get all users
- */
+// Get all users
 const getAllUser = async (req, res) => {
   const page = req.body?.page ? Number(req.body.page) : null;
   const perPage = req.body?.perPage ? Number(req.body.perPage) : null;
@@ -20,9 +18,7 @@ const getAllUser = async (req, res) => {
   return res.status(200).json({ success: true, data: users });
 };
 
-/**
- * Get user by ID
- */
+// Get user by ID
 const getUserById = async (req, res) => {
   const { _id } = req.body;
 
@@ -35,9 +31,7 @@ const getUserById = async (req, res) => {
   res.status(200).json({ success: true, data: user });
 };
 
-/**
- * Create a new user
- */
+// Create a new user
 const createUser = async (req, res) => {
   const user = req.user;
 
@@ -45,6 +39,7 @@ const createUser = async (req, res) => {
   const password = req.body?.password ? req.body.password.trim() : null;
 
   const rate = req.body?.rate ? Number(req.body.rate) : null;
+  const balance = req.body?.balance ? Number(req.body.balance) : null;
   const role = req.body?.role ? req.body?.role?.toLowerCase() : null;
 
   if (!(username && password)) {
@@ -67,36 +62,44 @@ const createUser = async (req, res) => {
     username,
     password,
     rate,
+    balance,
     role,
   });
 
-  res.status(201).json({ data: newuser });
+  res.status(201).json({ success: true, data: newuser });
 };
 
-/**
- * Update a user by ID
- */
+// Update a user
 const updateUser = async (req, res) => {
-  try {
-    const { _id } = req.body;
-    const user = await userService.modifyUser(req.body);
-    if (_id == null) {
-      throw new Error("id is required");
-    }
+  const _id = req.body?._id || null;
+  const rate = req.body?.rate ? Number(req.body.rate) : null;
+  const balance = req.body?.balance ? Number(req.body.balance) : null;
+  const status = req.body?.status || null;
+  const password = req.body?.password || null;
+  const confirmPassword = req.body?.confirmPassword || null;
 
-    res.status(200).json({ data: user });
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ message: error.message });
+  if (!_id) {
+    throw new Error("_id is required!");
   }
+
+  if (password && confirmPassword && password !== confirmPassword) {
+    throw new Error("password and confirm_password donot match!");
+  }
+
+  const updatedUser = await userService.modifyUser({
+    _id,
+    rate,
+    balance,
+    status,
+    password,
+  });
+
+  res.status(200).json({ success: true, data: updatedUser });
 };
 
-/**
- * Delete a user by ID
- */
+// Delete a user
 const deleteUser = async (req, res) => {
   try {
-    // console.log(req.body);
     const { _id } = req.body;
     if (_id == null) {
       throw new Error("id is required");

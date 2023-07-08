@@ -18,6 +18,13 @@ export const USER_ACCESSIBLE_ROLES = {
   [USER_ROLE.PLAYER]: [],
 };
 
+export const USER_STATUS = {
+  ACTIVE: "active",
+  IN_ACTIVE: "inactive",
+  SUSPENDED: "suspended",
+  LOCKED: "locked",
+};
+
 const userSchema = new mongoose.Schema(
   {
     parentId: {
@@ -25,7 +32,11 @@ const userSchema = new mongoose.Schema(
       default: null,
       ref: "user",
     },
-    isActive: { type: Boolean, default: true },
+    status: {
+      type: String,
+      enum: Object.values(USER_STATUS),
+      default: USER_STATUS.ACTIVE,
+    },
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     rate: { type: Number, min: 0, max: 1, default: 1 },

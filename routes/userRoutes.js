@@ -1,10 +1,11 @@
 import express from "express";
 import userController from "../controllers/userControlles.js";
+import { route } from "../lib/routes-error-boundary.js";
 
 const router = express.Router();
 
 //find all user
-router.get("/getAllUser", userController.getAllUser);
+route(router, "get", "/getAllUsers", userController.getAllUser);
 
 //find user with id
 router.post("/getUserById", userController.getUserById);

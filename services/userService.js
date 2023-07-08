@@ -1,6 +1,6 @@
 import { encryptPassword } from "../lib/auth-helpers.js";
 import { generatePaginationQueries } from "../lib/pagination-helper.js";
-import User from "../models/User.js";
+import User, { USER_ACCESSIBLE_ROLES } from "../models/User.js";
 
 /**
  * Fetch all users from the database
@@ -73,18 +73,16 @@ const fetchUserId = async (_id) => {
 /**
  * create user in the database
  */
-const addUser = async ({ username, password, rate, role }) => {
+const addUser = async ({ user, username, password, rate, role }) => {
   try {
     const existingUser = await User.findOne({ username: username });
     if (existingUser) {
       throw new Error("username already exists!");
     }
 
-    const hashedPassword = await encryptPassword(password);
-
     const newUserObj = {
       username: username,
-      password: hashedPassword,
+      password,
       forcePasswordChange: true,
     };
 
@@ -92,7 +90,18 @@ const addUser = async ({ username, password, rate, role }) => {
       newUserObj.rate = rate;
     }
 
+    // Set Parent
+    const loggedInUser = await User.findById(user._id);
+
+    newUserObj.parentId = loggedInUser._id;
+
     if (role) {
+      const userAllowedRoles = USER_ACCESSIBLE_ROLES[loggedInUser.role];
+
+      if (!userAllowedRoles.includes(role)) {
+        throw new Error("Unauthorized!");
+      }
+
       newUserObj.role = role;
     }
 

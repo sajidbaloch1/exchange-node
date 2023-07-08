@@ -39,6 +39,8 @@ const getUserById = async (req, res) => {
  * Create a new user
  */
 const createUser = async (req, res) => {
+  const user = req.user;
+
   const username = req.body?.username ? req.body.username.trim() : null;
   const password = req.body?.password ? req.body.password.trim() : null;
 
@@ -61,6 +63,7 @@ const createUser = async (req, res) => {
   }
 
   const newuser = await userService.addUser({
+    user,
     username,
     password,
     rate,

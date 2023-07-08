@@ -12,11 +12,9 @@ const registerUser = async ({ username, password }) => {
       throw new Error("username is already taken!");
     }
 
-    const hashedPassword = await encryptPassword(password);
-
     const createdUser = await User.create({
       username,
-      password: hashedPassword,
+      password,
       forcePasswordChange: true,
     });
 

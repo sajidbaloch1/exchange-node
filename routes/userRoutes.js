@@ -1,22 +1,13 @@
 import express from "express";
-import userController from "../controllers/userControlles.js";
+import userController from "../controllers/userController.js";
 import { route } from "../lib/routes-error-boundary.js";
 
 const router = express.Router();
 
-//find all user
-route(router, "get", "/getAllUsers", userController.getAllUser);
-
-//find user with id
-router.post("/getUserById", userController.getUserById);
-
-//create a new user
-router.post("/createUser", userController.createUser);
-
-// update a user
-router.post("/updateUserById", userController.updateUser);
-
-// Route to delete a user
-router.post("/deleteUserId", userController.deleteUser);
+route(router, "post", "/getAllUsers", userController.getAllUser);
+route(router, "post", "/getUserById", userController.getUserById);
+route(router, "post", "/createUser", userController.createUser);
+route(router, "post", "/updateUser", userController.updateUser);
+route(router, "post", "/deleteUser", userController.deleteUser);
 
 export default router;

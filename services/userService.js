@@ -1,34 +1,107 @@
+import { encryptPassword } from "../lib/auth-helpers.js";
+import { generatePaginationQueries } from "../lib/pagination-helper.js";
 import User from "../models/User.js";
 
 /**
  * Fetch all users from the database
  */
-const fetchAllUsers = async () => {
-  const users = await User.find({});
-  return users;
+const fetchAllUsers = async ({ page, perPage, sortBy, direction }) => {
+  try {
+    const sortDirection = direction === "asc" ? 1 : -1;
+
+    const paginationQueries = generatePaginationQueries(page, perPage);
+
+    const users = await User.aggregate([
+      {
+        $match: {
+          isActive: true,
+        },
+      },
+      {
+        $project: {
+          username: 1,
+          rate: 1,
+          role: 1,
+          balance: 1,
+          exposureLimit: 1,
+        },
+      },
+      {
+        $facet: {
+          totalRecords: [{ $count: "count" }],
+          paginatedResults: [
+            {
+              $sort: { [sortBy]: sortDirection },
+            },
+            ...paginationQueries,
+          ],
+        },
+      },
+    ]);
+
+    const data = {
+      records: [],
+      totalRecords: 0,
+    };
+
+    if (users?.length) {
+      data.records = users[0]?.paginatedResults || [];
+      data.totalRecords = users[0]?.totalRecords?.length
+        ? users[0]?.totalRecords[0].count
+        : 0;
+    }
+
+    return data;
+  } catch (e) {
+    throw new Error(e.message);
+  }
 };
 
 /**
  * Fetch user by Id from the database
  */
-const fetchUserId = async (id) => {
-  const user = await User.findById(id);
-  return user;
+const fetchUserId = async (_id) => {
+  try {
+    const user = await User.findById(_id, { password: 0 });
+
+    return user;
+  } catch (e) {
+    throw new Error(e);
+  }
 };
 
 /**
  * create user in the database
  */
 const addUser = async ({ username, password, rate, role }) => {
-  const newUserObj = {
-    username: username,
-    password: password,
-    rate: rate,
-    role: role,
-    forcePasswordChange: true,
-  };
-  const newUser = await User.create(newUserObj);
-  return newUser;
+  try {
+    const existingUser = await User.findOne({ username: username });
+    if (existingUser) {
+      throw new Error("username already exists!");
+    }
+
+    const hashedPassword = await encryptPassword(password);
+
+    const newUserObj = {
+      username: username,
+      password: hashedPassword,
+      forcePasswordChange: true,
+    };
+
+    if (rate) {
+      newUserObj.rate = rate;
+    }
+
+    if (role) {
+      newUserObj.role = role;
+    }
+
+    const newUser = await User.create(newUserObj);
+
+    return newUser;
+  } catch (e) {
+    throw new Error(e);
+  }
 };
 
 /**

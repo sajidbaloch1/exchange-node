@@ -1,10 +1,10 @@
 import express from "express";
-import userController from "../controllers/userControlles.js";
+import userController from "../controllers/userController.js";
 import { route } from "../lib/routes-error-boundary.js";
 
 const router = express.Router();
 
-route(router, "get", "/getAllUsers", userController.getAllUser);
+route(router, "post", "/getAllUsers", userController.getAllUser);
 route(router, "post", "/getUserById", userController.getUserById);
 route(router, "post", "/createUser", userController.createUser);
 route(router, "post", "/updateUser", userController.updateUser);

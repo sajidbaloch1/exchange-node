@@ -15,7 +15,7 @@ const getAllUser = async (req, res) => {
 };
 
 /**
- * Get user by ID
+ * Get User by ID
  */
 const getUserById = async (req, res) => {
   try {

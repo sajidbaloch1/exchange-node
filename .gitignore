@@ -132,3 +132,5 @@ dist
 # local
 .nvmrc
 .zshrc
+
+.DS_Store

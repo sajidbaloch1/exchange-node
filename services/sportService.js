@@ -22,17 +22,6 @@ const fetchAllSport = async ({
         $match: filters,
       },
       {
-        $lookup: {
-          from: "sports",
-          foreignField: "_id",
-          pipeline: [
-            {
-              $project: { name: 1 },
-            },
-          ],
-        },
-      },
-      {
         $facet: {
           totalRecords: [{ $count: "count" }],
           paginatedResults: [

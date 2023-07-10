@@ -1,4 +1,7 @@
-import { generatePaginationQueries } from "../lib/pagination-helper.js";
+import {
+  generatePaginationQueries,
+  generateSearchFilters,
+} from "../lib/filter-helper.js";
 import User, { USER_ACCESSIBLE_ROLES } from "../models/User.js";
 
 // Fetch all users from the database
@@ -20,20 +23,13 @@ const fetchAllUsers = async ({
       isDeleted: showDeleted,
     };
 
-    // User role filter
     if (role) {
       filters.role = role;
     }
 
-    // Search
     if (searchQuery) {
       const fields = ["username"];
-
-      filters.$or = fields.map((field) => {
-        return {
-          [field]: { $regex: `.*${searchQuery}.*`, $options: "i" },
-        };
-      });
+      filters.$or = generateSearchFilters(searchQuery, fields);
     }
 
     const users = await User.aggregate([
@@ -178,7 +174,11 @@ const modifyUser = async ({ _id, rate, balance, status, password }) => {
  */
 const removeUser = async (_id) => {
   try {
-    const deletedUser = await User.findByIdAndUpdate(_id, { isDeleted: true });
+    const deletedUser = await User.findByIdAndUpdate(
+      _id,
+      { isDeleted: true },
+      { new: true }
+    );
 
     return deletedUser;
   } catch (e) {

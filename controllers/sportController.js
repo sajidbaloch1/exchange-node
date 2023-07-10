@@ -1,4 +1,3 @@
-import Sport from "../models/Sport.js";
 import sportService from "../services/sportService.js";
 
 // Get all Sport
@@ -7,11 +6,18 @@ const getAllSport = async (req, res) => {
   const perPage = req.body?.perPage ? Number(req.body.perPage) : null;
   const sortBy = req.body?.sortBy ? req.body.sortBy : "createdAt";
   const direction = req.body?.direction ? req.body.direction : "desc";
+  const showDeleted = req.body?.showDeleted
+    ? req.body.showDeleted === true || req.body.showDeleted === "true"
+    : false;
+  const searchQuery = req.body?.searchQuery || null;
+
   const sports = await sportService.fetchAllSport({
     page,
     perPage,
     sortBy,
     direction,
+    showDeleted,
+    searchQuery,
   });
 
   return res.status(200).json({ success: true, data: sports });

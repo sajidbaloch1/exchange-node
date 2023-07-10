@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { encryptPassword } from "../lib/auth-helpers.js";
+import timestampPlugin from "./plugins/timestamp.js";
+import softDeletePlugin from "./plugins/soft-delete.js";
 
 export const USER_ROLE = {
   SUPER_ADMIN: "superadmin",
@@ -25,41 +27,41 @@ export const USER_STATUS = {
   LOCKED: "locked",
 };
 
-const userSchema = new mongoose.Schema(
-  {
-    parentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      default: null,
-      ref: "user",
-    },
-    status: {
-      type: String,
-      enum: Object.values(USER_STATUS),
-      default: USER_STATUS.ACTIVE,
-    },
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    rate: { type: Number, min: 0, max: 1, default: 1 },
-    role: {
-      type: String,
-      enum: Object.values(USER_ROLE),
-      default: USER_ROLE.PLAYER,
-    },
-    balance: { type: Number, default: 0 },
-    exposureLimit: { type: Number, default: 0 },
-    forcePasswordChange: { type: Boolean, default: false },
-    transactionCode: { type: String },
-    isDeleted: { type: Boolean, default: false }, // soft delete
+const userSchema = new mongoose.Schema({
+  parentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: null,
+    ref: "user",
   },
-  { timestamps: true }
-);
+  status: {
+    type: String,
+    enum: Object.values(USER_STATUS),
+    default: USER_STATUS.ACTIVE,
+  },
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  rate: { type: Number, min: 0, max: 1, default: 1 },
+  role: {
+    type: String,
+    enum: Object.values(USER_ROLE),
+    default: USER_ROLE.PLAYER,
+  },
+  balance: { type: Number, default: 0 },
+  exposureLimit: { type: Number, default: 0 },
+  forcePasswordChange: { type: Boolean, default: false },
+  transactionCode: { type: String },
+});
 
-// Validate username to only have alphanumeric values and underscore
+userSchema.plugin(timestampPlugin);
+userSchema.plugin(softDeletePlugin);
+
+// Validate username to only have
+// alphanumeric values and underscore
 userSchema.path("username").validate(function (value) {
   return /^[a-zA-Z0-9_]+$/.test(value);
 }, "Username can only contain alphanumeric characters or an underscore.");
 
-// Pre hook for encrypting the password
+// Encrypt password before saving
 userSchema.pre("save", async function (next) {
   const user = this;
 

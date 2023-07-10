@@ -174,11 +174,7 @@ const modifyUser = async ({ _id, rate, balance, status, password }) => {
  */
 const removeUser = async (_id) => {
   try {
-    const deletedUser = await User.findByIdAndUpdate(
-      _id,
-      { isDeleted: true },
-      { new: true }
-    );
+    const deletedUser = await User.findOneAndRemove(_id);
 
     return deletedUser;
   } catch (e) {

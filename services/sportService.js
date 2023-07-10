@@ -118,13 +118,7 @@ const modifySport = async ({ _id, name }) => {
  */
 const removeSport = async (_id) => {
   try {
-    const deletedSport = await Sport.findByIdAndUpdate(
-      _id,
-      {
-        isDeleted: true,
-      },
-      { new: true }
-    );
+    const deletedSport = await Sport.findByIdAndDelete(_id);
 
     return deletedSport;
   } catch (e) {

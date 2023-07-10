@@ -10,6 +10,12 @@ const getAllUser = async (req, res) => {
   const showDeleted = req.body?.showDeleted
     ? req.body.showDeleted === true || req.body.showDeleted === "true"
     : false;
+  const role = req.body?.role || null;
+  const searchQuery = req.body?.searchQuery || null;
+
+  if (role && !Object.values(USER_ROLE).includes(role)) {
+    throw new Error("Invalid user role!");
+  }
 
   const users = await userService.fetchAllUsers({
     page,
@@ -17,6 +23,8 @@ const getAllUser = async (req, res) => {
     sortBy,
     direction,
     showDeleted,
+    role,
+    searchQuery,
   });
 
   return res.status(200).json({ success: true, data: users });

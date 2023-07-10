@@ -8,6 +8,8 @@ const fetchAllUsers = async ({
   sortBy,
   direction,
   showDeleted,
+  role,
+  searchQuery,
 }) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -17,6 +19,22 @@ const fetchAllUsers = async ({
     const filters = {
       isDeleted: showDeleted,
     };
+
+    if (role) {
+      filters.role = role;
+    }
+
+    if (searchQuery) {
+      const fields = ["username"];
+
+      filters.$or = fields.map((field) => {
+        return {
+          [field]: { $regex: `.*${searchQuery}.*`, $options: "i" },
+        };
+      });
+    }
+
+    console.log(filters.$or);
 
     const users = await User.aggregate([
       {

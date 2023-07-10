@@ -24,16 +24,20 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const username = req.body?.username ? req.body.username.trim() : null;
-  const password = req.body?.password ? req.body.password.trim() : null;
+  try {
+    const username = req.body?.username ? req.body.username.trim() : null;
+    const password = req.body?.password ? req.body.password.trim() : null;
 
-  if (!(username && password)) {
-    throw new Error("username and password is required!");
+    if (!(username && password)) {
+      throw new Error("username and password is required!");
+    }
+
+    const userWithToken = await authService.loginUser({ username, password });
+
+    return res.status(200).json({ success: true, data: userWithToken });
+  } catch (e) {
+    return res.status(200).json({ success: false, message: e.message });
   }
-
-  const userWithToken = await authService.loginUser({ username, password });
-
-  return res.status(200).json({ success: true, data: userWithToken });
 };
 
 export default {

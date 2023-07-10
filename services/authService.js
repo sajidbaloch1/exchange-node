@@ -43,7 +43,7 @@ const loginUser = async ({ username, password }) => {
 
     return { user: existingUser, token };
   } catch (e) {
-    throw new Error(e);
+    throw new Error(e.message);
   }
 };
 

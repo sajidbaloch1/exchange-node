@@ -24,8 +24,6 @@ export default function corsMiddleware(req, res, next) {
     // Check if it's a preflight request
     if (req.method === "OPTIONS") {
       return res.status(200).end();
-    } else {
-      next();
     }
   }
 

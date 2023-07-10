@@ -34,8 +34,6 @@ const fetchAllUsers = async ({
       });
     }
 
-    console.log(filters.$or);
-
     const users = await User.aggregate([
       {
         $match: filters,

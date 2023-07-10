@@ -1,4 +1,7 @@
-import { generatePaginationQueries } from "../lib/filter-helper.js";
+import {
+  generatePaginationQueries,
+  generateSearchFilters,
+} from "../lib/filter-helper.js";
 import Sport from "../models/Sport.js";
 
 // Fetch all sport from the database

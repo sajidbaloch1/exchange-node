@@ -20,10 +20,12 @@ const fetchAllUsers = async ({
       isDeleted: showDeleted,
     };
 
+    // User role filter
     if (role) {
       filters.role = role;
     }
 
+    // Search
     if (searchQuery) {
       const fields = ["username"];
 

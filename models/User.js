@@ -48,6 +48,7 @@ const userSchema = new mongoose.Schema(
     balance: { type: Number, default: 0 },
     exposureLimit: { type: Number, default: 0 },
     forcePasswordChange: { type: Boolean, default: false },
+    transactionCode: { type: String },
     isDeleted: { type: Boolean, default: false }, // soft delete
   },
   { timestamps: true }

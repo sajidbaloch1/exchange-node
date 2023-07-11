@@ -2,10 +2,11 @@ import mongoose from "mongoose";
 import softDeletePlugin from "./plugins/soft-delete.js";
 import timestampPlugin from "./plugins/timestamp.js";
 
-const sportSchema = new mongoose.Schema({
+const categorySchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+    unique: true,
   },
   isActive: {
     type: Boolean,
@@ -13,9 +14,9 @@ const sportSchema = new mongoose.Schema({
   },
 });
 
-sportSchema.plugin(timestampPlugin);
-sportSchema.plugin(softDeletePlugin);
+categorySchema.plugin(timestampPlugin);
+categorySchema.plugin(softDeletePlugin);
 
-const Sport = mongoose.model("sport", sportSchema);
+const Category = mongoose.model("category", categorySchema);
 
-export default Sport;
+export default Category;

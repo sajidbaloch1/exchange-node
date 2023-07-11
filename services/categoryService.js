@@ -2,7 +2,7 @@ import {
   generatePaginationQueries,
   generateSearchFilters,
 } from "../lib/filter-helper.js";
-import Category from "../models/category.js";
+import Category from "../models/Category.js";
 
 // Fetch all Category from the database
 const fetchAllCategory = async ({

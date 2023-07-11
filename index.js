@@ -7,6 +7,7 @@ import corsMiddleware from "./middlewares/corsMiddleware.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import currencyRoutes from "./routes/currencyRoutes.js";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(corsMiddleware);
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
 app.use("/categories", categoryRoutes);
+app.use("/currencies", currencyRoutes);
 
 app.get("/", (req, res) => {
   res.json({

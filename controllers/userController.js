@@ -1,4 +1,4 @@
-import User, { USER_ROLE } from "../models/User.js";
+import { USER_ROLE } from "../models/User.js";
 import userService from "../services/userService.js";
 
 // Get all users

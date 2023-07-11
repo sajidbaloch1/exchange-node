@@ -1,10 +1,13 @@
 import { validateJwtToken } from "../lib/auth-helpers.js";
 
-export default function authMiddleware(req, res, next) {
-  const validToken = validateJwtToken(req);
+export default async function authMiddleware(req, res, next) {
+  const token = await validateJwtToken(req);
 
-  if (!validToken) {
-    return res.status(401).json({ error: "Not authenticated!" });
+  if (!token.isValid) {
+    return res.status(401).json({
+      invalidAuth: true,
+      message: token.message || "Not authenticated!",
+    });
   }
 
   next();

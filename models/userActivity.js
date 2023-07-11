@@ -1,4 +1,5 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+import timestampPlugin from "./plugins/timestamp.js";
 
 export const USER_ACTIVITY_EVENT = {
   LOGIN: "login",
@@ -31,6 +32,9 @@ const userActivitySchema = new mongoose.Schema(
     },
   }
 );
+
+userActivitySchema.plugin(timestampPlugin);
+
 const UserActivity = mongoose.model("user_activity", userActivitySchema);
 
 export default UserActivity;

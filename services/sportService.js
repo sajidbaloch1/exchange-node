@@ -1,4 +1,7 @@
-import { generatePaginationQueries } from "../lib/pagination-helper.js";
+import {
+  generatePaginationQueries,
+  generateSearchFilters,
+} from "../lib/filter-helper.js";
 import Sport from "../models/Sport.js";
 
 // Fetch all sport from the database
@@ -8,6 +11,7 @@ const fetchAllSport = async ({
   sortBy,
   direction,
   showDeleted,
+  searchQuery,
 }) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -17,6 +21,12 @@ const fetchAllSport = async ({
     const filters = {
       isDeleted: showDeleted,
     };
+
+    if (searchQuery) {
+      const fields = ["name"];
+      filters.$or = generateSearchFilters(searchQuery, fields);
+    }
+
     const sports = await Sport.aggregate([
       {
         $match: filters,
@@ -108,11 +118,11 @@ const modifySport = async ({ _id, name }) => {
  */
 const removeSport = async (_id) => {
   try {
-    const deletedSport = await Sport.findByIdAndUpdate(_id, {
-      isDeleted: true,
-    });
+    const sport = await Sport.findById(_id);
 
-    return deletedSport;
+    await sport.softDelete();
+
+    return sport;
   } catch (e) {
     throw new Error(e.message);
   }

@@ -118,9 +118,11 @@ const modifySport = async ({ _id, name }) => {
  */
 const removeSport = async (_id) => {
   try {
-    const deletedSport = await Sport.findByIdAndDelete(_id);
+    const sport = await Sport.findById(_id);
 
-    return deletedSport;
+    await sport.softDelete();
+
+    return sport;
   } catch (e) {
     throw new Error(e.message);
   }

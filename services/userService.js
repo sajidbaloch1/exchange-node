@@ -174,9 +174,11 @@ const modifyUser = async ({ _id, rate, balance, status, password }) => {
  */
 const removeUser = async (_id) => {
   try {
-    const deletedUser = await User.findOneAndRemove(_id);
+    const user = await User.findById(_id);
 
-    return deletedUser;
+    await user.softDelete();
+
+    return user;
   } catch (e) {
     throw new Error(e.message);
   }

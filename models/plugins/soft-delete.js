@@ -16,11 +16,12 @@ export default function softDeletePlugin(schema) {
     this.save(cb);
   };
 
-  schema.method(
-    "remove",
-    function (cb) {
-      this.softDelete(cb);
-    },
-    { suppressWarning: true }
-  );
+  // TODO: figure out a way to override this method
+  // schema.method(
+  //   "remove",
+  //   function (cb) {
+  //     this.softDelete(cb);
+  //   },
+  //   { suppressWarning: true }
+  // );
 }

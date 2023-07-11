@@ -1,21 +1,43 @@
 import mongoose from "mongoose";
 import { encryptPassword } from "../lib/auth-helpers.js";
+import softDeletePlugin from "./plugins/soft-delete.js";
+import timestampPlugin from "./plugins/timestamp.js";
 
 export const USER_ROLE = {
-  SUPER_ADMIN: "superadmin",
+  SYSTEM_OWNER: "system_owner",
+  SUPER_ADMIN: "super_admin",
   ADMIN: "admin",
+  SUPER_MASTER: "super_master",
   MASTER: "master",
-  PLAYER: "player",
+  AGENT: "agent",
+  USER: "user",
 };
 
 export const USER_ACCESSIBLE_ROLES = {
-  [USER_ROLE.SUPER_ADMIN]: Object.values(USER_ROLE),
+  [USER_ROLE.SYSTEM_OWNER]: Object.values(USER_ROLE),
 
-  [USER_ROLE.ADMIN]: [USER_ROLE.ADMIN, USER_ROLE.MASTER, USER_ROLE.PLAYER],
+  [USER_ROLE.SUPER_ADMIN]: [
+    USER_ROLE.ADMIN,
+    USER_ROLE.SUPER_MASTER,
+    USER_ROLE.MASTER,
+    USER_ROLE.AGENT,
+    USER_ROLE.USER,
+  ],
 
-  [USER_ROLE.MASTER]: [USER_ROLE.MASTER, USER_ROLE.PLAYER],
+  [USER_ROLE.ADMIN]: [
+    USER_ROLE.SUPER_MASTER,
+    USER_ROLE.MASTER,
+    USER_ROLE.AGENT,
+    USER_ROLE.USER,
+  ],
 
-  [USER_ROLE.PLAYER]: [],
+  [USER_ROLE.SUPER_MASTER]: [USER_ROLE.MASTER, USER_ROLE.AGENT, USER_ROLE.USER],
+
+  [USER_ROLE.MASTER]: [USER_ROLE.AGENT, USER_ROLE.USER],
+
+  [USER_ROLE.AGENT]: [USER_ROLE.USER],
+
+  [USER_ROLE.USER]: [],
 };
 
 export const USER_STATUS = {
@@ -31,6 +53,12 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       default: null,
       ref: "user",
+    },
+    currencyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+      ref: "currency",
+      required: true,
     },
     status: {
       type: String,
@@ -58,7 +86,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: Object.values(USER_ROLE),
-      default: USER_ROLE.PLAYER,
+      default: USER_ROLE.USER,
     },
     balance: { type: Number, default: 0 },
     exposureLimit: { type: Number, default: 0 },
@@ -69,6 +97,8 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+userSchema.plugin(timestampPlugin);
+userSchema.plugin(softDeletePlugin);
 
 // Validate username to only have alphanumeric values and underscore
 userSchema.path("username").validate(function (value) {

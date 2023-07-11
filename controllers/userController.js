@@ -46,7 +46,8 @@ const getUserById = async (req, res) => {
 // Create a new user
 const createUser = async (req, res) => {
   const user = req.user;
-
+  const currencyId = req.body?.currencyId ? req.body.currencyId.trim() : null;
+  const fullName = req.body?.fullName ? req.body.fullName.trim() : null;
   const username = req.body?.username ? req.body.username.trim() : null;
   const password = req.body?.password ? req.body.password.trim() : null;
 
@@ -71,11 +72,13 @@ const createUser = async (req, res) => {
 
   const newuser = await userService.addUser({
     user,
+    fullName,
     username,
     password,
     rate,
     balance,
     role,
+    currencyId,
   });
 
   res.status(201).json({ success: true, data: { details: newuser } });

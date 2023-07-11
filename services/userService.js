@@ -105,7 +105,16 @@ const fetchUserId = async (_id) => {
 /**
  * create user in the database
  */
-const addUser = async ({ user, username, password, rate, balance, role }) => {
+const addUser = async ({
+  user,
+  fullName,
+  username,
+  password,
+  rate,
+  balance,
+  role,
+  currencyId,
+}) => {
   try {
     const existingUser = await User.findOne({ username: username });
     if (existingUser) {
@@ -113,10 +122,14 @@ const addUser = async ({ user, username, password, rate, balance, role }) => {
     }
 
     const newUserObj = {
+      fullName: fullName,
       username: username,
       password,
       forcePasswordChange: true,
     };
+    if (currencyId) {
+      newUserObj.currencyId = currencyId;
+    }
 
     if (rate) {
       newUserObj.rate = rate;
@@ -133,11 +146,11 @@ const addUser = async ({ user, username, password, rate, balance, role }) => {
 
     if (role) {
       const userAllowedRoles = USER_ACCESSIBLE_ROLES[loggedInUser.role];
-
+      console.log(loggedInUser);
       if (!userAllowedRoles.includes(role)) {
         throw new Error("Unauthorized!");
       }
-
+      console.log("hear-1");
       newUserObj.role = role;
     }
 

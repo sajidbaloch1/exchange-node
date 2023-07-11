@@ -6,7 +6,7 @@ import dbConnection from "./lib/db-connection.js";
 import corsMiddleware from "./middlewares/corsMiddleware.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
-import sportRoutes from "./routes/sportRoutes.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 
 const app = express();
 
@@ -17,7 +17,7 @@ app.use(corsMiddleware);
 
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
-app.use("/sports", sportRoutes);
+app.use("/categories", categoryRoutes);
 
 app.get("/", (req, res) => {
   res.json({

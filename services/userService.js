@@ -1,19 +1,8 @@
-import {
-  generatePaginationQueries,
-  generateSearchFilters,
-} from "../lib/filter-helper.js";
-import User, { USER_ACCESSIBLE_ROLES } from "../models/User.js";
+import { generatePaginationQueries, generateSearchFilters } from "../lib/filter-helper.js";
+import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 
 // Fetch all users from the database
-const fetchAllUsers = async ({
-  page,
-  perPage,
-  sortBy,
-  direction,
-  showDeleted,
-  role,
-  searchQuery,
-}) => {
+const fetchAllUsers = async ({ page, perPage, sortBy, direction, showDeleted, role, searchQuery }) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
 
@@ -78,9 +67,7 @@ const fetchAllUsers = async ({
 
     if (users?.length) {
       data.records = users[0]?.paginatedResults || [];
-      data.totalRecords = users[0]?.totalRecords?.length
-        ? users[0]?.totalRecords[0].count
-        : 0;
+      data.totalRecords = users[0]?.totalRecords?.length ? users[0]?.totalRecords[0].count : 0;
     }
 
     return data;
@@ -105,28 +92,15 @@ const fetchUserId = async (_id) => {
 /**
  * create user in the database
  */
-const addUser = async ({
-  user,
-  fullName,
-  username,
-  password,
-  rate,
-  balance,
-  role,
-  currencyId,
-}) => {
+const addUser = async ({ user, fullName, username, password, rate, balance, role, currencyId }) => {
   try {
-    const existingUser = await User.findOne({ username: username });
-    if (existingUser) {
-      throw new Error("username already exists!");
-    }
-
     const newUserObj = {
       fullName: fullName,
       username: username,
       password,
       forcePasswordChange: true,
     };
+
     if (currencyId) {
       newUserObj.currencyId = currencyId;
     }
@@ -141,7 +115,6 @@ const addUser = async ({
 
     // Set Parent
     const loggedInUser = await User.findById(user._id);
-
     newUserObj.parentId = loggedInUser._id;
 
     if (role) {
@@ -152,7 +125,21 @@ const addUser = async ({
       newUserObj.role = role;
     }
 
+    //Check if new user points are not greater than parent user
+    if (loggedInUser.role != USER_ROLE.SYSTEM_OWNER) {
+      if (newUserObj.balance > loggedInUser.balance) {
+        throw new Error("The balance of a child account cannot exceed the balance of its parent account!");
+      }
+    }
+
     const newUser = await User.create(newUserObj);
+
+    //If User Created Then deduct points from parent
+    if (loggedInUser.role != USER_ROLE.SYSTEM_OWNER) {
+      loggedInUser.balance = loggedInUser.balance - newUser.balance;
+      await loggedInUser.save();
+      console.log("Here");
+    }
 
     return newUser;
   } catch (e) {

@@ -50,7 +50,11 @@ const createCurrency = async (req, res) => {
     multiplier: multiplier,
   });
 
-  res.status(201).json({ success: true, data: { details: newcurrency } });
+  res.status(201).json({
+    success: true,
+    data: { details: newcurrency },
+    message: "Currency Created",
+  });
 };
 
 // Update a Currency
@@ -69,7 +73,11 @@ const updateCurrency = async (req, res) => {
     multiplier,
   });
 
-  res.status(200).json({ success: true, data: { details: updatedCurrency } });
+  res.status(200).json({
+    success: true,
+    data: { details: updatedCurrency },
+    message: "Currency Updated",
+  });
 };
 
 // Delete a Currency
@@ -82,7 +90,11 @@ const deleteCurrency = async (req, res) => {
 
   const deletedCurrency = await currencyService.removeCurrency(_id);
 
-  res.status(200).json({ success: true, data: { details: deletedCurrency } });
+  res.status(200).json({
+    success: true,
+    data: { details: deletedCurrency },
+    message: "Currency Deleted",
+  });
 };
 
 export default {

@@ -5,7 +5,7 @@ import {
 } from "../lib/auth-helpers.js";
 import User from "../models/User.js";
 
-const registerUser = async ({ username, password }) => {
+const registerUser = async ({ username, password, fullName }) => {
   try {
     const existingUser = await User.findOne({ username: username });
     if (existingUser) {
@@ -16,6 +16,7 @@ const registerUser = async ({ username, password }) => {
       username,
       password,
       forcePasswordChange: true,
+      fullName,
     });
 
     return createdUser;

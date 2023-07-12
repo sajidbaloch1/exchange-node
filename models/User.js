@@ -69,6 +69,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isDemo: {
+      type: Boolean,
+      default: false,
+    },
     username: { type: String, required: true, unique: true },
     fullName: {
       type: String,

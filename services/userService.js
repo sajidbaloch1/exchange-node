@@ -2,7 +2,7 @@ import {
   generatePaginationQueries,
   generateSearchFilters,
 } from "../lib/filter-helper.js";
-import User, { USER_ACCESSIBLE_ROLES } from "../models/User.js";
+import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 
 // Fetch all users from the database
 const fetchAllUsers = async ({
@@ -138,11 +138,14 @@ const addUser = async ({
     if (balance) {
       newUserObj.balance = balance;
     }
-
     // Set Parent
     const loggedInUser = await User.findById(user._id);
 
     newUserObj.parentId = loggedInUser._id;
+
+    if (loggedInUser.role !== USER_ROLE.SYSTEM_OWNER) {
+      newUserObj.currencyId = loggedInUser.currencyId;
+    }
 
     if (role) {
       const userAllowedRoles = USER_ACCESSIBLE_ROLES[loggedInUser.role];
@@ -194,6 +197,23 @@ const removeUser = async (_id) => {
     throw new Error(e.message);
   }
 };
+const statusModify = async ({ _id, isBetLock, isActive }) => {
+  try {
+    const user = await User.findById(_id);
+    if (isBetLock) {
+      user.isBetLock = isBetLock;
+    }
+    if (isActive) {
+      user.isActive = isActive;
+    }
+
+    await user.save();
+
+    return user;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
 
 export default {
   fetchAllUsers,
@@ -201,4 +221,5 @@ export default {
   addUser,
   modifyUser,
   removeUser,
+  statusModify,
 };

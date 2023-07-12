@@ -176,11 +176,10 @@ const addUser = async ({
 /**
  * update user in the database
  */
-const modifyUser = async ({ _id, rate, balance, status, password }) => {
+const modifyUser = async ({ _id, rate, balance, password }) => {
   try {
     const user = await User.findById(_id);
 
-    user.status = status;
     user.password = password;
     user.rate = rate;
     user.balance = balance;

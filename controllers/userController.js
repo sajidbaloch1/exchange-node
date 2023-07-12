@@ -89,7 +89,6 @@ const updateUser = async (req, res) => {
   const _id = req.body?._id || null;
   const rate = req.body?.rate ? Number(req.body.rate) : null;
   const balance = req.body?.balance ? Number(req.body.balance) : null;
-  const status = req.body?.status || null;
   const password = req.body?.password || null;
   const confirmPassword = req.body?.confirmPassword || null;
 
@@ -105,7 +104,6 @@ const updateUser = async (req, res) => {
     _id,
     rate,
     balance,
-    status,
     password,
   });
 

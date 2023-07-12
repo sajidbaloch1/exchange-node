@@ -138,7 +138,6 @@ const addUser = async ({ user, fullName, username, password, rate, balance, role
     if (loggedInUser.role != USER_ROLE.SYSTEM_OWNER) {
       loggedInUser.balance = loggedInUser.balance - newUser.balance;
       await loggedInUser.save();
-      console.log("Here");
     }
 
     return newUser;

@@ -146,11 +146,9 @@ const addUser = async ({
 
     if (role) {
       const userAllowedRoles = USER_ACCESSIBLE_ROLES[loggedInUser.role];
-      console.log(loggedInUser);
       if (!userAllowedRoles.includes(role)) {
         throw new Error("Unauthorized!");
       }
-      console.log("hear-1");
       newUserObj.role = role;
     }
 

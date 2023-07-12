@@ -16,20 +16,9 @@ export const USER_ROLE = {
 export const USER_ACCESSIBLE_ROLES = {
   [USER_ROLE.SYSTEM_OWNER]: Object.values(USER_ROLE),
 
-  [USER_ROLE.SUPER_ADMIN]: [
-    USER_ROLE.ADMIN,
-    USER_ROLE.SUPER_MASTER,
-    USER_ROLE.MASTER,
-    USER_ROLE.AGENT,
-    USER_ROLE.USER,
-  ],
+  [USER_ROLE.SUPER_ADMIN]: [USER_ROLE.ADMIN, USER_ROLE.SUPER_MASTER, USER_ROLE.MASTER, USER_ROLE.AGENT, USER_ROLE.USER],
 
-  [USER_ROLE.ADMIN]: [
-    USER_ROLE.SUPER_MASTER,
-    USER_ROLE.MASTER,
-    USER_ROLE.AGENT,
-    USER_ROLE.USER,
-  ],
+  [USER_ROLE.ADMIN]: [USER_ROLE.SUPER_MASTER, USER_ROLE.MASTER, USER_ROLE.AGENT, USER_ROLE.USER],
 
   [USER_ROLE.SUPER_MASTER]: [USER_ROLE.MASTER, USER_ROLE.AGENT, USER_ROLE.USER],
 
@@ -73,7 +62,22 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    username: { type: String, required: true, unique: true },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: {
+        validator: async function (value) {
+          if (this._id) {
+            var count = await this.constructor.countDocuments({ _id: { $ne: this._id }, username: value });
+          } else {
+            var count = await this.model("user").countDocuments({ username: value });
+          }
+          return count === 0;
+        },
+        message: "Username already exists. Please choose a different username.",
+      },
+    },
     fullName: {
       type: String,
       required: true,
@@ -136,8 +140,7 @@ userSchema.pre("save", async function (next) {
 function generateTransactionCode() {
   const chars = "0123456789";
   let result = "";
-  for (let i = 6; i > 0; --i)
-    result += chars[Math.floor(Math.random() * chars.length)];
+  for (let i = 6; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
   return result;
 }
 

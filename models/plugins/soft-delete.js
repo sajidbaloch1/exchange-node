@@ -1,3 +1,10 @@
+/**
+ * Mongoose plugin that adds soft delete functionality to a schema.
+ *
+ * @function softDeletePlugin
+ * @param {mongoose.Schema} schema - The Mongoose schema to apply the soft delete plugin to.
+ * @returns {void}
+ */
 export default function softDeletePlugin(schema) {
   schema.add({
     isDeleted: {

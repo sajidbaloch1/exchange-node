@@ -116,17 +116,13 @@ const addUser = async ({
   currencyId,
 }) => {
   try {
-    const existingUser = await User.findOne({ username: username });
-    if (existingUser) {
-      throw new Error("username already exists!");
-    }
-
     const newUserObj = {
       fullName: fullName,
       username: username,
       password,
       forcePasswordChange: true,
     };
+
     if (currencyId) {
       newUserObj.currencyId = currencyId;
     }
@@ -140,7 +136,6 @@ const addUser = async ({
     }
     // Set Parent
     const loggedInUser = await User.findById(user._id);
-
     newUserObj.parentId = loggedInUser._id;
 
     if (loggedInUser.role !== USER_ROLE.SYSTEM_OWNER) {
@@ -155,7 +150,22 @@ const addUser = async ({
       newUserObj.role = role;
     }
 
+    //Check if new user points are not greater than parent user
+    if (loggedInUser.role != USER_ROLE.SYSTEM_OWNER) {
+      if (newUserObj.balance > loggedInUser.balance) {
+        throw new Error(
+          "The balance of a child account cannot exceed the balance of its parent account!"
+        );
+      }
+    }
+
     const newUser = await User.create(newUserObj);
+
+    //If User Created Then deduct points from parent
+    if (loggedInUser.role != USER_ROLE.SYSTEM_OWNER) {
+      loggedInUser.balance = loggedInUser.balance - newUser.balance;
+      await loggedInUser.save();
+    }
 
     return newUser;
   } catch (e) {

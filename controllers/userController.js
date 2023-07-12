@@ -89,7 +89,6 @@ const updateUser = async (req, res) => {
   const _id = req.body?._id || null;
   const rate = req.body?.rate ? Number(req.body.rate) : null;
   const balance = req.body?.balance ? Number(req.body.balance) : null;
-  const status = req.body?.status || null;
   const password = req.body?.password || null;
   const confirmPassword = req.body?.confirmPassword || null;
 
@@ -105,7 +104,6 @@ const updateUser = async (req, res) => {
     _id,
     rate,
     balance,
-    status,
     password,
   });
 
@@ -125,10 +123,28 @@ const deleteUser = async (req, res) => {
   res.status(200).json({ success: true, data: { details: deletedUser } });
 };
 
+// Bet Lock
+const updateUserStatus = async (req, res) => {
+  const _id = req.body?._id || null;
+  const isActive = req.body?.isActive || null;
+  const isBetLock = req.body?.isBetLock || null;
+  if (!_id) {
+    throw new Error("_id is required!");
+  }
+
+  const updatedUserStatus = await userService.statusModify({
+    _id,
+    isActive,
+    isBetLock,
+  });
+
+  res.status(200).json({ success: true, data: { details: updatedUserStatus } });
+};
 export default {
   getAllUser,
   getUserById,
   createUser,
   updateUser,
   deleteUser,
+  updateUserStatus,
 };

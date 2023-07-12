@@ -29,13 +29,6 @@ export const USER_ACCESSIBLE_ROLES = {
   [USER_ROLE.USER]: [],
 };
 
-export const USER_STATUS = {
-  ACTIVE: "active",
-  IN_ACTIVE: "inactive",
-  SUSPENDED: "suspended",
-  LOCKED: "locked",
-};
-
 const userSchema = new mongoose.Schema(
   {
     parentId: {
@@ -45,18 +38,17 @@ const userSchema = new mongoose.Schema(
     },
     currencyId: {
       type: mongoose.Schema.Types.ObjectId,
-      default: null,
       ref: "currency",
       required: true,
     },
-    status: {
-      type: String,
-      enum: Object.values(USER_STATUS),
-      default: USER_STATUS.ACTIVE,
-    },
+
     isActive: {
       type: Boolean,
       default: true,
+    },
+    isBetLock: {
+      type: Boolean,
+      default: false,
     },
     isDemo: {
       type: Boolean,

@@ -1,8 +1,19 @@
-import { generatePaginationQueries, generateSearchFilters } from "../lib/filter-helper.js";
+import {
+  generatePaginationQueries,
+  generateSearchFilters,
+} from "../lib/filter-helper.js";
 import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 
 // Fetch all users from the database
-const fetchAllUsers = async ({ page, perPage, sortBy, direction, showDeleted, role, searchQuery }) => {
+const fetchAllUsers = async ({
+  page,
+  perPage,
+  sortBy,
+  direction,
+  showDeleted,
+  role,
+  searchQuery,
+}) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
 
@@ -67,7 +78,9 @@ const fetchAllUsers = async ({ page, perPage, sortBy, direction, showDeleted, ro
 
     if (users?.length) {
       data.records = users[0]?.paginatedResults || [];
-      data.totalRecords = users[0]?.totalRecords?.length ? users[0]?.totalRecords[0].count : 0;
+      data.totalRecords = users[0]?.totalRecords?.length
+        ? users[0]?.totalRecords[0].count
+        : 0;
     }
 
     return data;
@@ -92,7 +105,16 @@ const fetchUserId = async (_id) => {
 /**
  * create user in the database
  */
-const addUser = async ({ user, fullName, username, password, rate, balance, role, currencyId }) => {
+const addUser = async ({
+  user,
+  fullName,
+  username,
+  password,
+  rate,
+  balance,
+  role,
+  currencyId,
+}) => {
   try {
     const newUserObj = {
       fullName: fullName,
@@ -112,10 +134,13 @@ const addUser = async ({ user, fullName, username, password, rate, balance, role
     if (balance) {
       newUserObj.balance = balance;
     }
-
     // Set Parent
     const loggedInUser = await User.findById(user._id);
     newUserObj.parentId = loggedInUser._id;
+
+    if (loggedInUser.role !== USER_ROLE.SYSTEM_OWNER) {
+      newUserObj.currencyId = loggedInUser.currencyId;
+    }
 
     if (role) {
       const userAllowedRoles = USER_ACCESSIBLE_ROLES[loggedInUser.role];
@@ -128,7 +153,9 @@ const addUser = async ({ user, fullName, username, password, rate, balance, role
     //Check if new user points are not greater than parent user
     if (loggedInUser.role != USER_ROLE.SYSTEM_OWNER) {
       if (newUserObj.balance > loggedInUser.balance) {
-        throw new Error("The balance of a child account cannot exceed the balance of its parent account!");
+        throw new Error(
+          "The balance of a child account cannot exceed the balance of its parent account!"
+        );
       }
     }
 
@@ -149,11 +176,10 @@ const addUser = async ({ user, fullName, username, password, rate, balance, role
 /**
  * update user in the database
  */
-const modifyUser = async ({ _id, rate, balance, status, password }) => {
+const modifyUser = async ({ _id, rate, balance, password }) => {
   try {
     const user = await User.findById(_id);
 
-    user.status = status;
     user.password = password;
     user.rate = rate;
     user.balance = balance;
@@ -180,6 +206,23 @@ const removeUser = async (_id) => {
     throw new Error(e.message);
   }
 };
+const statusModify = async ({ _id, isBetLock, isActive }) => {
+  try {
+    const user = await User.findById(_id);
+    if (isBetLock) {
+      user.isBetLock = isBetLock;
+    }
+    if (isActive) {
+      user.isActive = isActive;
+    }
+
+    await user.save();
+
+    return user;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
 
 export default {
   fetchAllUsers,
@@ -187,4 +230,5 @@ export default {
   addUser,
   modifyUser,
   removeUser,
+  statusModify,
 };

@@ -1,10 +1,25 @@
 import express from "express";
 import authController from "../controllers/authController.js";
 import { route } from "../lib/routes-error-boundary.js";
+import validateRequest from "../middlewares/requestMiddleware.js";
+import authRequest from "../requests/authRequest.js";
 
 const router = express.Router();
 
-route(router, "post", "/login", authController.login, false);
-route(router, "post", "/register", authController.register, false);
+route(
+  router,
+  "post",
+  "/login",
+  validateRequest(authRequest.login, authController.login),
+  false
+);
+
+route(
+  router,
+  "post",
+  "/register",
+  validateRequest(authRequest.register, authController.register),
+  false
+);
 
 export default router;

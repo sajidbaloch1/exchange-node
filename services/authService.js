@@ -33,7 +33,7 @@ const registerUser = async ({ username, password, fullName, currencyId }) => {
 
     return createdUser;
   } catch (e) {
-    throw new ErrorResponse(200, e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 
@@ -58,7 +58,7 @@ const loginUser = async ({ username, password }) => {
 
     return { user: existingUser, token };
   } catch (e) {
-    throw new ErrorResponse(200, e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 

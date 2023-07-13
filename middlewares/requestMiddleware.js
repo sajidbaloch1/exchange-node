@@ -15,7 +15,7 @@ export default function validateRequest(validationSchema, controller) {
       await validator.validate(req.body);
       return await controller(req, res, next);
     } catch (e) {
-      throw new ErrorResponse(200, e.message);
+      throw new ErrorResponse(e.message).status(200);
     }
   };
 }

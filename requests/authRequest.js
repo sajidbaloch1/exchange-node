@@ -1,10 +1,10 @@
 import { isValidObjectId } from "mongoose";
-import yup from "yup";
+import Yup from "yup";
 
 export const loginReqSchema = async () => {
-  const requestSchema = yup.object().shape({
-    username: yup.string().required(),
-    password: yup.string().required(),
+  const requestSchema = Yup.object().shape({
+    username: Yup.string().required(),
+    password: Yup.string().required(),
   });
 
   return requestSchema;
@@ -14,20 +14,18 @@ export const registerReqSchema = async (req) => {
   req.body.username = req.body.username?.trim();
   req.body.password = req.body.password?.trim();
 
-  const requestSchema = yup.object().shape({
-    username: yup.string().required(),
+  const requestSchema = Yup.object().shape({
+    username: Yup.string().required(),
 
-    password: yup.string().required(),
+    password: Yup.string().required(),
 
-    confirmPassword: yup
-      .string()
-      .oneOf([yup.ref("password"), null], "Passwords must match")
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password"), null], "Passwords must match")
       .required(),
 
-    fullName: yup.string().required(),
+    fullName: Yup.string().required(),
 
-    currencyId: yup
-      .string()
+    currencyId: Yup.string()
       .required()
       .test("currencyId", "Invalid currencyId!", isValidObjectId),
   });

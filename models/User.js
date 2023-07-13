@@ -61,7 +61,7 @@ const userSchema = new mongoose.Schema(
     fullName: { type: String, required: true },
     mobileNumber: { type: String, unique: true },
     city: { type: String },
-    rate: { type: Number, min: 0, max: 1, default: 1 },
+    rate: { type: Number, min: 0, max: 100, default: 100 },
     role: {
       type: String,
       enum: Object.values(USER_ROLE),

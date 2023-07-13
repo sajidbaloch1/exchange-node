@@ -12,15 +12,25 @@ route(
   "/getAllUsers",
   validateRequest(userRequest.listingSchema, userController.getAllUser)
 );
+
 route(router, "post", "/getUserById", userController.getUserById);
+
 route(
   router,
   "post",
   "/createUser",
   validateRequest(userRequest.createUserSchema, userController.createUser)
 );
-route(router, "post", "/updateUser", userController.updateUser);
+
+route(
+  router,
+  "post",
+  "/updateUser",
+  validateRequest(userRequest.updateUserSchema, userController.updateUser)
+);
+
 route(router, "post", "/deleteUser", userController.deleteUser);
+
 route(router, "post", "/updateUserStatus", userController.updateUserStatus);
 
 export default router;

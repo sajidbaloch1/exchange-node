@@ -33,25 +33,9 @@ const createUser = async (req, res) => {
 
 // Update a user
 const updateUser = async (req, res) => {
-  const _id = req.body?._id || null;
-  const rate = req.body?.rate ? Number(req.body.rate) : null;
-  const balance = req.body?.balance ? Number(req.body.balance) : null;
-  const password = req.body?.password || null;
-  const confirmPassword = req.body?.confirmPassword || null;
-
-  if (!_id) {
-    throw new Error("_id is required!");
-  }
-
-  if (password && confirmPassword && password !== confirmPassword) {
-    throw new Error("password and confirm_password donot match!");
-  }
-
   const updatedUser = await userService.modifyUser({
-    _id,
-    rate,
-    balance,
-    password,
+    user: req.user,
+    ...req.body,
   });
 
   res.status(200).json({ success: true, data: { details: updatedUser } });

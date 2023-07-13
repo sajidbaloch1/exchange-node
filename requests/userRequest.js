@@ -1,5 +1,6 @@
 import Yup from "yup";
 import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
+import { isValidObjectId } from "mongoose";
 
 async function listingSchema(req) {
   req.body.page = req.body?.page ? Number(req.body.page) : null;
@@ -42,7 +43,9 @@ async function listingSchema(req) {
 
 async function createUserSchema(req) {
   req.body.rate = req.body?.rate ? Number(req.body.rate) : null;
-  req.body.balance = req.body?.balance ? Number(req.body.balance) : null;
+  req.body.creditPoints = req.body?.creditPoints
+    ? Number(req.body.creditPoints)
+    : null;
   req.body.currencyId = req.body?.currencyId || null;
 
   const user = await User.findById(req.user._id, { role: 1 });
@@ -55,18 +58,56 @@ async function createUserSchema(req) {
     password: Yup.string().required(),
 
     confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password"), null], "Passwords must match.")
+      .oneOf([Yup.ref("password")], "Passwords must match.")
       .required(),
 
-    rate: Yup.number().min(0).max(1).nullable(true),
+    rate: Yup.number().min(0).max(100).nullable(true),
 
     role: Yup.string()
       .oneOf(USER_ACCESSIBLE_ROLES[user.role], "Invalid user role!")
       .required(),
 
-    balance: Yup.number().min(0).nullable(true),
+    creditPoints: Yup.number().min(0).nullable(true),
 
     currencyId: Yup.string().nullable(true),
+
+    city: Yup.string(),
+
+    mobileNumber: Yup.string().length(10),
+  });
+
+  return requestSchema;
+}
+
+async function updateUserSchema(req) {
+  req.body._id = req.body?._id || null;
+  req.body.rate = req.body?.rate ? Number(req.body.rate) : null;
+  req.body.creditPoints = req.body?.creditPoints
+    ? Number(req.body.creditPoints)
+    : null;
+  req.body.password = req.body?.password || null;
+
+  const requestSchema = Yup.object().shape({
+    _id: Yup.string()
+      .required()
+      .test("_id", "Given _id is not valid!", (v) => isValidObjectId(v)),
+
+    fullName: Yup.string().required(),
+
+    password: Yup.string().nullable(true),
+
+    confirmPassword: Yup.string()
+      .nullable()
+      .when("password", {
+        is: (pw) => pw !== null && pw !== "",
+        then: Yup.string()
+          .oneOf([Yup.ref("password")], "Passwords should match.")
+          .required(),
+      }),
+
+    rate: Yup.number().min(0).max(100).nullable(true),
+
+    creditPoints: Yup.number().min(0),
 
     city: Yup.string(),
 
@@ -79,4 +120,5 @@ async function createUserSchema(req) {
 export default {
   listingSchema,
   createUserSchema,
+  updateUserSchema,
 };

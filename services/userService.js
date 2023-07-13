@@ -127,12 +127,12 @@ const addUser = async ({ user, ...reqBody }) => {
       newUserObj.rate = rate;
     }
 
-    if (balance) {
-      if (balance > loggedInUser.balance) {
-        throw new Error("Given balance exceeds the available balance!");
+    if (creditPoints) {
+      if (creditPoints > loggedInUser.balance) {
+        throw new Error("Given credit points exceed the available balance!");
       }
-      newUserObj.creditPoints = balance;
-      newUserObj.balance = balance;
+      newUserObj.creditPoints = creditPoints;
+      newUserObj.balance = creditPoints;
     }
 
     if (loggedInUser.role === USER_ROLE.SYSTEM_OWNER) {
@@ -145,7 +145,7 @@ const addUser = async ({ user, ...reqBody }) => {
     const newUser = await User.create(newUserObj);
 
     // Update logged in users balance and child status
-    loggedInUser.balance = loggedInUser.balance - newUser.balance;
+    loggedInUser.balance = loggedInUser.balance - creditPoints;
     loggedInUser.hasChild = true;
 
     await loggedInUser.save();
@@ -156,20 +156,81 @@ const addUser = async ({ user, ...reqBody }) => {
   }
 };
 
+const calculateUserPointBalance = async (currentUser, userReq) => {
+  try {
+    const parentUser = await User.findById(currentUser.parentId);
+
+    let userNewCreditPoints = currentUser.creditPoints;
+    let userNewBalance = currentUser.balance;
+    const currentUserBalanceInUse =
+      currentUser.creditPoints - currentUser.balance;
+
+    let parentNewBalance = parentUser.balance;
+
+    const pointDiff = userReq.creditPoints - currentUser.creditPoints;
+
+    // If points reduced
+    if (pointDiff < 0) {
+      if (currentUser.balance < Math.abs(pointDiff)) {
+        throw new Error("Balance already in use!");
+      }
+      parentNewBalance = parentUser.balance + Math.abs(pointDiff);
+      // If no change in points
+    } else if (pointDiff === 0) {
+      userNewCreditPoints = currentUser.creditPoints;
+      userNewBalance = currentUser.balance;
+      parentNewBalance = parentUser.balance;
+      // If points increased
+    } else if (pointDiff > 0) {
+      if (parentUser.balance < pointDiff) {
+        throw new Error("Insufficient balance!");
+      }
+      parentNewBalance = parentUser.balance - pointDiff;
+    }
+
+    userNewCreditPoints = currentUser.creditPoints + pointDiff;
+    userNewBalance = userNewCreditPoints - currentUserBalanceInUse;
+
+    return {
+      creditPoints: userNewCreditPoints,
+      balance: userNewBalance,
+      parentBalance: parentNewBalance,
+    };
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 /**
  * update user in the database
  */
-const modifyUser = async ({ _id, rate, balance, password }) => {
+const modifyUser = async ({ user, ...reqBody }) => {
   try {
-    const user = await User.findById(_id);
+    const currentUser = await User.findById(reqBody._id);
+    if (currentUser.role === USER_ROLE.SYSTEM_OWNER) {
+      throw new Error("Failed to update user!");
+    }
 
-    user.password = password;
-    user.rate = rate;
-    user.balance = balance;
+    const loggedInUser = await User.findById(user._id);
+    if (!USER_ACCESSIBLE_ROLES[loggedInUser.role].includes(currentUser.role)) {
+      throw new Error("Failed to update user!");
+    }
 
-    await user.save();
+    const { creditPoints, balance, parentBalance } =
+      await calculateUserPointBalance(currentUser, reqBody);
 
-    return user;
+    reqBody.creditPoints = creditPoints;
+    reqBody.balance = balance;
+
+    const updatedUser = await User.findByIdAndUpdate(currentUser._id, reqBody, {
+      new: true,
+    });
+
+    await User.findOneAndUpdate(updatedUser.parentId, {
+      balance: parentBalance,
+    });
+
+    return updatedUser;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

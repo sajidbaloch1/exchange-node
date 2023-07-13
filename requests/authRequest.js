@@ -20,7 +20,7 @@ async function registerSchema(req) {
     password: Yup.string().required(),
 
     confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password"), null], "Passwords must match")
+      .oneOf([Yup.ref("password")], "Passwords must match")
       .required(),
 
     fullName: Yup.string().required(),

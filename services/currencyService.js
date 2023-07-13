@@ -1,7 +1,7 @@
 import {
   generatePaginationQueries,
   generateSearchFilters,
-} from "../lib/filter-helper.js";
+} from "../lib/filter-helpers.js";
 import Currency from "../models/Currency.js";
 
 // Fetch all Currency from the database

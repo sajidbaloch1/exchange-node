@@ -1,16 +1,16 @@
 import { isValidObjectId } from "mongoose";
 import Yup from "yup";
 
-export const loginReqSchema = async () => {
+async function loginSchema() {
   const requestSchema = Yup.object().shape({
     username: Yup.string().required(),
     password: Yup.string().required(),
   });
 
   return requestSchema;
-};
+}
 
-export const registerReqSchema = async (req) => {
+async function registerSchema(req) {
   req.body.username = req.body.username?.trim();
   req.body.password = req.body.password?.trim();
 
@@ -31,4 +31,9 @@ export const registerReqSchema = async (req) => {
   });
 
   return requestSchema;
+}
+
+export default {
+  loginSchema,
+  registerSchema,
 };

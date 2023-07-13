@@ -1,5 +1,8 @@
-import { generateJwtToken, validatePassword } from "../lib/auth-helpers.js";
-import ErrorResponse from "../lib/error-response.js";
+import ErrorResponse from "../lib/error-handling/error-response.js";
+import {
+  generateJwtToken,
+  validatePassword,
+} from "../lib/helpers/auth-helpers.js";
 import Currency from "../models/Currency.js";
 import User from "../models/User.js";
 

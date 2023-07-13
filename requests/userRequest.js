@@ -40,6 +40,8 @@ async function listingSchema(req) {
   return requestSchema;
 }
 
+async function createSchema(req) {}
+
 export default {
   listingSchema,
 };

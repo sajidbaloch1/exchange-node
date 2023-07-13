@@ -1,4 +1,4 @@
-import ErrorResponse from "../lib/error-response.js";
+import ErrorResponse from "../lib/error-handling/error-response.js";
 
 /**
  * Middleware that validates a request against a Yup schema and calls a controller if the request is valid.

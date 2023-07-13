@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { encryptPassword } from "../lib/auth-helpers.js";
+import { encryptPassword } from "../lib/helpers/auth-helpers.js";
 import softDeletePlugin from "./plugins/soft-delete.js";
 import timestampPlugin from "./plugins/timestamp.js";
 

@@ -1,6 +1,6 @@
 import express from "express";
 import categoryController from "../controllers/categoryController.js";
-import { route } from "../lib/routes-error-boundary.js";
+import { route } from "../lib/error-handling/routes-error-boundary.js";
 
 const router = express.Router();
 

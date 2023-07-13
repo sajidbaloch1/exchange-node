@@ -1,6 +1,6 @@
 import express from "express";
 import userController from "../controllers/userController.js";
-import { route } from "../lib/routes-error-boundary.js";
+import { route } from "../lib/error-handling/routes-error-boundary.js";
 import validateRequest from "../middlewares/requestMiddleware.js";
 import userRequest from "../requests/userRequest.js";
 

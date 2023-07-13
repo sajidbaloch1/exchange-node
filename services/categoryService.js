@@ -1,7 +1,7 @@
 import {
   generatePaginationQueries,
   generateSearchFilters,
-} from "../lib/filter-helpers.js";
+} from "../lib/helpers/filter-helpers.js";
 import Category from "../models/Category.js";
 
 // Fetch all Category from the database

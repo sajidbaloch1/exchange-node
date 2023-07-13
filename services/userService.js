@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import ErrorResponse from "../lib/error-response.js";
+import ErrorResponse from "../lib/error-handling/error-response.js";
 import {
   generatePaginationQueries,
   generateSearchFilters,
-} from "../lib/filter-helpers.js";
+} from "../lib/helpers/filter-helpers.js";
 import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 
 // Fetch all users from the database

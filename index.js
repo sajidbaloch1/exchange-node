@@ -2,12 +2,12 @@ import bodyParser from "body-parser";
 import express from "express";
 import moment from "moment";
 import { appConfig } from "./config/app.js";
-import dbConnection from "./lib/db-connection.js";
+import dbConnection from "./lib/app/db-connection.js";
 import corsMiddleware from "./middlewares/corsMiddleware.js";
 import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import currencyRoutes from "./routes/currencyRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 

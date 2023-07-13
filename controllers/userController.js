@@ -12,6 +12,7 @@ const getAllUser = async (req, res) => {
     : false;
   const role = req.body?.role || null;
   const searchQuery = req.body?.searchQuery || null;
+  const parentId = req.body?.parentId || null;
 
   if (role && !Object.values(USER_ROLE).includes(role)) {
     throw new Error("Invalid user role!");
@@ -25,6 +26,7 @@ const getAllUser = async (req, res) => {
     showDeleted,
     role,
     searchQuery,
+    parentId,
   });
 
   return res.status(200).json({ success: true, data: users });

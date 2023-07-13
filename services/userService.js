@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import {
   generatePaginationQueries,
   generateSearchFilters,
@@ -13,6 +14,7 @@ const fetchAllUsers = async ({
   showDeleted,
   role,
   searchQuery,
+  parentId,
 }) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -25,6 +27,10 @@ const fetchAllUsers = async ({
 
     if (role) {
       filters.role = role;
+    }
+
+    if (parentId) {
+      filters.parentId = new mongoose.Types.ObjectId(parentId);
     }
 
     if (searchQuery) {

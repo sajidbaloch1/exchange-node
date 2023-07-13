@@ -32,7 +32,7 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
 
     const loggedInUser = await User.findById(user._id, { role: 1 });
     if (loggedInUser.role !== USER_ROLE.SYSTEM_OWNER) {
-      parentId = new mongoose.Types.ObjectId(user._id);
+      filters.parentId = new mongoose.Types.ObjectId(user._id);
     }
 
     const users = await User.aggregate([
@@ -106,67 +106,49 @@ const fetchUserId = async (_id) => {
 /**
  * Create user in the database
  */
-const addUser = async ({
-  user,
-  fullName,
-  username,
-  password,
-  rate,
-  balance,
-  role,
-  currencyId,
-}) => {
+const addUser = async ({ user, ...reqBody }) => {
+  const { fullName, username, password, rate, balance, role, currencyId } =
+    reqBody;
+
   try {
+    const loggedInUser = await User.findById(user._id);
+
     const newUserObj = {
-      fullName: fullName,
-      username: username,
+      fullName,
+      username,
       password,
+      role,
+      currencyId: loggedInUser.currencyId,
+      parentId: loggedInUser._id,
       forcePasswordChange: true,
     };
-
-    if (currencyId) {
-      newUserObj.currencyId = currencyId;
-    }
 
     if (rate) {
       newUserObj.rate = rate;
     }
 
     if (balance) {
+      if (balance > loggedInUser.balance) {
+        throw new Error("Given balance exceeds the available balance!");
+      }
+      newUserObj.creditPoints = balance;
       newUserObj.balance = balance;
     }
-    // Set Parent
-    const loggedInUser = await User.findById(user._id);
-    newUserObj.parentId = loggedInUser._id;
 
-    if (loggedInUser.role !== USER_ROLE.SYSTEM_OWNER) {
-      newUserObj.currencyId = loggedInUser.currencyId;
-    }
-
-    if (role) {
-      const userAllowedRoles = USER_ACCESSIBLE_ROLES[loggedInUser.role];
-      if (!userAllowedRoles.includes(role)) {
-        throw new Error("Unauthorized!");
+    if (loggedInUser.role === USER_ROLE.SYSTEM_OWNER) {
+      if (!currencyId) {
+        throw new Error("currencyId is required!");
       }
-      newUserObj.role = role;
-    }
-
-    //Check if new user points are not greater than parent user
-    if (loggedInUser.role != USER_ROLE.SYSTEM_OWNER) {
-      if (newUserObj.balance > loggedInUser.balance) {
-        throw new Error(
-          "The balance of a child account cannot exceed the balance of its parent account!"
-        );
-      }
+      newUserObj.currencyId = currencyId;
     }
 
     const newUser = await User.create(newUserObj);
 
-    //If User Created Then deduct points from parent
-    if (loggedInUser.role != USER_ROLE.SYSTEM_OWNER) {
-      loggedInUser.balance = loggedInUser.balance - newUser.balance;
-      await loggedInUser.save();
-    }
+    // Update logged in users balance and child status
+    loggedInUser.balance = loggedInUser.balance - newUser.balance;
+    loggedInUser.hasChild = true;
+
+    await loggedInUser.save();
 
     return newUser;
   } catch (e) {

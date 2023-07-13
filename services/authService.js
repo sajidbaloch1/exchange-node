@@ -8,21 +8,9 @@ import User from "../models/User.js";
 
 const registerUser = async ({ username, password, fullName, currencyId }) => {
   try {
-    // Check existing username
-    const existingUser = async (username) => {
-      const user = await User.findOne({ username: username });
-      return !user;
-    };
-    if (existingUser) {
-      throw new Error("Username already in use!");
-    }
-
     // Check if currency exists
-    const currencyExists = async (currencyId) => {
-      const currency = await Currency.findById(currencyId);
-      return !!currency;
-    };
-    if (!currencyExists) {
+    const currency = await Currency.findById(currencyId);
+    if (!currency) {
       throw new Error("Currency not found!");
     }
 

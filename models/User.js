@@ -47,6 +47,7 @@ const userSchema = new mongoose.Schema(
       default: null,
       ref: "user",
     },
+    hasChild: { type: Boolean, default: false },
     currencyId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "currency",
@@ -56,16 +57,17 @@ const userSchema = new mongoose.Schema(
     isBetLock: { type: Boolean, default: false },
     isDemo: { type: Boolean, default: false },
     username: { type: String, required: true, unique: true },
-    fullName: { type: String, required: true },
-    mobileNumber: { type: String },
-    city: { type: String },
     password: { type: String, required: true },
+    fullName: { type: String, required: true },
+    mobileNumber: { type: String, unique: true },
+    city: { type: String },
     rate: { type: Number, min: 0, max: 1, default: 1 },
     role: {
       type: String,
       enum: Object.values(USER_ROLE),
       default: USER_ROLE.USER,
     },
+    creditPoints: { type: Number, default: 0 },
     balance: { type: Number, default: 0 },
     exposureLimit: { type: Number, default: 0 },
     clientPl: { type: Number },
@@ -86,16 +88,10 @@ userSchema.path("username").validate(function (value) {
 
 // Validate username to only have alphanumeric values and underscore
 userSchema.path("username").validate(async function (value) {
-  if (this._id) {
-    var count = await this.constructor.countDocuments({
-      _id: { $ne: this._id },
-      username: value,
-    });
-  } else {
-    var count = await this.model("user").countDocuments({
-      username: value,
-    });
-  }
+  const count = await this.constructor.countDocuments({
+    _id: { $ne: this._id },
+    username: value,
+  });
   return count === 0;
 }, "Username already exists. Please choose a different username.");
 

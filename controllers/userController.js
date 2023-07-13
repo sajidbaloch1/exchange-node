@@ -26,41 +26,7 @@ const getUserById = async (req, res) => {
 
 // Create a new user
 const createUser = async (req, res) => {
-  const user = req.user;
-  const currencyId = req.body?.currencyId ? req.body.currencyId.trim() : null;
-  const fullName = req.body?.fullName ? req.body.fullName.trim() : null;
-  const username = req.body?.username ? req.body.username.trim() : null;
-  const password = req.body?.password ? req.body.password.trim() : null;
-
-  const rate = req.body?.rate ? Number(req.body.rate) : null;
-  const balance = req.body?.balance ? Number(req.body.balance) : null;
-  const role = req.body?.role ? req.body?.role?.toLowerCase() : null;
-
-  if (!(username && password)) {
-    throw new Error("username and password is required!");
-  }
-
-  if (rate && (rate < 0 || rate > 1)) {
-    throw new Error("Invalid rate!");
-  }
-
-  if (role) {
-    const userRoles = Object.values(USER_ROLE);
-    if (!userRoles.includes(role)) {
-      throw new Error("Invalid user role!");
-    }
-  }
-
-  const newuser = await userService.addUser({
-    user,
-    fullName,
-    username,
-    password,
-    rate,
-    balance,
-    role,
-    currencyId,
-  });
+  const newuser = await userService.addUser({ user: req.user, ...req.body });
 
   res.status(201).json({ success: true, data: { details: newuser } });
 };

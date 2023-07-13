@@ -1,5 +1,5 @@
 import Yup from "yup";
-import User, { USER_ROLE } from "../models/User.js";
+import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 
 async function listingSchema(req) {
   req.body.page = req.body?.page ? Number(req.body.page) : null;
@@ -40,8 +40,43 @@ async function listingSchema(req) {
   return requestSchema;
 }
 
-async function createSchema(req) {}
+async function createUserSchema(req) {
+  req.body.rate = req.body?.rate ? Number(req.body.rate) : null;
+  req.body.balance = req.body?.balance ? Number(req.body.balance) : null;
+  req.body.currencyId = req.body?.currencyId || null;
+
+  const user = await User.findById(req.user._id, { role: 1 });
+
+  const requestSchema = Yup.object().shape({
+    fullName: Yup.string().required(),
+
+    username: Yup.string().required(),
+
+    password: Yup.string().required(),
+
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password"), null], "Passwords must match.")
+      .required(),
+
+    rate: Yup.number().min(0).max(1).nullable(true),
+
+    role: Yup.string()
+      .oneOf(USER_ACCESSIBLE_ROLES[user.role], "Invalid user role!")
+      .required(),
+
+    balance: Yup.number().min(0).nullable(true),
+
+    currencyId: Yup.string().nullable(true),
+
+    city: Yup.string(),
+
+    mobileNumber: Yup.string().length(10),
+  });
+
+  return requestSchema;
+}
 
 export default {
   listingSchema,
+  createUserSchema,
 };

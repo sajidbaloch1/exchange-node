@@ -1,24 +1,22 @@
+import mongoose from "mongoose";
+import ErrorResponse from "../lib/error-response.js";
 import {
   generatePaginationQueries,
   generateSearchFilters,
-} from "../lib/filter-helper.js";
+} from "../lib/filter-helpers.js";
 import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 
 // Fetch all users from the database
-const fetchAllUsers = async ({
-  page,
-  perPage,
-  sortBy,
-  direction,
-  showDeleted,
-  role,
-  searchQuery,
-}) => {
+const fetchAllUsers = async ({ user, ...reqBody }) => {
   try {
-    const sortDirection = direction === "asc" ? 1 : -1;
+    const { page, perPage, sortBy, direction, showDeleted, role, searchQuery } =
+      reqBody;
 
+    // Pagination and Sorting
+    const sortDirection = direction === "asc" ? 1 : -1;
     const paginationQueries = generatePaginationQueries(page, perPage);
 
+    // Filters
     const filters = {
       isDeleted: showDeleted,
     };
@@ -30,6 +28,11 @@ const fetchAllUsers = async ({
     if (searchQuery) {
       const fields = ["username"];
       filters.$or = generateSearchFilters(searchQuery, fields);
+    }
+
+    const loggedInUser = await User.findById(user._id, { role: 1 });
+    if (loggedInUser.role !== USER_ROLE.SYSTEM_OWNER) {
+      parentId = new mongoose.Types.ObjectId(user._id);
     }
 
     const users = await User.aggregate([
@@ -85,7 +88,7 @@ const fetchAllUsers = async ({
 
     return data;
   } catch (e) {
-    throw new Error(e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 
@@ -94,16 +97,14 @@ const fetchAllUsers = async ({
  */
 const fetchUserId = async (_id) => {
   try {
-    const user = await User.findById(_id, { password: 0 });
-
-    return user;
+    return await User.findById(_id, { password: 0 });
   } catch (e) {
-    throw new Error(e);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 
 /**
- * create user in the database
+ * Create user in the database
  */
 const addUser = async ({
   user,
@@ -169,7 +170,7 @@ const addUser = async ({
 
     return newUser;
   } catch (e) {
-    throw new Error(e);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 
@@ -188,7 +189,7 @@ const modifyUser = async ({ _id, rate, balance, password }) => {
 
     return user;
   } catch (e) {
-    throw new Error(e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 
@@ -203,9 +204,10 @@ const removeUser = async (_id) => {
 
     return user;
   } catch (e) {
-    throw new Error(e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
+
 const statusModify = async ({ _id, isBetLock, isActive }) => {
   try {
     const user = await User.findById(_id);
@@ -220,7 +222,7 @@ const statusModify = async ({ _id, isBetLock, isActive }) => {
 
     return user;
   } catch (e) {
-    throw new Error(e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 

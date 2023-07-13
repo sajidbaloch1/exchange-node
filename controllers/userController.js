@@ -3,28 +3,9 @@ import userService from "../services/userService.js";
 
 // Get all users
 const getAllUser = async (req, res) => {
-  const page = req.body?.page ? Number(req.body.page) : null;
-  const perPage = req.body?.perPage ? Number(req.body.perPage) : null;
-  const sortBy = req.body?.sortBy ? req.body.sortBy : "createdAt";
-  const direction = req.body?.direction ? req.body.direction : "desc";
-  const showDeleted = req.body?.showDeleted
-    ? req.body.showDeleted === true || req.body.showDeleted === "true"
-    : false;
-  const role = req.body?.role || null;
-  const searchQuery = req.body?.searchQuery || null;
-
-  if (role && !Object.values(USER_ROLE).includes(role)) {
-    throw new Error("Invalid user role!");
-  }
-
   const users = await userService.fetchAllUsers({
-    page,
-    perPage,
-    sortBy,
-    direction,
-    showDeleted,
-    role,
-    searchQuery,
+    user: req.user,
+    ...req.body,
   });
 
   return res.status(200).json({ success: true, data: users });
@@ -32,7 +13,7 @@ const getAllUser = async (req, res) => {
 
 // Get user by ID
 const getUserById = async (req, res) => {
-  const { _id } = req.body;
+  const { _id = null } = req.body;
 
   if (!_id) {
     throw new Error("_id is required");

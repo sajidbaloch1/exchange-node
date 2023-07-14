@@ -65,33 +65,32 @@ const registerUser = async ({
   }
 };
 
-const resetPassword = async ({
-  user_id,
-  old_password,
-  new_password,
-  is_force_change_password,
-}) => {
+
+const resetPassword = async ({ userId, oldPassword, newPassword, isForceChangePassword }) => {
+
   try {
     // Check if user_id exists
-    const existingUser = await User.findOne({ _id: user_id });
+    const existingUser = await User.findOne({ _id: userId });
     if (!existingUser) {
       throw new Error("User not found.");
     }
 
     // Check if password is valid
     const isValidPassword = await validatePassword(
-      old_password,
+      oldPassword,
       existingUser.password
     );
     if (!isValidPassword) {
       throw new Error("Old password is incorrect!");
-    } else {
-      if (is_force_change_password == "true") {
-        existingUser.password = new_password;
+    }
+    else {
+      if (isForceChangePassword == 'true') {
+        existingUser.password = newPassword;
         existingUser.forcePasswordChange = false;
         existingUser.save();
-      } else {
-        existingUser.password = new_password;
+      }
+      else {
+        existingUser.password = newPassword;
         existingUser.save();
       }
     }

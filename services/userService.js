@@ -9,8 +9,16 @@ import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 // Fetch all users from the database
 const fetchAllUsers = async ({ user, ...reqBody }) => {
   try {
-    const { page, perPage, sortBy, direction, showDeleted, role, searchQuery } =
-      reqBody;
+    const {
+      page,
+      perPage,
+      sortBy,
+      direction,
+      showDeleted,
+      role,
+      searchQuery,
+      parentId,
+    } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -112,7 +120,7 @@ const fetchUserId = async (_id) => {
  * Create user in the database
  */
 const addUser = async ({ user, ...reqBody }) => {
-  const { fullName, username, password, rate, balance, role, currencyId } =
+  const { fullName, username, password, rate, creditPoints, role, currencyId } =
     reqBody;
 
   try {

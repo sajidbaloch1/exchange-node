@@ -14,6 +14,7 @@ async function userListingRequest(req) {
   req.body.showDeleted = req.body?.showDeleted
     ? [true, "true"].includes(req.body.showDeleted)
     : false;
+  req.body.parentId = req.body?.parentId || null;
 
   const validationSchema = Yup.object().shape({
     page: Yup.number().nullable(true),
@@ -36,6 +37,12 @@ async function userListingRequest(req) {
       .nullable(true),
 
     searchQuery: Yup.string().nullable(true),
+
+    parentId: Yup.string()
+      .nullable()
+      .test("validId", "Invalid parentId!", (v) =>
+        v === null ? true : isValidObjectId(v)
+      ),
   });
 
   await validationSchema.validate(req.body);

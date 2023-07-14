@@ -129,6 +129,7 @@ const addUser = async ({ user, ...reqBody }) => {
     role,
     currencyId,
     mobileNumber,
+    city,
   } = reqBody;
 
   try {
@@ -139,6 +140,7 @@ const addUser = async ({ user, ...reqBody }) => {
       username,
       password,
       role,
+      city,
       mobileNumber,
       currencyId: loggedInUser.currencyId,
       parentId: loggedInUser._id,
@@ -238,7 +240,16 @@ const modifyUser = async ({ user, ...reqBody }) => {
     }
 
     const loggedInUser = await User.findById(user._id);
-    if (!USER_ACCESSIBLE_ROLES[loggedInUser.role].includes(currentUser.role)) {
+
+    // Logged in user should have access to the current user's role
+    // Logged in user should be direct parent or System Owner
+    if (
+      !(
+        USER_ACCESSIBLE_ROLES[loggedInUser.role].includes(currentUser.role) &&
+        (currentUser.parentId.toString() === loggedInUser._id.toString() ||
+          loggedInUser.role === USER_ROLE.SYSTEM_OWNER)
+      )
+    ) {
       throw new Error("Failed to update user!");
     }
 

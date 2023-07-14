@@ -4,10 +4,7 @@ import moment from "moment";
 import { appConfig } from "./config/app.js";
 import dbConnection from "./lib/app/db-connection.js";
 import corsMiddleware from "./middlewares/corsMiddleware.js";
-import authRoutes from "./routes/authRoutes.js";
-import categoryRoutes from "./routes/categoryRoutes.js";
-import currencyRoutes from "./routes/currencyRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
+import apiRouter from "./routes/api.js";
 
 const app = express();
 
@@ -16,10 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(corsMiddleware);
 
-app.use("/auth", authRoutes);
-app.use("/users", userRoutes);
-app.use("/categories", categoryRoutes);
-app.use("/currencies", currencyRoutes);
+app.use("/api/", apiRouter);
 
 app.get("/", (req, res) => {
   res.json({

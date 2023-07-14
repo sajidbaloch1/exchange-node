@@ -14,6 +14,7 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
+
     const paginationQueries = generatePaginationQueries(page, perPage);
 
     // Filters
@@ -23,6 +24,10 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
 
     if (role) {
       filters.role = role;
+    }
+
+    if (parentId) {
+      filters.parentId = new mongoose.Types.ObjectId(parentId);
     }
 
     if (searchQuery) {
@@ -122,6 +127,10 @@ const addUser = async ({ user, ...reqBody }) => {
       parentId: loggedInUser._id,
       forcePasswordChange: true,
     };
+
+    if (currencyId) {
+      newUserObj.currencyId = currencyId;
+    }
 
     if (rate) {
       newUserObj.rate = rate;

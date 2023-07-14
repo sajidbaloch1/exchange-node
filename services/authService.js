@@ -34,7 +34,13 @@ const loginUser = async ({ username, password }) => {
   }
 };
 
-const registerUser = async ({ username, password, fullName, currencyId }) => {
+const registerUser = async ({
+  username,
+  password,
+  fullName,
+  currencyId,
+  mobileNumber,
+}) => {
   try {
     // Check if currency exists
     const currency = await Currency.findById(currencyId);
@@ -45,9 +51,9 @@ const registerUser = async ({ username, password, fullName, currencyId }) => {
     const createdUser = await User.create({
       username,
       password,
-      forcePasswordChange: true,
       fullName,
       currencyId,
+      mobileNumber,
     });
 
     const registeredUser = createdUser.toJSON();
@@ -59,7 +65,12 @@ const registerUser = async ({ username, password, fullName, currencyId }) => {
   }
 };
 
-const resetPassword = async ({ user_id, old_password, new_password, is_force_change_password }) => {
+const resetPassword = async ({
+  user_id,
+  old_password,
+  new_password,
+  is_force_change_password,
+}) => {
   try {
     // Check if user_id exists
     const existingUser = await User.findOne({ _id: user_id });
@@ -74,14 +85,12 @@ const resetPassword = async ({ user_id, old_password, new_password, is_force_cha
     );
     if (!isValidPassword) {
       throw new Error("Old password is incorrect!");
-    }
-    else {
-      if (is_force_change_password == 'true') {
+    } else {
+      if (is_force_change_password == "true") {
         existingUser.password = new_password;
         existingUser.forcePasswordChange = false;
         existingUser.save();
-      }
-      else {
+      } else {
         existingUser.password = new_password;
         existingUser.save();
       }
@@ -97,5 +106,5 @@ const resetPassword = async ({ user_id, old_password, new_password, is_force_cha
 export default {
   loginUser,
   registerUser,
-  resetPassword
+  resetPassword,
 };

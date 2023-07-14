@@ -82,7 +82,7 @@ async function createUserRequest(req) {
 
     city: Yup.string(),
 
-    mobileNumber: Yup.string().length(10),
+    mobileNumber: Yup.string().length(10).required(),
   });
 
   await validationSchema.validate(req.body);

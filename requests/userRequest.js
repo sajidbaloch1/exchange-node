@@ -2,7 +2,7 @@ import Yup from "yup";
 import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 import { isValidObjectId } from "mongoose";
 
-async function listingSchema(req) {
+async function userListingRequest(req) {
   req.body.page = req.body?.page ? Number(req.body.page) : null;
   req.body.perPage = req.body?.perPage ? Number(req.body.perPage) : 10;
   req.body.sortBy = req.body?.sortBy ? req.body.sortBy : "createdAt";
@@ -15,7 +15,7 @@ async function listingSchema(req) {
     ? [true, "true"].includes(req.body.showDeleted)
     : false;
 
-  const requestSchema = Yup.object().shape({
+  const validationSchema = Yup.object().shape({
     page: Yup.number().nullable(true),
 
     perPage: Yup.number(),
@@ -38,10 +38,12 @@ async function listingSchema(req) {
     searchQuery: Yup.string().nullable(true),
   });
 
-  return requestSchema;
+  await validationSchema.validate(req.body);
+
+  return req;
 }
 
-async function createUserSchema(req) {
+async function createUserRequest(req) {
   req.body.rate = req.body?.rate ? Number(req.body.rate) : null;
   req.body.creditPoints = req.body?.creditPoints
     ? Number(req.body.creditPoints)
@@ -50,7 +52,7 @@ async function createUserSchema(req) {
 
   const user = await User.findById(req.user._id, { role: 1 });
 
-  const requestSchema = Yup.object().shape({
+  const validationSchema = Yup.object().shape({
     fullName: Yup.string().required(),
 
     username: Yup.string().required(),
@@ -76,10 +78,12 @@ async function createUserSchema(req) {
     mobileNumber: Yup.string().length(10),
   });
 
-  return requestSchema;
+  await validationSchema.validate(req.body);
+
+  return req;
 }
 
-async function updateUserSchema(req) {
+async function updateUserRequest(req) {
   req.body._id = req.body?._id || null;
   req.body.rate = req.body?.rate ? Number(req.body.rate) : null;
   req.body.creditPoints = req.body?.creditPoints
@@ -87,7 +91,7 @@ async function updateUserSchema(req) {
     : null;
   req.body.password = req.body?.password || null;
 
-  const requestSchema = Yup.object().shape({
+  const validationSchema = Yup.object().shape({
     _id: Yup.string()
       .required()
       .test("_id", "Given _id is not valid!", (v) => isValidObjectId(v)),
@@ -114,11 +118,13 @@ async function updateUserSchema(req) {
     mobileNumber: Yup.string().length(10),
   });
 
-  return requestSchema;
+  await validationSchema.validate(req.body);
+
+  return req;
 }
 
 export default {
-  listingSchema,
-  createUserSchema,
-  updateUserSchema,
+  userListingRequest,
+  createUserRequest,
+  updateUserRequest,
 };

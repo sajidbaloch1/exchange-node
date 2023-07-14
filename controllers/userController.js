@@ -1,12 +1,11 @@
-import { USER_ROLE } from "../models/User.js";
+import userRequest from "../requests/userRequest.js";
 import userService from "../services/userService.js";
 
 // Get all users
 const getAllUser = async (req, res) => {
-  const users = await userService.fetchAllUsers({
-    user: req.user,
-    ...req.body,
-  });
+  const validatedReq = await userRequest.userListingRequest(req);
+
+  const users = await userService.fetchAllUsers(validatedReq);
 
   return res.status(200).json({ success: true, data: users });
 };
@@ -26,17 +25,18 @@ const getUserById = async (req, res) => {
 
 // Create a new user
 const createUser = async (req, res) => {
-  const newuser = await userService.addUser({ user: req.user, ...req.body });
+  const validatedReq = await userRequest.createUserRequest(req);
+
+  const newuser = await userService.addUser(validatedReq);
 
   res.status(201).json({ success: true, data: { details: newuser } });
 };
 
 // Update a user
 const updateUser = async (req, res) => {
-  const updatedUser = await userService.modifyUser({
-    user: req.user,
-    ...req.body,
-  });
+  const validatedReq = await userRequest.updateUserRequest(req);
+
+  const updatedUser = await userService.modifyUser(validatedReq);
 
   res.status(200).json({ success: true, data: { details: updatedUser } });
 };

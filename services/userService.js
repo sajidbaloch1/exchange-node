@@ -240,6 +240,9 @@ const modifyUser = async ({ user, ...reqBody }) => {
     }
 
     const loggedInUser = await User.findById(user._id);
+
+    // Logged in user should have access to the current user's role
+    // Logged in user should be direct parent or System Owner
     if (
       !(
         USER_ACCESSIBLE_ROLES[loggedInUser.role].includes(currentUser.role) &&

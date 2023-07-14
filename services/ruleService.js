@@ -52,7 +52,7 @@ const fetchAllRule = async ({
             },
             {
                 $lookup: {
-                    from: "categories",
+                    from: "sports",
                     localField: "sportsId",
                     foreignField: "_id",
                     as: "sport",

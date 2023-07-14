@@ -1,34 +1,43 @@
 import { isValidObjectId } from "mongoose";
-import yup from "yup";
+import Yup from "yup";
 
-async function login() {
-  return yup.object().shape({
-    username: yup.string().required(),
-    password: yup.string().required(),
+async function userLoginRequest(req) {
+  const validationSchema = Yup.object().shape({
+    username: Yup.string().required(),
+    password: Yup.string().required(),
   });
+
+  await validationSchema.validate(req.body);
+
+  return req;
 }
 
-async function register() {
-  return yup.object().shape({
-    username: yup.string().required(),
+async function userRegisterRequest(req) {
+  req.body.username = req.body.username?.trim();
+  req.body.password = req.body.password?.trim();
 
-    password: yup.string().required(),
+  const validationSchema = Yup.object().shape({
+    username: Yup.string().required(),
 
-    confirmPassword: yup
-      .string()
-      .oneOf([yup.ref("password"), null], "Passwords must match")
+    password: Yup.string().required(),
+
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password")], "Passwords must match")
       .required(),
 
-    fullName: yup.string().required(),
+    fullName: Yup.string().required(),
 
-    currencyId: yup
-      .string()
+    currencyId: Yup.string()
       .required()
       .test("currencyId", "Invalid currencyId!", isValidObjectId),
   });
+
+  await validationSchema.validate(req.body);
+
+  return req;
 }
 
 export default {
-  login,
-  register,
+  userLoginRequest,
+  userRegisterRequest,
 };

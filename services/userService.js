@@ -1,26 +1,31 @@
 import mongoose from "mongoose";
+import ErrorResponse from "../lib/error-handling/error-response.js";
 import {
   generatePaginationQueries,
   generateSearchFilters,
-} from "../lib/filter-helper.js";
+} from "../lib/helpers/filter-helpers.js";
 import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 
 // Fetch all users from the database
-const fetchAllUsers = async ({
-  page,
-  perPage,
-  sortBy,
-  direction,
-  showDeleted,
-  role,
-  searchQuery,
-  parentId,
-}) => {
+const fetchAllUsers = async ({ user, ...reqBody }) => {
   try {
+    const {
+      page,
+      perPage,
+      sortBy,
+      direction,
+      showDeleted,
+      role,
+      searchQuery,
+      parentId,
+    } = reqBody;
+
+    // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
 
     const paginationQueries = generatePaginationQueries(page, perPage);
 
+    // Filters
     const filters = {
       isDeleted: showDeleted,
     };
@@ -36,6 +41,11 @@ const fetchAllUsers = async ({
     if (searchQuery) {
       const fields = ["username"];
       filters.$or = generateSearchFilters(searchQuery, fields);
+    }
+
+    const loggedInUser = await User.findById(user._id, { role: 1 });
+    if (loggedInUser.role !== USER_ROLE.SYSTEM_OWNER) {
+      filters.parentId = new mongoose.Types.ObjectId(user._id);
     }
 
     const users = await User.aggregate([
@@ -91,7 +101,7 @@ const fetchAllUsers = async ({
 
     return data;
   } catch (e) {
-    throw new Error(e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 
@@ -100,32 +110,29 @@ const fetchAllUsers = async ({
  */
 const fetchUserId = async (_id) => {
   try {
-    const user = await User.findById(_id, { password: 0 });
-
-    return user;
+    return await User.findById(_id, { password: 0 });
   } catch (e) {
-    throw new Error(e);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 
 /**
- * create user in the database
+ * Create user in the database
  */
-const addUser = async ({
-  user,
-  fullName,
-  username,
-  password,
-  rate,
-  balance,
-  role,
-  currencyId,
-}) => {
+const addUser = async ({ user, ...reqBody }) => {
+  const { fullName, username, password, rate, creditPoints, role, currencyId } =
+    reqBody;
+
   try {
+    const loggedInUser = await User.findById(user._id);
+
     const newUserObj = {
-      fullName: fullName,
-      username: username,
+      fullName,
+      username,
       password,
+      role,
+      currencyId: loggedInUser.currencyId,
+      parentId: loggedInUser._id,
       forcePasswordChange: true,
     };
 
@@ -137,64 +144,112 @@ const addUser = async ({
       newUserObj.rate = rate;
     }
 
-    if (balance) {
-      newUserObj.balance = balance;
-    }
-    // Set Parent
-    const loggedInUser = await User.findById(user._id);
-    newUserObj.parentId = loggedInUser._id;
-
-    if (loggedInUser.role !== USER_ROLE.SYSTEM_OWNER) {
-      newUserObj.currencyId = loggedInUser.currencyId;
-    }
-
-    if (role) {
-      const userAllowedRoles = USER_ACCESSIBLE_ROLES[loggedInUser.role];
-      if (!userAllowedRoles.includes(role)) {
-        throw new Error("Unauthorized!");
+    if (creditPoints) {
+      if (creditPoints > loggedInUser.balance) {
+        throw new Error("Given credit points exceed the available balance!");
       }
-      newUserObj.role = role;
+      newUserObj.creditPoints = creditPoints;
+      newUserObj.balance = creditPoints;
     }
 
-    //Check if new user points are not greater than parent user
-    if (loggedInUser.role != USER_ROLE.SYSTEM_OWNER) {
-      if (newUserObj.balance > loggedInUser.balance) {
-        throw new Error(
-          "The balance of a child account cannot exceed the balance of its parent account!"
-        );
+    if (loggedInUser.role === USER_ROLE.SYSTEM_OWNER) {
+      if (!currencyId) {
+        throw new Error("currencyId is required!");
       }
+      newUserObj.currencyId = currencyId;
     }
 
     const newUser = await User.create(newUserObj);
 
-    //If User Created Then deduct points from parent
-    if (loggedInUser.role != USER_ROLE.SYSTEM_OWNER) {
-      loggedInUser.balance = loggedInUser.balance - newUser.balance;
-      await loggedInUser.save();
-    }
+    // Update logged in users balance and child status
+    loggedInUser.balance = loggedInUser.balance - creditPoints;
+    loggedInUser.hasChild = true;
+
+    await loggedInUser.save();
 
     return newUser;
   } catch (e) {
-    throw new Error(e);
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
+const calculateUserPointBalance = async (currentUser, userReq) => {
+  try {
+    const parentUser = await User.findById(currentUser.parentId);
+
+    let userNewCreditPoints = currentUser.creditPoints;
+    let userNewBalance = currentUser.balance;
+    const currentUserBalanceInUse =
+      currentUser.creditPoints - currentUser.balance;
+
+    let parentNewBalance = parentUser.balance;
+
+    const pointDiff = userReq.creditPoints - currentUser.creditPoints;
+
+    // If points reduced
+    if (pointDiff < 0) {
+      if (currentUser.balance < Math.abs(pointDiff)) {
+        throw new Error("Balance already in use!");
+      }
+      parentNewBalance = parentUser.balance + Math.abs(pointDiff);
+      // If no change in points
+    } else if (pointDiff === 0) {
+      userNewCreditPoints = currentUser.creditPoints;
+      userNewBalance = currentUser.balance;
+      parentNewBalance = parentUser.balance;
+      // If points increased
+    } else if (pointDiff > 0) {
+      if (parentUser.balance < pointDiff) {
+        throw new Error("Insufficient balance!");
+      }
+      parentNewBalance = parentUser.balance - pointDiff;
+    }
+
+    userNewCreditPoints = currentUser.creditPoints + pointDiff;
+    userNewBalance = userNewCreditPoints - currentUserBalanceInUse;
+
+    return {
+      creditPoints: userNewCreditPoints,
+      balance: userNewBalance,
+      parentBalance: parentNewBalance,
+    };
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 
 /**
  * update user in the database
  */
-const modifyUser = async ({ _id, rate, balance, password }) => {
+const modifyUser = async ({ user, ...reqBody }) => {
   try {
-    const user = await User.findById(_id);
+    const currentUser = await User.findById(reqBody._id);
+    if (currentUser.role === USER_ROLE.SYSTEM_OWNER) {
+      throw new Error("Failed to update user!");
+    }
 
-    user.password = password;
-    user.rate = rate;
-    user.balance = balance;
+    const loggedInUser = await User.findById(user._id);
+    if (!USER_ACCESSIBLE_ROLES[loggedInUser.role].includes(currentUser.role)) {
+      throw new Error("Failed to update user!");
+    }
 
-    await user.save();
+    const { creditPoints, balance, parentBalance } =
+      await calculateUserPointBalance(currentUser, reqBody);
 
-    return user;
+    reqBody.creditPoints = creditPoints;
+    reqBody.balance = balance;
+
+    const updatedUser = await User.findByIdAndUpdate(currentUser._id, reqBody, {
+      new: true,
+    });
+
+    await User.findOneAndUpdate(updatedUser.parentId, {
+      balance: parentBalance,
+    });
+
+    return updatedUser;
   } catch (e) {
-    throw new Error(e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 
@@ -209,9 +264,10 @@ const removeUser = async (_id) => {
 
     return user;
   } catch (e) {
-    throw new Error(e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
+
 const statusModify = async ({ _id, isBetLock, isActive }) => {
   try {
     const user = await User.findById(_id);
@@ -226,7 +282,7 @@ const statusModify = async ({ _id, isBetLock, isActive }) => {
 
     return user;
   } catch (e) {
-    throw new Error(e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 

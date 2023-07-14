@@ -1,7 +1,7 @@
 import {
   generatePaginationQueries,
   generateSearchFilters,
-} from "../lib/filter-helper.js";
+} from "../lib/helpers/filter-helpers.js";
 import BetCategory from "../models/BetCategory.js";
 
 // Fetch all Bet-Category from the database

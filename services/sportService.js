@@ -2,10 +2,10 @@ import {
   generatePaginationQueries,
   generateSearchFilters,
 } from "../lib/helpers/filter-helpers.js";
-import Category from "../models/Category.js";
+import Sport from "../models/Sport.js";
 
-// Fetch all Category from the database
-const fetchAllCategory = async ({
+// Fetch all sport from the database
+const fetchAllSport = async ({
   page,
   perPage,
   sortBy,
@@ -27,7 +27,7 @@ const fetchAllCategory = async ({
       filters.$or = generateSearchFilters(searchQuery, fields);
     }
 
-    const category = await Category.aggregate([
+    const sport = await Sport.aggregate([
       {
         $match: filters,
       },
@@ -49,10 +49,10 @@ const fetchAllCategory = async ({
       totalRecords: 0,
     };
 
-    if (category?.length) {
-      data.records = category[0]?.paginatedResults || [];
-      data.totalRecords = category[0]?.totalRecords?.length
-        ? category[0]?.totalRecords[0].count
+    if (sport?.length) {
+      data.records = sport[0]?.paginatedResults || [];
+      data.totalRecords = sport[0]?.totalRecords?.length
+        ? sport[0]?.totalRecords[0].count
         : 0;
     }
 
@@ -63,75 +63,75 @@ const fetchAllCategory = async ({
 };
 
 /**
- * Fetch Category by Id from the database
+ * Fetch Sport by Id from the database
  */
-const fetchCategoryId = async (_id) => {
+const fetchSportId = async (_id) => {
   try {
-    const category = await Category.findById(_id);
+    const sport = await Sport.findById(_id);
 
-    return category;
+    return sport;
   } catch (e) {
     throw new Error(e);
   }
 };
 
 /**
- * create Category in the database
+ * create Sport in the database
  */
-const addCategory = async ({ name }) => {
+const addSport = async ({ name }) => {
   try {
-    const existingCategory = await Category.findOne({ name: name });
-    if (existingCategory) {
+    const existingSport = await Sport.findOne({ name: name });
+    if (existingSport) {
       throw new Error("name already exists!");
     }
 
-    const newCategoryObj = {
+    const newSportObj = {
       name: name,
     };
-    const newcategory = await Category.create(newCategoryObj);
+    const newsport = await Sport.create(newSportObj);
 
-    return newcategory;
+    return newsport;
   } catch (e) {
     throw new Error(e);
   }
 };
 
 /**
- * update Category in the database
+ * update Sport in the database
  */
-const modifyCategory = async ({ _id, name }) => {
+const modifySport = async ({ _id, name }) => {
   try {
-    const category = await Category.findById(_id);
+    const sport = await Sport.findById(_id);
 
-    category.name = name;
+    sport.name = name;
 
-    await category.save();
+    await sport.save();
 
-    return category;
+    return sport;
   } catch (e) {
     throw new Error(e.message);
   }
 };
 
 /**
- * delete Category in the database
+ * delete Sport in the database
  */
-const removeCategory = async (_id) => {
+const removeSport = async (_id) => {
   try {
-    const category = await Category.findById(_id);
+    const sport = await Sport.findById(_id);
 
-    await category.softDelete();
+    await sport.softDelete();
 
-    return category;
+    return sport;
   } catch (e) {
     throw new Error(e.message);
   }
 };
 
 export default {
-  fetchAllCategory,
-  fetchCategoryId,
-  addCategory,
-  modifyCategory,
-  removeCategory,
+  fetchAllSport,
+  fetchSportId,
+  addSport,
+  modifySport,
+  removeSport,
 };

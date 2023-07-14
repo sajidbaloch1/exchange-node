@@ -25,7 +25,10 @@ const loginUser = async ({ username, password }) => {
 
     const token = generateJwtToken({ _id: existingUser._id });
 
-    return { user: existingUser, token };
+    const loggedInUser = existingUser.toJSON();
+    delete loggedInUser.password;
+
+    return { user: loggedInUser, token };
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -47,7 +50,10 @@ const registerUser = async ({ username, password, fullName, currencyId }) => {
       currencyId,
     });
 
-    return createdUser;
+    const registeredUser = createdUser.toJSON();
+    delete registeredUser.password;
+
+    return registeredUser;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

@@ -6,28 +6,6 @@ import {
 import Currency from "../models/Currency.js";
 import User from "../models/User.js";
 
-const registerUser = async ({ username, password, fullName, currencyId }) => {
-  try {
-    // Check if currency exists
-    const currency = await Currency.findById(currencyId);
-    if (!currency) {
-      throw new Error("Currency not found!");
-    }
-
-    const createdUser = await User.create({
-      username,
-      password,
-      forcePasswordChange: true,
-      fullName,
-      currencyId,
-    });
-
-    return createdUser;
-  } catch (e) {
-    throw new ErrorResponse(e.message).status(200);
-  }
-};
-
 const loginUser = async ({ username, password }) => {
   try {
     // Check if username exists
@@ -53,7 +31,29 @@ const loginUser = async ({ username, password }) => {
   }
 };
 
+const registerUser = async ({ username, password, fullName, currencyId }) => {
+  try {
+    // Check if currency exists
+    const currency = await Currency.findById(currencyId);
+    if (!currency) {
+      throw new Error("Currency not found!");
+    }
+
+    const createdUser = await User.create({
+      username,
+      password,
+      forcePasswordChange: true,
+      fullName,
+      currencyId,
+    });
+
+    return createdUser;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
-  registerUser,
   loginUser,
+  registerUser,
 };

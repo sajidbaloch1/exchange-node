@@ -9,9 +9,9 @@ import authRequest from "../requests/authRequest.js";
  * @returns {object} The response with success status and user data.
  */
 const login = async (req, res) => {
-  const validatedReq = await authRequest.userLoginRequest(req);
+  const { user, body } = await authRequest.userLoginRequest(req);
 
-  const userWithToken = await authService.loginUser(validatedReq);
+  const userWithToken = await authService.loginUser({ user, ...body });
 
   return res.status(200).json({ success: true, data: userWithToken });
 };
@@ -24,9 +24,9 @@ const login = async (req, res) => {
  * @returns {object} The response with success status and registered user data.
  */
 const register = async (req, res) => {
-  const validatedReq = await authRequest.userRegisterRequest(req);
+  const { user, body } = await authRequest.userRegisterRequest(req);
 
-  const registeredUser = await authService.registerUser(validatedReq);
+  const registeredUser = await authService.registerUser({ user, ...body });
 
   return res.status(200).json({ success: true, data: registeredUser });
 };

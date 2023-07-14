@@ -3,9 +3,9 @@ import userService from "../services/userService.js";
 
 // Get all users
 const getAllUser = async (req, res) => {
-  const validatedReq = await userRequest.userListingRequest(req);
+  const { user, body } = await userRequest.userListingRequest(req);
 
-  const users = await userService.fetchAllUsers(validatedReq);
+  const users = await userService.fetchAllUsers({ user, ...body });
 
   return res.status(200).json({ success: true, data: users });
 };
@@ -25,18 +25,18 @@ const getUserById = async (req, res) => {
 
 // Create a new user
 const createUser = async (req, res) => {
-  const validatedReq = await userRequest.createUserRequest(req);
+  const { user, body } = await userRequest.createUserRequest(req);
 
-  const newuser = await userService.addUser(validatedReq);
+  const newuser = await userService.addUser({ user, ...body });
 
   res.status(201).json({ success: true, data: { details: newuser } });
 };
 
 // Update a user
 const updateUser = async (req, res) => {
-  const validatedReq = await userRequest.updateUserRequest(req);
+  const { user, body } = await userRequest.updateUserRequest(req);
 
-  const updatedUser = await userService.modifyUser(validatedReq);
+  const updatedUser = await userService.modifyUser({ user, ...body });
 
   res.status(200).json({ success: true, data: { details: updatedUser } });
 };

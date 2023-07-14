@@ -1,13 +1,38 @@
 import express from "express";
 import betCategoryController from "../controllers/betCategoryController.js";
-import { route } from "../lib/routes-error-boundary.js";
+import { route } from "../lib/error-handling/routes-error-boundary.js";
 
 const router = express.Router();
 
-route(router, "post", "/getAllBetCategory", betCategoryController.getAllBetCategory);
-route(router, "post", "/getBetCategoryById", betCategoryController.getBetCategoryById);
-route(router, "post", "/createBetCategory", betCategoryController.createBetCategory);
-route(router, "post", "/updateBetCategory", betCategoryController.updateBetCategory);
-route(router, "post", "/deleteBetCategory", betCategoryController.deleteBetCategory);
+route(
+  router,
+  "post",
+  "/getAllBetCategory",
+  betCategoryController.getAllBetCategory
+);
+route(
+  router,
+  "post",
+  "/getBetCategoryById",
+  betCategoryController.getBetCategoryById
+);
+route(
+  router,
+  "post",
+  "/createBetCategory",
+  betCategoryController.createBetCategory
+);
+route(
+  router,
+  "post",
+  "/updateBetCategory",
+  betCategoryController.updateBetCategory
+);
+route(
+  router,
+  "post",
+  "/deleteBetCategory",
+  betCategoryController.deleteBetCategory
+);
 
 export default router;

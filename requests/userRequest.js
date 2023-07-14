@@ -108,12 +108,13 @@ async function updateUserRequest(req) {
     password: Yup.string().nullable(true),
 
     confirmPassword: Yup.string()
-      .nullable()
-      .when("password", {
-        is: (pw) => pw !== null && pw !== "",
-        then: Yup.string()
-          .oneOf([Yup.ref("password")], "Passwords should match.")
-          .required(),
+      .nullable(true)
+      .when(["password"], (password, schema) => {
+        return password
+          ? schema
+              .oneOf([Yup.ref("password")], "Passwords should match.")
+              .required()
+          : schema;
       }),
 
     rate: Yup.number().min(0).max(100).nullable(true),

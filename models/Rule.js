@@ -18,7 +18,7 @@ const ruleSchema = new mongoose.Schema({
   },
   sportsId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "category",
+    ref: "sport",
   },
   betCatId: {
     type: mongoose.Schema.Types.ObjectId,

@@ -31,7 +31,20 @@ const register = async (req, res) => {
   return res.status(200).json({ success: true, data: registeredUser });
 };
 
+/**
+ * Reset password.
+  */
+
+const resetPassword = async (req, res) => {
+  const { body } = await authRequest.userResetPasswordRequest(req);
+
+  const resetPasswordUser = await authService.resetPassword({ ...body });
+
+  return res.status(200).json({ success: true, data: resetPasswordUser });
+};
+
 export default {
   login,
   register,
+  resetPassword
 };

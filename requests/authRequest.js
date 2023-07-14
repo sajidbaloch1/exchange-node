@@ -39,10 +39,10 @@ async function userRegisterRequest(req) {
 
 async function userResetPasswordRequest(req) {
   const validationSchema = Yup.object().shape({
-    user_id: Yup.string().required(),
-    old_password: Yup.string().required(),
-    new_password: Yup.string().required(),
-    is_force_change_password: Yup.string().required(),
+    userId: Yup.string().required(),
+    oldPassword: Yup.string().required(),
+    newPassword: Yup.string().required(),
+    isForceChangePassword: Yup.string().required(),
   });
 
   await validationSchema.validate(req.body);

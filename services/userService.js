@@ -120,8 +120,16 @@ const fetchUserId = async (_id) => {
  * Create user in the database
  */
 const addUser = async ({ user, ...reqBody }) => {
-  const { fullName, username, password, rate, creditPoints, role, currencyId } =
-    reqBody;
+  const {
+    fullName,
+    username,
+    password,
+    rate,
+    creditPoints,
+    role,
+    currencyId,
+    mobileNumber,
+  } = reqBody;
 
   try {
     const loggedInUser = await User.findById(user._id);
@@ -131,6 +139,7 @@ const addUser = async ({ user, ...reqBody }) => {
       username,
       password,
       role,
+      mobileNumber,
       currencyId: loggedInUser.currencyId,
       parentId: loggedInUser._id,
       forcePasswordChange: true,

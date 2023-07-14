@@ -34,7 +34,13 @@ const loginUser = async ({ username, password }) => {
   }
 };
 
-const registerUser = async ({ username, password, fullName, currencyId }) => {
+const registerUser = async ({
+  username,
+  password,
+  fullName,
+  currencyId,
+  mobileNumber,
+}) => {
   try {
     // Check if currency exists
     const currency = await Currency.findById(currencyId);
@@ -45,9 +51,9 @@ const registerUser = async ({ username, password, fullName, currencyId }) => {
     const createdUser = await User.create({
       username,
       password,
-      forcePasswordChange: true,
       fullName,
       currencyId,
+      mobileNumber,
     });
 
     const registeredUser = createdUser.toJSON();
@@ -59,7 +65,9 @@ const registerUser = async ({ username, password, fullName, currencyId }) => {
   }
 };
 
+
 const resetPassword = async ({ userId, oldPassword, newPassword, isForceChangePassword }) => {
+
   try {
     // Check if user_id exists
     const existingUser = await User.findOne({ _id: userId });
@@ -97,5 +105,5 @@ const resetPassword = async ({ userId, oldPassword, newPassword, isForceChangePa
 export default {
   loginUser,
   registerUser,
-  resetPassword
+  resetPassword,
 };

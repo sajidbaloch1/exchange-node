@@ -30,6 +30,8 @@ async function userRegisterRequest(req) {
     currencyId: Yup.string()
       .required()
       .test("currencyId", "Invalid currencyId!", isValidObjectId),
+
+    mobileNumber: Yup.string().length(10).required(),
   });
 
   await validationSchema.validate(req.body);
@@ -53,5 +55,5 @@ async function userResetPasswordRequest(req) {
 export default {
   userLoginRequest,
   userRegisterRequest,
-  userResetPasswordRequest
+  userResetPasswordRequest,
 };

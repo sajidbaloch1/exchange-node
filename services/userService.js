@@ -28,9 +28,10 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
     // Filters
     const filters = {
       isDeleted: showDeleted,
+      role: { $ne: USER_ROLE.SYSTEM_OWNER }
     };
 
-    if (role) {
+    if (role && role != USER_ROLE.SYSTEM_OWNER) {
       filters.role = role;
     }
 
@@ -306,6 +307,26 @@ const statusModify = async ({ _id, isBetLock, isActive }) => {
   }
 };
 
+/**
+ * fetch balance
+ */
+const fetchBalance = async ({ user, ...reqBody }) => {
+  try {
+    const {
+      userId
+    } = reqBody;
+    const user = await User.findOne({ _id: userId, role: { $ne: USER_ROLE.SYSTEM_OWNER } }, { balance: 1, _id: 0 });
+    if (user) {
+      return user;
+    }
+    else {
+      throw new Error("User Not Found!");
+    }
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   fetchAllUsers,
   fetchUserId,
@@ -313,4 +334,5 @@ export default {
   modifyUser,
   removeUser,
   statusModify,
+  fetchBalance
 };

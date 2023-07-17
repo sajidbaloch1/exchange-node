@@ -71,8 +71,13 @@ const resetPassword = async ({ userId, oldPassword, newPassword, isForceChangePa
   try {
     // Check if user_id exists
     const existingUser = await User.findOne({ _id: userId });
+
     if (!existingUser) {
       throw new Error("User not found.");
+    }
+
+    if (existingUser.lockPasswordChange == true) {
+      throw new Error("You can not change password.");
     }
 
     // Check if password is valid

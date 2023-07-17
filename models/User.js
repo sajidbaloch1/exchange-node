@@ -74,6 +74,7 @@ const userSchema = new mongoose.Schema(
     forcePasswordChange: { type: Boolean, default: false },
     transactionCode: { type: String },
     remarks: String,
+    lockPasswordChange: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

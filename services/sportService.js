@@ -1,3 +1,4 @@
+import ErrorResponse from "../lib/error-handling/error-response.js";
 import {
   generatePaginationQueries,
   generateSearchFilters,
@@ -86,13 +87,15 @@ const addSport = async ({ name }) => {
     }
 
     const newSportObj = {
-      name: name,
+      name: name.toLowerCase().replace(/(?:^|\s)\S/g, function (char) {
+        return char.toUpperCase();
+      }),
     };
     const newsport = await Sport.create(newSportObj);
 
     return newsport;
   } catch (e) {
-    throw new Error(e);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 

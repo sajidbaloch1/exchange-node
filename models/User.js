@@ -47,6 +47,7 @@ const userSchema = new mongoose.Schema(
       default: null,
       ref: "user",
     },
+    cloneParentId: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
     hasChild: { type: Boolean, default: false },
     currencyId: {
       type: mongoose.Schema.Types.ObjectId,

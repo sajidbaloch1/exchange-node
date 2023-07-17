@@ -1,9 +1,10 @@
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import ErrorResponse from "../lib/error-handling/error-response.js";
 import {
   generatePaginationQueries,
   generateSearchFilters,
 } from "../lib/helpers/filter-helpers.js";
+import AppModule from "../models/AppModule.js";
 import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 
 // Fetch all users from the database
@@ -306,6 +307,54 @@ const statusModify = async ({ _id, isBetLock, isActive }) => {
   }
 };
 
+const cloneUser = async ({ user, ...reqBody }) => {
+  try {
+    const { fullName, username, password, moduleIds, transactionCode } =
+      reqBody;
+
+    // Validate module ids
+    const validModuleIds = [];
+
+    for (const id of moduleIds) {
+      if (!isValidObjectId(id)) {
+        continue;
+      }
+      const module = await AppModule.findById(id);
+      if (module) {
+        validModuleIds.push(id);
+      }
+    }
+
+    // Validate parent
+    const cloneParent = User.findById(user._id).lean();
+
+    if (!cloneParent || cloneParent.role === USER_ROLE.SYSTEM_OWNER) {
+      throw new Error("Unauthorised request!");
+    }
+    if (cloneParent.transactionCode !== transactionCode) {
+      throw new Error("Invalid transactionCode!");
+    }
+
+    // Create user
+    const newUserObj = {
+      ...cloneParent,
+      cloneParentId: cloneParent._id,
+      fullName,
+      username,
+      password,
+    };
+
+    delete newUserObj._id;
+    delete newUserObj.transactionCode;
+
+    const clonedUser = await User.create(newUserObj);
+
+    return clonedUser;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   fetchAllUsers,
   fetchUserId,
@@ -313,4 +362,5 @@ export default {
   modifyUser,
   removeUser,
   statusModify,
+  cloneUser,
 };

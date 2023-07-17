@@ -71,6 +71,15 @@ const updateUserStatus = async (req, res) => {
 
   res.status(200).json({ success: true, data: { details: updatedUserStatus } });
 };
+
+const createUserClone = async (req, res) => {
+  const { user, body } = await userRequest.cloneUserRequest(req);
+
+  const clonedUser = await userService.cloneUser({ user, ...body });
+
+  res.status(200).json({ success: true, data: { details: clonedUser } });
+};
+
 export default {
   getAllUser,
   getUserById,
@@ -78,4 +87,5 @@ export default {
   updateUser,
   deleteUser,
   updateUserStatus,
+  createUserClone,
 };

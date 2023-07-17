@@ -56,6 +56,8 @@ async function createUserRequest(req) {
     ? Number(req.body.creditPoints)
     : null;
   req.body.currencyId = req.body?.currencyId || null;
+  req.body.username = req.body.username?.trim();
+  req.body.password = req.body.password?.trim();
 
   const user = await User.findById(req.user._id, { role: 1 });
 
@@ -96,7 +98,7 @@ async function updateUserRequest(req) {
   req.body.creditPoints = req.body?.creditPoints
     ? Number(req.body.creditPoints)
     : null;
-  req.body.password = req.body?.password || null;
+  req.body.password = req.body?.password ? req.body.password.trim() : null;
 
   const validationSchema = Yup.object().shape({
     _id: Yup.string()
@@ -131,8 +133,41 @@ async function updateUserRequest(req) {
   return req;
 }
 
+async function cloneUserRequest(req) {
+  req.body.moduleIds = req.body.moduleIds ? req.body.moduleIds.split(",") : [];
+  req.body.username = req.body.username?.trim();
+  req.body.password = req.body.password?.trim();
+
+  const validationSchema = Yup.object().shape({
+    fullName: Yup.string().required(),
+
+    username: Yup.string().required(),
+
+    password: Yup.string().nullable(true),
+
+    confirmPassword: Yup.string()
+      .nullable(true)
+      .when(["password"], (password, schema) => {
+        return password
+          ? schema
+              .oneOf([Yup.ref("password")], "Passwords should match.")
+              .required()
+          : schema;
+      }),
+
+    moduleIds: Yup.array().required(),
+
+    transactionCode: Yup.string().length(6).required(),
+  });
+
+  await validationSchema.validate(req.body);
+
+  return req;
+}
+
 export default {
   userListingRequest,
   createUserRequest,
   updateUserRequest,
+  cloneUserRequest,
 };

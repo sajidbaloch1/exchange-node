@@ -36,6 +36,7 @@ const register = async (req, res) => {
   const { user, body } = await authRequest.userRegisterRequest(req);
 
   const registeredUser = await authService.registerUser({ user, ...body });
+  console.log(registeredUser);
   await userActivityService.createUserActivity({
     userId: registeredUser._id,
     event: USER_ACTIVITY_EVENT.REGISTERED,

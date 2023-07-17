@@ -69,8 +69,15 @@ const fetchAllRule = async ({
                     preserveNullAndEmptyArrays: true,
                 },
             },
+
             {
-                $unset: ["betCatId", "sportsId"],
+                $set: {
+                    betCatName: "$betCategory.name",
+                    sportsName: "$sport.name",
+                }
+            },
+            {
+                $unset: ["betCategory", "sport"],
             },
             {
                 $facet: {

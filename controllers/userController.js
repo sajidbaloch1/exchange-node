@@ -71,6 +71,18 @@ const updateUserStatus = async (req, res) => {
 
   res.status(200).json({ success: true, data: { details: updatedUserStatus } });
 };
+
+
+// Fetch User Balance
+const fetchUserBalance = async (req, res) => {
+
+  const { user, body } = await userRequest.fetchUserBalanceRequest(req);
+
+  const fetchBalance = await userService.fetchBalance({ user, ...body });
+
+  res.status(200).json({ success: true, data: fetchBalance });
+};
+
 export default {
   getAllUser,
   getUserById,
@@ -78,4 +90,5 @@ export default {
   updateUser,
   deleteUser,
   updateUserStatus,
+  fetchUserBalance
 };

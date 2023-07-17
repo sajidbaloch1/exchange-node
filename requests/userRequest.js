@@ -112,8 +112,8 @@ async function updateUserRequest(req) {
       .when(["password"], (password, schema) => {
         return password
           ? schema
-              .oneOf([Yup.ref("password")], "Passwords should match.")
-              .required()
+            .oneOf([Yup.ref("password")], "Passwords should match.")
+            .required()
           : schema;
       }),
 
@@ -131,8 +131,20 @@ async function updateUserRequest(req) {
   return req;
 }
 
+async function fetchUserBalanceRequest(req) {
+
+  const validationSchema = Yup.object().shape({
+    userId: Yup.string().required(),
+  });
+
+  await validationSchema.validate(req.body);
+
+  return req;
+}
+
 export default {
   userListingRequest,
   createUserRequest,
   updateUserRequest,
+  fetchUserBalanceRequest
 };

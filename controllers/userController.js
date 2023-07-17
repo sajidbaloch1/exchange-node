@@ -1,5 +1,7 @@
 import userRequest from "../requests/userRequest.js";
 import userService from "../services/userService.js";
+import { USER_ACTIVITY_EVENT } from "../models/UserActivity.js";
+import userActivityService from "../services/userActivityService.js";
 
 // Get all users
 const getAllUser = async (req, res) => {
@@ -29,6 +31,13 @@ const createUser = async (req, res) => {
 
   const newuser = await userService.addUser({ user, ...body });
 
+  await userActivityService.createUserActivity({
+    userId: newuser._id,
+    event: USER_ACTIVITY_EVENT.CREATED,
+    ipAddress: body.ipAddress,
+    description: body.description,
+  });
+
   res.status(201).json({ success: true, data: { details: newuser } });
 };
 
@@ -37,6 +46,13 @@ const updateUser = async (req, res) => {
   const { user, body } = await userRequest.updateUserRequest(req);
 
   const updatedUser = await userService.modifyUser({ user, ...body });
+
+  await userActivityService.createUserActivity({
+    userId: updatedUser._id,
+    event: USER_ACTIVITY_EVENT.UPDATED,
+    ipAddress: body.ipAddress,
+    description: body.description,
+  });
 
   res.status(200).json({ success: true, data: { details: updatedUser } });
 };

@@ -10,6 +10,7 @@ route(router, "post", "/createUser", userController.createUser);
 route(router, "post", "/updateUser", userController.updateUser);
 route(router, "post", "/deleteUser", userController.deleteUser);
 route(router, "post", "/updateUserStatus", userController.updateUserStatus);
+route(router, "post", "/fetchUserBalance", userController.fetchUserBalance);
 route(router, "post", "/createUserClone", userController.createUserClone);
 
 export default router;

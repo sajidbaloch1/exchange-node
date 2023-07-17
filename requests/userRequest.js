@@ -133,6 +133,16 @@ async function updateUserRequest(req) {
   return req;
 }
 
+async function fetchUserBalanceRequest(req) {
+  const validationSchema = Yup.object().shape({
+    userId: Yup.string().required(),
+  });
+
+  await validationSchema.validate(req.body);
+
+  return req;
+}
+
 async function cloneUserRequest(req) {
   req.body.moduleIds = req.body.moduleIds ? req.body.moduleIds.split(",") : [];
   req.body.username = req.body.username?.trim();
@@ -169,5 +179,6 @@ export default {
   userListingRequest,
   createUserRequest,
   updateUserRequest,
+  fetchUserBalanceRequest,
   cloneUserRequest,
 };

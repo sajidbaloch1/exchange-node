@@ -10,32 +10,34 @@ export const USER_ACTIVITY_EVENT = {
   PASSWORD_RESET: "password_reset",
 };
 
-const userActivitySchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: "user",
-    },
-    event: {
-      type: String,
-      enum: Object.values(USER_ACTIVITY_EVENT),
-    },
-    ipAddress: {
-      type: String,
-    },
-    description: {
-      type: String,
-    },
+const GEO_LOCATION_TYPE = {
+  POINT: "Point",
+};
+
+const userActivitySchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "user" },
+  event: {
+    type: String,
+    enum: Object.values(USER_ACTIVITY_EVENT),
+    required: true,
   },
-  {
-    timestamp: {
-      type: Date,
+  ipAddress: { type: String },
+  description: { type: String },
+  geoLocation: {
+    type: {
+      type: String,
+      enum: [GEO_LOCATION_TYPE.POINT],
+      default: GEO_LOCATION_TYPE.POINT,
     },
-  }
-);
+    coordinates: { type: [Number], default: [0, 0] },
+  },
+});
 
 userActivitySchema.plugin(timestampPlugin);
+
+userActivitySchema.index({ userId: 1 });
+userActivitySchema.index({ evnet: 1 });
+userActivitySchema.index({ geo_location: "2dsphere" });
 
 const UserActivity = mongoose.model("user_activity", userActivitySchema);
 

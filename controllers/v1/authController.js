@@ -33,10 +33,10 @@ const login = async (req, res) => {
  * @returns {object} The response with success status and registered user data.
  */
 const register = async (req, res) => {
-  const { user, body } = await authRequest.userRegisterRequest(req);
+  const { body } = await authRequest.userRegisterRequest(req);
 
-  const registeredUser = await authService.registerUser({ user, ...body });
-  console.log(registeredUser);
+  const registeredUser = await authService.registerUser(body);
+
   await userActivityService.createUserActivity({
     userId: registeredUser._id,
     event: USER_ACTIVITY_EVENT.REGISTERED,
@@ -48,9 +48,14 @@ const register = async (req, res) => {
 };
 
 /**
- * Reset password.
+ * Resets the user's password.
+ *
+ * @async
+ * @param {Object} req - The HTTP request object.
+ * @param {Object} res - The HTTP response object.
+ * @returns {Promise<Object>} A Promise that resolves to the JSON response 
+ * containing the success status and reset password user data.
  */
-
 const resetPassword = async (req, res) => {
   const { body } = await authRequest.userResetPasswordRequest(req);
 

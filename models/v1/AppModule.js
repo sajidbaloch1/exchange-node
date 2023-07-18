@@ -6,11 +6,7 @@ export const APP_MODULES = {
 };
 
 const appModuleSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    unique: true,
-  },
+  name: { type: String, required: true, unique: true },
   key: {
     type: String,
     required: true,
@@ -20,6 +16,8 @@ const appModuleSchema = new mongoose.Schema({
 });
 
 appModuleSchema.plugin(timestampPlugin);
+
+appModuleSchema.index({ key: 1 });
 
 const AppModule = mongoose.model("app_module", appModuleSchema);
 

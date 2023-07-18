@@ -11,6 +11,7 @@ import User, {
   USER_ROLE,
 } from "../../models/v1/User.js";
 import permissionService from "./permissionService.js";
+import { encryptPassword } from "../../lib/helpers/auth.js";
 
 // Fetch all users from the database
 const fetchAllUsers = async ({ user, ...reqBody }) => {
@@ -265,6 +266,7 @@ const modifyUser = async ({ user, ...reqBody }) => {
 
     reqBody.creditPoints = creditPoints;
     reqBody.balance = balance;
+    reqBody.password = await encryptPassword(reqBody.password);
 
     const updatedUser = await User.findByIdAndUpdate(currentUser._id, reqBody, {
       new: true,
@@ -398,4 +400,5 @@ export default {
   removeUser,
   statusModify,
   fetchBalance,
+  cloneUser,
 };

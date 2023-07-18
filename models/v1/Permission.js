@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import timestampPlugin from "./plugins/timestamp.js";
+import timestampPlugin from "../plugins/timestamp.js";
 
 const permissionSchema = new mongoose.Schema({
   userId: {

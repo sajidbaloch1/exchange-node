@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import timestampPlugin from "./plugins/timestamp.js";
+import timestampPlugin from "../plugins/timestamp.js";
 
 export const APP_MODULES = {
   USER_MODULE: "user_module",

@@ -1,4 +1,4 @@
-import { BET_CATEGORY } from "../../models/Sport.js";
+import { BET_CATEGORY } from "../../models/v1/Sport.js";
 import sportService from "../../services/sportService.js";
 
 // Get all sport

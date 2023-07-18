@@ -1,7 +1,7 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
-import User from "../../models/User.js";
-import { USER_ACTIVITY_EVENT } from "../../models/UserActivity.js";
+import User from "../../models/v1/User.js";
+import { USER_ACTIVITY_EVENT } from "../../models/v1/UserActivity.js";
 import userRequest from "../../requests/v1/userRequest.js";
 import permissionService from "../../services/permissionService.js";
 import userActivityService from "../../services/userActivityService.js";

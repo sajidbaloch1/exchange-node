@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import softDeletePlugin from "./plugins/soft-delete.js";
-import timestampPlugin from "./plugins/timestamp.js";
+import softDeletePlugin from "../plugins/soft-delete.js";
+import timestampPlugin from "../plugins/timestamp.js";
 
 const currencySchema = new mongoose.Schema({
   name: {

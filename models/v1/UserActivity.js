@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import timestampPlugin from "./plugins/timestamp.js";
+import timestampPlugin from "../plugins/timestamp.js";
 
 export const USER_ACTIVITY_EVENT = {
   LOGIN: "login",

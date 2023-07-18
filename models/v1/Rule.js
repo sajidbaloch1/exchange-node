@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
-import softDeletePlugin from "./plugins/soft-delete.js";
-import timestampPlugin from "./plugins/timestamp.js";
+import softDeletePlugin from "../plugins/soft-delete.js";
+import timestampPlugin from "../plugins/timestamp.js";
 
 export const GAME_TYPE = {
   EXCHANGE: "exchange",
-  CASINO: "casino"
+  CASINO: "casino",
 };
 
 const ruleSchema = new mongoose.Schema({
   gameType: {
     type: String,
     enum: Object.values(GAME_TYPE),
-    required: true
+    required: true,
   },
   casinoId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -23,18 +23,20 @@ const ruleSchema = new mongoose.Schema({
   betCatId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "bet_category",
-    require: true
+    require: true,
   },
-  notes: [{
-    description: {
-      type: String,
-      require: true
+  notes: [
+    {
+      description: {
+        type: String,
+        require: true,
+      },
+      highlight: {
+        type: Boolean,
+        require: true,
+      },
     },
-    highlight: {
-      type: Boolean,
-      require: true
-    }
-  }]
+  ],
 });
 
 ruleSchema.plugin(timestampPlugin);

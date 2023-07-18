@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import Permission from "../models/Permission.js";
+import Permission from "../models/v1/Permission.js";
 import CryptoJS from "crypto-js";
-import { APP_MODULES } from "../models/AppModule.js";
+import { APP_MODULES } from "../models/v1/AppModule.js";
 import { appConfig } from "../config/app.js";
 
 const encryptModules = (modulesObj) => {

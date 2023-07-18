@@ -2,7 +2,7 @@ import {
   generatePaginationQueries,
   generateSearchFilters,
 } from "../lib/helpers/filters.js";
-import Currency from "../models/Currency.js";
+import Currency from "../models/v1/Currency.js";
 
 // Fetch all Currency from the database
 const fetchAllCurrency = async ({

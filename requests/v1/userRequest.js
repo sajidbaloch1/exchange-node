@@ -1,9 +1,9 @@
+import { isValidObjectId } from "mongoose";
 import Yup from "yup";
 import User, {
   USER_ACCESSIBLE_ROLES,
   USER_ROLE,
 } from "../../models/v1/User.js";
-import { isValidObjectId } from "mongoose";
 
 async function userListingRequest(req) {
   req.body.page = req.body?.page ? Number(req.body.page) : null;

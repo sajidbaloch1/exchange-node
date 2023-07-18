@@ -1,9 +1,9 @@
 import express from "express";
 import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import sportRoutes from "./routes/sportRoutes.js";
 import currencyRoutes from "./routes/currencyRoutes.js";
 import ruleRoutes from "./routes/ruleRoutes.js";
+import sportRoutes from "./routes/sportRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 

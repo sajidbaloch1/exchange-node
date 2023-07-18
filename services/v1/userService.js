@@ -4,12 +4,12 @@ import {
   generatePaginationQueries,
   generateSearchFilters,
 } from "../../lib/helpers/filters.js";
+import { validateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import AppModule from "../../models/v1/AppModule.js";
 import User, {
   USER_ACCESSIBLE_ROLES,
   USER_ROLE,
 } from "../../models/v1/User.js";
-import { validateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import permissionService from "./permissionService.js";
 
 // Fetch all users from the database

@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
+import { encryptPassword } from "../../lib/helpers/auth.js";
+import { generateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import softDeletePlugin from "../plugins/soft-delete.js";
 import timestampPlugin from "../plugins/timestamp.js";
-import { generateTransactionCode } from "../../lib/helpers/transaction-code.js";
-import { encryptPassword } from "../../lib/helpers/auth.js";
 
 export const USER_ROLE = {
   SYSTEM_OWNER: "system_owner",

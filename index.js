@@ -2,9 +2,9 @@ import bodyParser from "body-parser";
 import express from "express";
 import moment from "moment";
 import { appConfig } from "./config/app.js";
-import dbConnection from "./lib/app/db-connection.js";
+import dbConnection from "./lib/database/connect.js";
 import corsMiddleware from "./middlewares/corsMiddleware.js";
-import apiRouter from "./routes/api.js";
+import apiRoutes from "./routes/apiRoutes.js";
 
 const app = express();
 
@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(corsMiddleware);
 
-app.use("/api/", apiRouter);
+app.use("/api", apiRoutes);
 
 app.get("/", (req, res) => {
   res.json({

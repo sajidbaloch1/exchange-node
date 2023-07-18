@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { encryptPassword } from "../lib/helpers/auth-helpers.js";
 import softDeletePlugin from "./plugins/soft-delete.js";
 import timestampPlugin from "./plugins/timestamp.js";
+import { generateTransactionCode } from "../lib/helpers/transaction-code.js";
 
 export const USER_ROLE = {
   SYSTEM_OWNER: "system_owner",
@@ -75,7 +76,7 @@ const userSchema = new mongoose.Schema(
     forcePasswordChange: { type: Boolean, default: false },
     transactionCode: { type: String },
     remarks: String,
-    lockPasswordChange: { type: Boolean, default: false }
+    lockPasswordChange: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -97,13 +98,13 @@ userSchema.path("username").validate(async function (value) {
   return count === 0;
 }, "Username already exists. Please choose a different username.");
 
-// Pre hook for encrypting the password
+// Encrypt password before saving
 userSchema.pre("save", async function (next) {
   const user = this;
-  if (!user.isModified("password")) {
-    return next();
-  }
   try {
+    if (!user.isModified("password")) {
+      return next();
+    }
     const hashedPassword = await encryptPassword(user.password);
     user.password = hashedPassword;
     next();
@@ -112,30 +113,25 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-// Pre hook for encrypting the password
+// Generate and encrypt transaction code before saving
 userSchema.pre("save", async function (next) {
   const user = this;
-  if (!user.isModified("transactionCode")) {
-    return next();
-  }
   try {
     if (!user.transactionCode) {
-      user.transactionCode = generateTransactionCode();
+      const transactionCodesInUse = await user.constructor
+        .distinct("transactionCode")
+        .exec();
+      user.transactionCode = await generateTransactionCode(
+        transactionCodesInUse
+      );
+    } else if (!user.isModified("transactionCode")) {
+      return next();
     }
     next();
   } catch (error) {
     next(error);
   }
 });
-
-function generateTransactionCode() {
-  const chars = "0123456789";
-  let result = "";
-  for (let i = 6; i > 0; --i) {
-    result += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return result;
-}
 
 const User = mongoose.model("user", userSchema);
 

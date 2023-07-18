@@ -1,7 +1,7 @@
 import {
   generatePaginationQueries,
   generateSearchFilters,
-} from "../lib/helpers/filter.js";
+} from "../lib/helpers/filters.js";
 import Sport from "../models/Sport.js";
 
 // Fetch all sport from the database

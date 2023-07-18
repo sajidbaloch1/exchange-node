@@ -3,7 +3,7 @@ import ErrorResponse from "../lib/error-handling/error-response.js";
 import {
   generatePaginationQueries,
   generateSearchFilters,
-} from "../lib/helpers/filter.js";
+} from "../lib/helpers/filters.js";
 import AppModule from "../models/AppModule.js";
 import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 import { validateTransactionCode } from "../lib/helpers/transaction-code.js";

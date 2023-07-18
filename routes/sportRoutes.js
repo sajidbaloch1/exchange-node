@@ -9,5 +9,6 @@ route(router, "post", "/getSportById", sportController.getSportById);
 route(router, "post", "/createSport", sportController.createSport);
 route(router, "post", "/updateSport", sportController.updateSport);
 route(router, "post", "/deleteSport", sportController.deleteSport);
+route(router, "get", "/getBetCategory", sportController.getBetCategory);
 
 export default router;

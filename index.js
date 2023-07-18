@@ -5,7 +5,6 @@ import { appConfig } from "./config/app.js";
 import dbConnection from "./lib/database/connect.js";
 import corsMiddleware from "./middlewares/corsMiddleware.js";
 import apiRouter from "./routes/api.js";
-// import { decryptTransactionCode } from "./lib/helpers/transaction-code.js";
 
 const app = express();
 
@@ -27,10 +26,6 @@ app.get("/", (req, res) => {
 });
 
 dbConnection();
-
-// console.log(
-//   decryptTransactionCode("U2FsdGVkX19Htv1LBA3Q57uJlMW0LNXxeh6lK5QTuPg=")
-// );
 
 app.listen(appConfig.PORT, () => {
   console.log(`Server running on port: ${appConfig.PORT}`);

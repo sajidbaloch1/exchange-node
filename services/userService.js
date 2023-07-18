@@ -7,6 +7,7 @@ import {
 import AppModule from "../models/AppModule.js";
 import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
 import { validateTransactionCode } from "../lib/helpers/transaction-code.js";
+import permissionService from "./permissionService.js";
 
 // Fetch all users from the database
 const fetchAllUsers = async ({ user, ...reqBody }) => {
@@ -370,11 +371,15 @@ const cloneUser = async ({ user, ...reqBody }) => {
 
     delete newUserObj._id;
     delete newUserObj.transactionCode;
-
-    console.log(newUserObj);
-    throw new Error("here");
+    delete newUserObj.mobileNumber;
 
     const clonedUser = await User.create(newUserObj);
+
+    // Create permissions
+    await permissionService.setUserPermissions({
+      userId: clonedUser._id,
+      moduleIds,
+    });
 
     return clonedUser;
   } catch (e) {

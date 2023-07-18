@@ -1,4 +1,8 @@
+import ErrorResponse from "../lib/error-handling/error-response.js";
+import { decryptTransactionCode } from "../lib/helpers/transaction-code.js";
+import User from "../models/User.js";
 import userRequest from "../requests/userRequest.js";
+import permissionService from "../services/permissionService.js";
 import userService from "../services/userService.js";
 
 // Get all users
@@ -89,6 +93,33 @@ const createUserClone = async (req, res) => {
   res.status(200).json({ success: true, data: { details: clonedUser } });
 };
 
+const getUserTransactionCode = async (req, res) => {
+  const { _id = null } = req.body;
+
+  if (!_id) {
+    throw new ErrorResponse("_id is required!").status(200);
+  }
+
+  const user = await User.findById(_id, { transactionCode: 1 });
+  const transactionCode = decryptTransactionCode(user.transactionCode);
+
+  res.status(200).json({ success: true, data: { details: transactionCode } });
+};
+
+const getUserPermissions = async (req, res) => {
+  const { _id = null } = req.body;
+
+  if (!_id) {
+    throw new ErrorResponse("_id is required!").status(200);
+  }
+
+  const userPermissions = await permissionService.fetchUserPermissions({
+    userId: _id,
+  });
+
+  res.status(200).json({ success: true, data: { details: userPermissions } });
+};
+
 export default {
   getAllUser,
   getUserById,
@@ -98,4 +129,6 @@ export default {
   updateUserStatus,
   fetchUserBalance,
   createUserClone,
+  getUserTransactionCode,
+  getUserPermissions,
 };

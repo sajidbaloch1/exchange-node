@@ -1,8 +1,9 @@
+import ErrorResponse from "../lib/error-handling/error-response.js";
 import {
   generatePaginationQueries,
   generateSearchFilters,
 } from "../lib/helpers/filter-helpers.js";
-import Sport from "../models/Sport.js";
+import Sport, { BET_CATEGORY } from "../models/Sport.js";
 
 // Fetch all sport from the database
 const fetchAllSport = async ({
@@ -78,7 +79,7 @@ const fetchSportId = async (_id) => {
 /**
  * create Sport in the database
  */
-const addSport = async ({ name }) => {
+const addSport = async ({ name, betCategory }) => {
   try {
     const existingSport = await Sport.findOne({ name: name });
     if (existingSport) {
@@ -86,30 +87,36 @@ const addSport = async ({ name }) => {
     }
 
     const newSportObj = {
-      name: name,
+      name: name.toLowerCase().replace(/(?:^|\s)\S/g, function (char) {
+        return char.toUpperCase();
+      }),
+
+      betCategory: betCategory,
     };
     const newsport = await Sport.create(newSportObj);
 
     return newsport;
   } catch (e) {
-    throw new Error(e);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 
 /**
  * update Sport in the database
  */
-const modifySport = async ({ _id, name }) => {
+const modifySport = async ({ _id, name, betCategory }) => {
   try {
     const sport = await Sport.findById(_id);
 
-    sport.name = name;
-
+    sport.name = name.toLowerCase().replace(/(?:^|\s)\S/g, function (char) {
+      return char.toUpperCase();
+    });
+    sport.betCategory = betCategory;
     await sport.save();
 
     return sport;
   } catch (e) {
-    throw new Error(e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 

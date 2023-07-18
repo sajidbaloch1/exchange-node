@@ -10,29 +10,29 @@ route(
   "/getAllBetCategory",
   betCategoryController.getAllBetCategory
 );
-route(
-  router,
-  "post",
-  "/getBetCategoryById",
-  betCategoryController.getBetCategoryById
-);
-route(
-  router,
-  "post",
-  "/createBetCategory",
-  betCategoryController.createBetCategory
-);
-route(
-  router,
-  "post",
-  "/updateBetCategory",
-  betCategoryController.updateBetCategory
-);
-route(
-  router,
-  "post",
-  "/deleteBetCategory",
-  betCategoryController.deleteBetCategory
-);
+// route(
+//   router,
+//   "post",
+//   "/getBetCategoryById",
+//   betCategoryController.getBetCategoryById
+// );
+// route(
+//   router,
+//   "post",
+//   "/createBetCategory",
+//   betCategoryController.createBetCategory
+// );
+// route(
+//   router,
+//   "post",
+//   "/updateBetCategory",
+//   betCategoryController.updateBetCategory
+// );
+// route(
+//   router,
+//   "post",
+//   "/deleteBetCategory",
+//   betCategoryController.deleteBetCategory
+// );
 
 export default router;

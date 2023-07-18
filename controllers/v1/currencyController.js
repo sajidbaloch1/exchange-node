@@ -1,4 +1,4 @@
-import currencyService from "../services/currencyService.js";
+import currencyService from "../../services/currencyService.js";
 
 // Get all Currency
 const getAllCurrency = async (req, res) => {
@@ -38,8 +38,6 @@ const getCurrencyById = async (req, res) => {
 
 // Create a new Currency
 const createCurrency = async (req, res) => {
-  const currency = req.currency;
-
   const name = req.body?.name ? req.body.name.trim() : null;
   const multiplier = req.body?.multiplier ? Number(req.body.multiplier) : null;
   if (!name) {

@@ -1,5 +1,5 @@
 import express from "express";
-import userController from "../../../controllers/userController.js";
+import userController from "../../../controllers/v1/userController.js";
 import { route } from "../../../lib/error-handling/routes-error-boundary.js";
 
 const router = express.Router();

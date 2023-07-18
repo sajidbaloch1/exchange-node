@@ -1,7 +1,7 @@
-import authService from "../services/authService.js";
-import authRequest from "../requests/v1/authRequest.js";
-import { USER_ACTIVITY_EVENT } from "../models/UserActivity.js";
-import userActivityService from "../services/userActivityService.js";
+import authService from "../../services/authService.js";
+import authRequest from "../../requests/v1/authRequest.js";
+import { USER_ACTIVITY_EVENT } from "../../models/UserActivity.js";
+import userActivityService from "../../services/userActivityService.js";
 
 /**
  * Logs in a user.

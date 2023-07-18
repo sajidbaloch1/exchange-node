@@ -1,11 +1,11 @@
-import ErrorResponse from "../lib/error-handling/error-response.js";
-import { decryptTransactionCode } from "../lib/helpers/transaction-code.js";
-import User from "../models/User.js";
-import userRequest from "../requests/v1/userRequest.js";
-import permissionService from "../services/permissionService.js";
-import userService from "../services/userService.js";
-import { USER_ACTIVITY_EVENT } from "../models/UserActivity.js";
-import userActivityService from "../services/userActivityService.js";
+import ErrorResponse from "../../lib/error-handling/error-response.js";
+import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
+import User from "../../models/User.js";
+import { USER_ACTIVITY_EVENT } from "../../models/UserActivity.js";
+import userRequest from "../../requests/v1/userRequest.js";
+import permissionService from "../../services/permissionService.js";
+import userActivityService from "../../services/userActivityService.js";
+import userService from "../../services/userService.js";
 
 // Get all users
 const getAllUser = async (req, res) => {

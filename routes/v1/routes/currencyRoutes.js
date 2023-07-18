@@ -1,5 +1,5 @@
 import express from "express";
-import currencyController from "../../../controllers/currencyController.js";
+import currencyController from "../../../controllers/v1/currencyController.js";
 import { route } from "../../../lib/error-handling/routes-error-boundary.js";
 
 const router = express.Router();

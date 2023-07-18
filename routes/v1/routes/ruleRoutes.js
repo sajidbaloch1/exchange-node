@@ -1,5 +1,5 @@
 import express from "express";
-import ruleController from "../../../controllers/ruleController.js";
+import ruleController from "../../../controllers/v1/ruleController.js";
 import { route } from "../../../lib/error-handling/routes-error-boundary.js";
 
 const router = express.Router();

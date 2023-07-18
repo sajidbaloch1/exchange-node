@@ -1,5 +1,5 @@
-import { BET_CATEGORY } from "../models/Sport.js";
-import sportService from "../services/sportService.js";
+import { BET_CATEGORY } from "../../models/Sport.js";
+import sportService from "../../services/sportService.js";
 
 // Get all sport
 const getAllSport = async (req, res) => {

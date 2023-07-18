@@ -395,5 +395,4 @@ export default {
   removeUser,
   statusModify,
   fetchBalance,
-  cloneUser,
 };

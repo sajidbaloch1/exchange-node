@@ -112,7 +112,7 @@ const modifySport = async ({ _id, name }) => {
 
     return sport;
   } catch (e) {
-    throw new Error(e.message);
+    throw new ErrorResponse(e.message).status(200);
   }
 };
 

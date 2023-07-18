@@ -84,6 +84,16 @@ const userSchema = new mongoose.Schema(
 userSchema.plugin(timestampPlugin);
 userSchema.plugin(softDeletePlugin);
 
+userSchema.index({ parentId: 1 });
+userSchema.index({ cloneParentId: 1 });
+userSchema.index({ currencyId: 1 });
+userSchema.index({ isActive: 1 });
+userSchema.index({ isBetLock: 1 });
+userSchema.index({ username: 1 });
+userSchema.index({ mobileNumber: 1 });
+userSchema.index({ role: 1 });
+userSchema.index({ isActive: 1, role: 1 });
+
 // Validate username to only have alphanumeric values and underscore
 userSchema.path("username").validate(function (value) {
   return /^[a-zA-Z0-9_]+$/.test(value);

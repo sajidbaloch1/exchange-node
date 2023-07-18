@@ -39,8 +39,6 @@ const getSportById = async (req, res) => {
 
 // Create a new sport
 const createSport = async (req, res) => {
-  const sport = req.sport;
-
   const name = req.body?.name ? req.body.name.trim() : null;
   const betCategory = req.body?.betCategory || [];
   if (!name) {

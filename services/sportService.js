@@ -3,7 +3,7 @@ import {
   generatePaginationQueries,
   generateSearchFilters,
 } from "../lib/helpers/filters.js";
-import Sport, { BET_CATEGORY } from "../models/Sport.js";
+import Sport from "../models/Sport.js";
 
 // Fetch all sport from the database
 const fetchAllSport = async ({

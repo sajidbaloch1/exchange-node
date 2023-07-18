@@ -3,7 +3,6 @@ import {
   generatePaginationQueries,
   generateSearchFilters,
 } from "../lib/helpers/filter-helpers.js";
-
 import Sport, { BET_CATEGORY } from "../models/Sport.js";
 
 // Fetch all sport from the database

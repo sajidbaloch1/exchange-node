@@ -387,7 +387,6 @@ const cloneUser = async ({ user, ...reqBody }) => {
   }
 };
 
-
 export default {
   fetchAllUsers,
   fetchUserId,

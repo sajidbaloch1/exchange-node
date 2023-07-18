@@ -24,7 +24,6 @@ const loginUser = async ({ username, password }) => {
 
     const loggedInUser = existingUser.toJSON();
     delete loggedInUser.password;
-
     return { user: loggedInUser, token };
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
@@ -62,9 +61,12 @@ const registerUser = async ({
   }
 };
 
-
-const resetPassword = async ({ userId, oldPassword, newPassword, isForceChangePassword }) => {
-
+const resetPassword = async ({
+  userId,
+  oldPassword,
+  newPassword,
+  isForceChangePassword,
+}) => {
   try {
     // Check if user_id exists
     const existingUser = await User.findOne({ _id: userId });
@@ -84,14 +86,12 @@ const resetPassword = async ({ userId, oldPassword, newPassword, isForceChangePa
     );
     if (!isValidPassword) {
       throw new Error("Old password is incorrect!");
-    }
-    else {
-      if (isForceChangePassword == 'true') {
+    } else {
+      if (isForceChangePassword == "true") {
         existingUser.password = newPassword;
         existingUser.forcePasswordChange = false;
         existingUser.save();
-      }
-      else {
+      } else {
         existingUser.password = newPassword;
         existingUser.save();
       }

@@ -6,6 +6,8 @@ export const USER_ACTIVITY_EVENT = {
   LOGOUT: "logout",
   CREATED: "created",
   UPDATED: "updated",
+  REGISTERED: "registered",
+  PASSWORD_RESET: "password_reset",
 };
 
 const userActivitySchema = new mongoose.Schema(

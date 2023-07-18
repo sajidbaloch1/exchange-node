@@ -4,6 +4,8 @@ import User from "../models/User.js";
 import userRequest from "../requests/userRequest.js";
 import permissionService from "../services/permissionService.js";
 import userService from "../services/userService.js";
+import { USER_ACTIVITY_EVENT } from "../models/UserActivity.js";
+import userActivityService from "../services/userActivityService.js";
 
 // Get all users
 const getAllUser = async (req, res) => {
@@ -31,9 +33,16 @@ const getUserById = async (req, res) => {
 const createUser = async (req, res) => {
   const { user, body } = await userRequest.createUserRequest(req);
 
-  const newuser = await userService.addUser({ user, ...body });
+  const newUser = await userService.addUser({ user, ...body });
 
-  res.status(201).json({ success: true, data: { details: newuser } });
+  await userActivityService.createUserActivity({
+    userId: newUser._id,
+    event: USER_ACTIVITY_EVENT.CREATED,
+    ipAddress: body.ipAddress,
+    description: body.description,
+  });
+
+  res.status(201).json({ success: true, data: { details: newUser } });
 };
 
 // Update a user
@@ -41,6 +50,13 @@ const updateUser = async (req, res) => {
   const { user, body } = await userRequest.updateUserRequest(req);
 
   const updatedUser = await userService.modifyUser({ user, ...body });
+
+  await userActivityService.createUserActivity({
+    userId: updatedUser._id,
+    event: USER_ACTIVITY_EVENT.UPDATED,
+    ipAddress: body.ipAddress,
+    description: body.description,
+  });
 
   res.status(200).json({ success: true, data: { details: updatedUser } });
 };

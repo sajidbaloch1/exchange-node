@@ -41,45 +41,42 @@ export const USER_ACCESSIBLE_ROLES = {
   [USER_ROLE.USER]: [],
 };
 
-const userSchema = new mongoose.Schema(
-  {
-    parentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      default: null,
-      ref: "user",
-    },
-    cloneParentId: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
-    hasChild: { type: Boolean, default: false },
-    currencyId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "currency",
-      required: true,
-    },
-    isActive: { type: Boolean, default: true },
-    isBetLock: { type: Boolean, default: false },
-    isDemo: { type: Boolean, default: false },
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    fullName: { type: String, required: true },
-    mobileNumber: { type: String, unique: true, sparse: true, default: null },
-    city: { type: String },
-    rate: { type: Number, min: 0, max: 100, default: 100 },
-    role: {
-      type: String,
-      enum: Object.values(USER_ROLE),
-      default: USER_ROLE.USER,
-    },
-    creditPoints: { type: Number, default: 0 },
-    balance: { type: Number, default: 0 },
-    exposureLimit: { type: Number, default: 0 },
-    clientPl: { type: Number },
-    forcePasswordChange: { type: Boolean, default: false },
-    transactionCode: { type: String },
-    remarks: String,
-    lockPasswordChange: { type: Boolean, default: false },
+const userSchema = new mongoose.Schema({
+  parentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: null,
+    ref: "user",
   },
-  { timestamps: true }
-);
+  cloneParentId: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
+  hasChild: { type: Boolean, default: false },
+  currencyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "currency",
+    required: true,
+  },
+  isActive: { type: Boolean, default: true },
+  isBetLock: { type: Boolean, default: false },
+  isDemo: { type: Boolean, default: false },
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  fullName: { type: String, required: true },
+  mobileNumber: { type: String, unique: true, sparse: true, default: null },
+  city: { type: String },
+  rate: { type: Number, min: 0, max: 100, default: 100 },
+  role: {
+    type: String,
+    enum: Object.values(USER_ROLE),
+    default: USER_ROLE.USER,
+  },
+  creditPoints: { type: Number, default: 0 },
+  balance: { type: Number, default: 0 },
+  exposureLimit: { type: Number, default: 0 },
+  clientPl: { type: Number },
+  forcePasswordChange: { type: Boolean, default: false },
+  transactionCode: { type: String },
+  remarks: String,
+  lockPasswordChange: { type: Boolean, default: false },
+});
 
 userSchema.plugin(timestampPlugin);
 userSchema.plugin(softDeletePlugin);

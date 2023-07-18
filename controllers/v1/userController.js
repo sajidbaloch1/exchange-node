@@ -3,9 +3,9 @@ import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
 import User from "../../models/v1/User.js";
 import { USER_ACTIVITY_EVENT } from "../../models/v1/UserActivity.js";
 import userRequest from "../../requests/v1/userRequest.js";
-import permissionService from "../../services/permissionService.js";
-import userActivityService from "../../services/userActivityService.js";
-import userService from "../../services/userService.js";
+import permissionService from "../../services/v1/permissionService.js";
+import userActivityService from "../../services/v1/userActivityService.js";
+import userService from "../../services/v1/userService.js";
 
 // Get all users
 const getAllUser = async (req, res) => {

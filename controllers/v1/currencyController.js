@@ -1,4 +1,4 @@
-import currencyService from "../../services/currencyService.js";
+import currencyService from "../../services/v1/currencyService.js";
 
 // Get all Currency
 const getAllCurrency = async (req, res) => {

@@ -1,4 +1,4 @@
-import UserActivity from "../models/v1/UserActivity.js";
+import UserActivity from "../../models/v1/UserActivity.js";
 
 const createUserActivity = async ({
   userId,

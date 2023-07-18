@@ -1,7 +1,7 @@
-import ErrorResponse from "../lib/error-handling/error-response.js";
-import { generateJwtToken, validatePassword } from "../lib/helpers/auth.js";
-import Currency from "../models/v1/Currency.js";
-import User from "../models/v1/User.js";
+import ErrorResponse from "../../lib/error-handling/error-response.js";
+import { generateJwtToken, validatePassword } from "../../lib/helpers/auth.js";
+import Currency from "../../models/v1/Currency.js";
+import User from "../../models/v1/User.js";
 
 const loginUser = async ({ username, password }) => {
   try {

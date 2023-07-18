@@ -1,9 +1,9 @@
-import ErrorResponse from "../lib/error-handling/error-response.js";
+import ErrorResponse from "../../lib/error-handling/error-response.js";
 import {
   generatePaginationQueries,
   generateSearchFilters,
-} from "../lib/helpers/filters.js";
-import Sport from "../models/v1/Sport.js";
+} from "../../lib/helpers/filters.js";
+import Sport from "../../models/v1/Sport.js";
 
 // Fetch all sport from the database
 const fetchAllSport = async ({

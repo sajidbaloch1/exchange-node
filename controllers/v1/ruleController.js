@@ -1,4 +1,4 @@
-import ruleService from "../../services/ruleService.js";
+import ruleService from "../../services/v1/ruleService.js";
 
 // Get all rule
 const getAllRule = async (req, res) => {

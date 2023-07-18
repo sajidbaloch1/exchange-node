@@ -1,8 +1,8 @@
 import {
   generatePaginationQueries,
   generateSearchFilters,
-} from "../lib/helpers/filters.js";
-import Rule from "../models/v1/Rule.js";
+} from "../../lib/helpers/filters.js";
+import Rule from "../../models/v1/Rule.js";
 
 // Fetch all Rule from the database
 const fetchAllRule = async ({

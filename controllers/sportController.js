@@ -41,10 +41,7 @@ const createSport = async (req, res) => {
   const sport = req.sport;
 
   const name = req.body?.name ? req.body.name.trim() : null;
-  const betCategory = req.body?.betCategory
-    ? req.body.betCategory.split(",")
-    : [];
-
+  const betCategory = req.body?.betCategory || [];
   if (!name) {
     throw new Error("name is required!");
   }
@@ -60,9 +57,8 @@ const createSport = async (req, res) => {
 const updateSport = async (req, res) => {
   const _id = req.body?._id || null;
   const name = req.body?.name ? req.body.name : null;
-  const betCategory = req.body?.betCategory
-    ? req.body.betCategory.split(",")
-    : [];
+  const betCategory = req.body?.betCategory || [];
+
   if (!_id) {
     throw new Error("_id is required!");
   }

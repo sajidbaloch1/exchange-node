@@ -108,10 +108,10 @@ const modifySport = async ({ _id, name, betCategory }) => {
   try {
     const sport = await Sport.findById(_id);
 
-    (sport.name = name.toLowerCase().replace(/(?:^|\s)\S/g, function (char) {
+    sport.name = name.toLowerCase().replace(/(?:^|\s)\S/g, function (char) {
       return char.toUpperCase();
-    })),
-      (sport.betCategory = betCategory);
+    });
+    sport.betCategory = betCategory;
     await sport.save();
 
     return sport;

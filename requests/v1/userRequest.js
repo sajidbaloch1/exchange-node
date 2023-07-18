@@ -1,5 +1,5 @@
 import Yup from "yup";
-import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
+import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../../models/User.js";
 import { isValidObjectId } from "mongoose";
 
 async function userListingRequest(req) {

@@ -1,7 +1,7 @@
 import {
-    generatePaginationQueries,
-    generateSearchFilters,
-} from "../lib/helpers/filter-helpers.js";
+  generatePaginationQueries,
+  generateSearchFilters,
+} from "../lib/helpers/filter.js";
 import Rule from "../models/Rule.js";
 
 // Fetch all Rule from the database

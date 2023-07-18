@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { encryptPassword } from "../lib/helpers/auth-helpers.js";
+import { encryptPassword } from "../lib/helpers/auth.js";
 import softDeletePlugin from "./plugins/soft-delete.js";
 import timestampPlugin from "./plugins/timestamp.js";
 import { generateTransactionCode } from "../lib/helpers/transaction-code.js";
@@ -121,9 +121,7 @@ userSchema.pre("save", async function (next) {
       const transactionCodesInUse = await user.constructor
         .distinct("transactionCode")
         .exec();
-      user.transactionCode = await generateTransactionCode(
-        transactionCodesInUse
-      );
+      user.transactionCode = generateTransactionCode(transactionCodesInUse);
     } else if (!user.isModified("transactionCode")) {
       return next();
     }

@@ -3,9 +3,10 @@ import ErrorResponse from "../lib/error-handling/error-response.js";
 import {
   generatePaginationQueries,
   generateSearchFilters,
-} from "../lib/helpers/filter-helpers.js";
+} from "../lib/helpers/filter.js";
 import AppModule from "../models/AppModule.js";
 import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../models/User.js";
+import { validateTransactionCode } from "../lib/helpers/transaction-code.js";
 
 // Fetch all users from the database
 const fetchAllUsers = async ({ user, ...reqBody }) => {
@@ -29,7 +30,7 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
     // Filters
     const filters = {
       isDeleted: showDeleted,
-      role: { $ne: USER_ROLE.SYSTEM_OWNER }
+      role: { $ne: USER_ROLE.SYSTEM_OWNER },
     };
 
     if (role && role != USER_ROLE.SYSTEM_OWNER) {
@@ -313,14 +314,14 @@ const statusModify = async ({ _id, isBetLock, isActive }) => {
  */
 const fetchBalance = async ({ user, ...reqBody }) => {
   try {
-    const {
-      userId
-    } = reqBody;
-    const user = await User.findOne({ _id: userId, role: { $ne: USER_ROLE.SYSTEM_OWNER } }, { balance: 1, _id: 0 });
+    const { userId } = reqBody;
+    const user = await User.findOne(
+      { _id: userId, role: { $ne: USER_ROLE.SYSTEM_OWNER } },
+      { balance: 1, _id: 0 }
+    );
     if (user) {
       return user;
-    }
-    else {
+    } else {
       throw new Error("User Not Found!");
     }
   } catch (e) {
@@ -335,7 +336,6 @@ const cloneUser = async ({ user, ...reqBody }) => {
 
     // Validate module ids
     const validModuleIds = [];
-
     for (const id of moduleIds) {
       if (!isValidObjectId(id)) {
         continue;
@@ -347,12 +347,15 @@ const cloneUser = async ({ user, ...reqBody }) => {
     }
 
     // Validate parent
-    const cloneParent = User.findById(user._id).lean();
-
+    const cloneParent = await User.findById(user._id).lean();
     if (!cloneParent || cloneParent.role === USER_ROLE.SYSTEM_OWNER) {
       throw new Error("Unauthorised request!");
     }
-    if (cloneParent.transactionCode !== transactionCode) {
+    const isValidCode = validateTransactionCode(
+      transactionCode,
+      cloneParent?.transactionCode
+    );
+    if (!isValidCode) {
       throw new Error("Invalid transactionCode!");
     }
 
@@ -368,10 +371,12 @@ const cloneUser = async ({ user, ...reqBody }) => {
     delete newUserObj._id;
     delete newUserObj.transactionCode;
 
+    console.log(newUserObj);
+    throw new Error("here");
+
     const clonedUser = await User.create(newUserObj);
 
     return clonedUser;
-
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

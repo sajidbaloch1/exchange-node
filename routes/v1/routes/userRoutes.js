@@ -1,6 +1,6 @@
 import express from "express";
-import userController from "../controllers/userController.js";
-import { route } from "../lib/error-handling/routes-error-boundary.js";
+import userController from "../../../controllers/userController.js";
+import { route } from "../../../lib/error-handling/routes-error-boundary.js";
 
 const router = express.Router();
 

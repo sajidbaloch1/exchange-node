@@ -1,6 +1,6 @@
 import express from "express";
-import sportController from "../controllers/sportController.js";
-import { route } from "../lib/error-handling/routes-error-boundary.js";
+import sportController from "../../../controllers/sportController.js";
+import { route } from "../../../lib/error-handling/routes-error-boundary.js";
 
 const router = express.Router();
 

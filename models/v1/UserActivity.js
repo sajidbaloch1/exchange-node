@@ -15,14 +15,24 @@ const GEO_LOCATION_TYPE = {
 };
 
 const userActivitySchema = new mongoose.Schema({
+  // The ID of the user for whom the activity is being recorded.
   userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "user" },
+
+  // The type of activity event. This is constrained to the values in USER_ACTIVITY_EVENT.
   event: {
     type: String,
     enum: Object.values(USER_ACTIVITY_EVENT),
     required: true,
   },
+
+  // The IP address from which the activity was performed.
   ipAddress: { type: String },
+
+  // A description providing more details about the activity.
   description: { type: String },
+
+  // The geolocation from where the activity was performed.
+  // Stored in GeoJSON format, default type is 'Point' and default coordinates are [0,0].
   geoLocation: {
     type: {
       type: String,

@@ -1,4 +1,3 @@
-import { BET_CATEGORY } from "../../models/v1/Sport.js";
 import sportService from "../../services/v1/sportService.js";
 
 // Get all sport
@@ -84,27 +83,11 @@ const deleteSport = async (req, res) => {
   res.status(200).json({ success: true, data: { details: deletedSport } });
 };
 
-const getBetCategory = async (req, res) => {
-  const categories = [];
-
-  Object.values(BET_CATEGORY).forEach((category) => {
-    categories.push({
-      value: category,
-      label: category
-        .split("_")
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(" "),
-    });
-  });
-
-  res.status(200).json({ success: true, data: { details: categories } });
-};
 
 export default {
   getAllSport,
   getSportById,
   createSport,
   updateSport,
-  deleteSport,
-  getBetCategory,
+  deleteSport
 };

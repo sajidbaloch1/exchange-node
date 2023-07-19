@@ -14,7 +14,21 @@ const sportsBetCategorySchema = new mongoose.Schema({
     require: true,
   },
   maxBet: { type: Number, default: 0 },
-  minBet: { type: Number, default: 0 }
+  minBet: { type: Number, default: 0 },
+  notes: [
+    {
+      description: {
+        type: String
+      },
+      highlight: {
+        type: Boolean
+      },
+    },
+  ],
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 sportsBetCategorySchema.plugin(timestampPlugin);

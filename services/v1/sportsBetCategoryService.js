@@ -3,6 +3,7 @@ import {
   generateSearchFilters,
 } from "../../lib/helpers/filters.js";
 import SportsBetCategory from "../../models/v1/SportsBetCategory.js";
+import mongoose from "mongoose";
 
 // Fetch all Sports-Bet-Category from the database
 const fetchAllSportsBetCategory = async ({
@@ -12,6 +13,7 @@ const fetchAllSportsBetCategory = async ({
   direction,
   showDeleted,
   searchQuery,
+  sportId
 }) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -20,6 +22,7 @@ const fetchAllSportsBetCategory = async ({
 
     const filters = {
       isDeleted: showDeleted,
+      sportsId: new mongoose.Types.ObjectId(sportId)
     };
 
     if (searchQuery) {

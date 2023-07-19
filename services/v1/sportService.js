@@ -76,14 +76,17 @@ const fetchSportId = async (_id) => {
   try {
     const sport = await Sport.findById(_id);
     const sportBetCategory = await SportsBetCategory.find({ sportsId: _id, isActive: true });
-
+    const betCatId = [];
+    sportBetCategory.forEach(element => {
+      betCatId.push(element.betCatId)
+    });
     const data = {
       _id: sport._id,
       name: sport.name,
       isActive: sport.isActive,
       updatedAt: sport.updatedAt,
       createdAt: sport.createdAt,
-      betCategory: sportBetCategory
+      betCategory: betCatId
     }
     return data;
   } catch (e) {

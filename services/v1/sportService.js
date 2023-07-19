@@ -47,7 +47,7 @@ const fetchAllSport = async ({
     ]);
 
     for (var i = 0; i < sport[0].paginatedResults.length; i++) {
-      const betCategoryCount = await SportsBetCategory.count({ sportsId: sport[0].paginatedResults[i]._id });
+      const betCategoryCount = await SportsBetCategory.count({ sportsId: sport[0].paginatedResults[i]._id, isActive: true });
       sport[0].paginatedResults[i].betCategoryCount = betCategoryCount
     }
 

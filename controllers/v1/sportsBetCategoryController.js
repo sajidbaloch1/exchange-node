@@ -10,7 +10,10 @@ const getAllSportsBetCategory = async (req, res) => {
     ? req.body.showDeleted === true || req.body.showDeleted === "true"
     : false;
   const searchQuery = req.body?.searchQuery || null;
-
+  const sportId = req.body?.sportId || null;
+  if (!sportId) {
+    throw new Error("Sports Id is required!");
+  }
   const sportsBetCategory = await sportsBetCategoryService.fetchAllSportsBetCategory({
     page,
     perPage,
@@ -18,6 +21,7 @@ const getAllSportsBetCategory = async (req, res) => {
     direction,
     showDeleted,
     searchQuery,
+    sportId
   });
 
   return res.status(200).json({ success: true, data: sportsBetCategory });
@@ -44,7 +48,7 @@ const createSportsBetCategory = async (req, res) => {
   const maxBet = req.body?.maxBet ? req.body.maxBet : null;
   const minBet = req.body?.minBet ? req.body.minBet : null;
   const notes = req.body?.notes ? req.body.notes : null;
-  const isActive = req.body?.isActive ? req.body.isActive : null;
+  const isActive = req.body?.isActive ? req.body.isActive : true;
 
   if (!sportsId) {
     throw new Error("Sports Id is required!");

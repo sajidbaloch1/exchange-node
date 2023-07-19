@@ -90,9 +90,6 @@ const userSchema = new mongoose.Schema({
   // User's account balance. Default is 0.
   balance: { type: Number, default: 0 },
 
-  // User's exposure limit for betting. Default is 0.
-  exposureLimit: { type: Number, default: 0 },
-
   // The Profit or Loss of the client.
   userPl: { type: Number },
 

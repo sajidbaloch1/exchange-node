@@ -47,7 +47,7 @@ const fetchAllSport = async ({
     ]);
 
     for (var i = 0; i < sport[0].paginatedResults.length; i++) {
-      const betCategoryCount = await SportsBetCategory.count({ sportsId: sport[0].paginatedResults[i]._id, isActive: true });
+      const betCategoryCount = await SportsBetCategory.count({ sportsId: sport[0].paginatedResults[i]._id, isActive: true, isDeleted: false });
       sport[0].paginatedResults[i].betCategoryCount = betCategoryCount
     }
 
@@ -75,7 +75,7 @@ const fetchAllSport = async ({
 const fetchSportId = async (_id) => {
   try {
     const sport = await Sport.findById(_id);
-    const sportBetCategory = await SportsBetCategory.find({ sportsId: _id, isActive: true });
+    const sportBetCategory = await SportsBetCategory.find({ sportsId: _id, isActive: true, isDeleted: false });
     const betCatId = [];
     sportBetCategory.forEach(element => {
       betCatId.push(element.betCatId)

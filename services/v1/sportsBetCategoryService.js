@@ -22,7 +22,8 @@ const fetchAllSportsBetCategory = async ({
 
     const filters = {
       isDeleted: showDeleted,
-      sportsId: new mongoose.Types.ObjectId(sportId)
+      sportsId: new mongoose.Types.ObjectId(sportId),
+      isActive: true
     };
 
     if (searchQuery) {

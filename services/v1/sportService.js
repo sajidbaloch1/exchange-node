@@ -133,15 +133,12 @@ const addSport = async ({ name, betCategory }) => {
 const modifySport = async ({ _id, name, betCategory }) => {
   try {
     const sport = await Sport.findById(_id);
-    console.log(_id);
     const sportBetCategory = await SportsBetCategory.find({ sportsId: _id, isActive: true, isDeleted: false }, { betCatId: 1, _id: 0 });
 
     sport.name = name.toLowerCase().replace(/(?:^|\s)\S/g, function (char) {
       return char.toUpperCase();
     });
     await sport.save();
-
-    console.log(sportBetCategory, betCategory);
 
     var newCategoryAdd = betCategory.filter(function (obj) {
       return !sportBetCategory.some(function (obj2) {
@@ -154,9 +151,6 @@ const modifySport = async ({ _id, name, betCategory }) => {
         return obj.betCatId.toString() == obj2;
       });
     });
-
-    console.log(newCategoryAdd, oldCategoryRemove);
-
 
     for (var i = 0; i < newCategoryAdd.length; i++) {
       const findSportBetCategory = await SportsBetCategory.findOne({ sportsId: _id, betCatId: newCategoryAdd[i], isDeleted: false });

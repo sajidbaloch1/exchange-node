@@ -134,7 +134,7 @@ const fetchSportsBetCategoryId = async (_id) => {
 /**
  * create Sports-Bet-Category in the database
  */
-const addSportsBetCategory = async ({ sportsId, betCatId, maxBet, minBet, notes, isActive }) => {
+const addSportsBetCategory = async ({ sportsId, betCatId, maxBet, minBet, notes, isActive, betDelay }) => {
   try {
     const existingSportsBetCategory = await SportsBetCategory.findOne({
       sportsId: sportsId,
@@ -151,7 +151,8 @@ const addSportsBetCategory = async ({ sportsId, betCatId, maxBet, minBet, notes,
       maxBet,
       minBet,
       notes,
-      isActive
+      isActive,
+      betDelay
     };
     const newSportsBetCategory = await SportsBetCategory.create(newSportsBetCategoryObj);
 
@@ -164,7 +165,7 @@ const addSportsBetCategory = async ({ sportsId, betCatId, maxBet, minBet, notes,
 /**
  * update Sports-Bet-Category in the database
  */
-const modifySportsBetCategory = async ({ _id, sportsId, betCatId, maxBet, minBet, notes, isActive }) => {
+const modifySportsBetCategory = async ({ _id, sportsId, betCatId, maxBet, minBet, notes, isActive, betDelay }) => {
   try {
     const sportsBetCategory = await SportsBetCategory.findById(_id);
 
@@ -178,6 +179,7 @@ const modifySportsBetCategory = async ({ _id, sportsId, betCatId, maxBet, minBet
     sportsBetCategory.minBet = minBet;
     sportsBetCategory.notes = notes;
     sportsBetCategory.isActive = isActive;
+    sportsBetCategory.betDelay = betDelay;
     await sportsBetCategory.save();
 
     return sportsBetCategory;

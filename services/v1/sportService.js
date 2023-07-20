@@ -97,7 +97,7 @@ const fetchSportId = async (_id) => {
 /**
  * create Sport in the database
  */
-const addSport = async ({ name, betCategory }) => {
+const addSport = async ({ name, betCategory, apiSportId }) => {
   try {
     const existingSport = await Sport.findOne({ name: name });
     if (existingSport) {
@@ -108,6 +108,7 @@ const addSport = async ({ name, betCategory }) => {
       name: name.toLowerCase().replace(/(?:^|\s)\S/g, function (char) {
         return char.toUpperCase();
       }),
+      apiSportId: apiSportId
     };
     const newsport = await Sport.create(newSportObj);
 
@@ -130,7 +131,7 @@ const addSport = async ({ name, betCategory }) => {
 /**
  * update Sport in the database
  */
-const modifySport = async ({ _id, name, betCategory }) => {
+const modifySport = async ({ _id, name, betCategory, apiSportId }) => {
   try {
     const sport = await Sport.findById(_id);
     const sportBetCategory = await SportsBetCategory.find({ sportsId: _id, isActive: true, isDeleted: false }, { betCatId: 1, _id: 0 });
@@ -138,6 +139,7 @@ const modifySport = async ({ _id, name, betCategory }) => {
     sport.name = name.toLowerCase().replace(/(?:^|\s)\S/g, function (char) {
       return char.toUpperCase();
     });
+    sport.apiSportId = apiSportId;
     await sport.save();
 
     var newCategoryAdd = betCategory.filter(function (obj) {
@@ -196,10 +198,33 @@ const removeSport = async (_id) => {
   }
 };
 
+
+/**
+ * Change Sport status in the database
+ */
+const changeSportStatus = async (_id, status) => {
+  try {
+    const sport = await Sport.findById(_id);
+    if (sport) {
+      sport.isActive = status;
+      sport.save();
+    }
+    else {
+      throw new Error("Sport not found!");
+    }
+
+    return sport;
+  } catch (e) {
+    throw new Error(e.message);
+  }
+};
+
+
 export default {
   fetchAllSport,
   fetchSportId,
   addSport,
   modifySport,
   removeSport,
+  changeSportStatus
 };

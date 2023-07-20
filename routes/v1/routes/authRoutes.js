@@ -5,7 +5,7 @@ import { route } from "../../../lib/error-handling/routes-error-boundary.js";
 const router = express.Router();
 
 route(router, "post", "/login", authController.login, false);
-route(router, "post", "/user-login", authController.userlogin, false);
+route(router, "post", "/userLogin", authController.userlogin, false);
 route(router, "post", "/register", authController.register, false);
 route(router, "post", "/resetPassword", authController.resetPassword);
 

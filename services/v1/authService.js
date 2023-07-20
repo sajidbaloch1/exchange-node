@@ -1,23 +1,20 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generateJwtToken, validatePassword } from "../../lib/helpers/auth.js";
 import Currency from "../../models/v1/Currency.js";
-import User from "../../models/v1/User.js";
+import User, { USER_ROLE } from "../../models/v1/User.js";
 
 const loginUser = async ({ username, password }) => {
   try {
     // Check if username exists
     const existingUser = await User.findOne({ username: username });
     if (!existingUser) {
-      throw new Error("Invalid credentials!");
+      throw new Error("The provided credentials are incorrect. Please try again.");
     }
 
     // Check if password is valid
-    const isValidPassword = await validatePassword(
-      password,
-      existingUser.password
-    );
+    const isValidPassword = await validatePassword(password, existingUser.password);
     if (!isValidPassword) {
-      throw new Error("Invalid credentials!");
+      throw new Error("The provided credentials are incorrect. Please try again.");
     }
 
     const token = generateJwtToken({ _id: existingUser._id });
@@ -30,13 +27,31 @@ const loginUser = async ({ username, password }) => {
   }
 };
 
-const registerUser = async ({
-  username,
-  password,
-  fullName,
-  currencyId,
-  mobileNumber,
-}) => {
+const loginFrontUser = async ({ username, password }) => {
+  try {
+    // Check if username exists
+    const existingUser = await User.findOne({ username: username, role: USER_ROLE.USER });
+    if (!existingUser) {
+      throw new Error("The provided credentials are incorrect. Please try again.");
+    }
+
+    // Check if password is valid
+    const isValidPassword = await validatePassword(password, existingUser.password);
+    if (!isValidPassword) {
+      throw new Error("The provided credentials are incorrect. Please try again.");
+    }
+
+    const token = generateJwtToken({ _id: existingUser._id });
+
+    const loggedInUser = existingUser.toJSON();
+    delete loggedInUser.password;
+    return { user: loggedInUser, token };
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
+const registerUser = async ({ username, password, fullName, currencyId, mobileNumber }) => {
   try {
     // Check if currency exists
     const currency = await Currency.findById(currencyId);
@@ -61,12 +76,7 @@ const registerUser = async ({
   }
 };
 
-const resetPassword = async ({
-  userId,
-  oldPassword,
-  newPassword,
-  isForceChangePassword,
-}) => {
+const resetPassword = async ({ userId, oldPassword, newPassword, isForceChangePassword }) => {
   try {
     // Check if user_id exists
     const existingUser = await User.findOne({ _id: userId });
@@ -80,10 +90,7 @@ const resetPassword = async ({
     }
 
     // Check if password is valid
-    const isValidPassword = await validatePassword(
-      oldPassword,
-      existingUser.password
-    );
+    const isValidPassword = await validatePassword(oldPassword, existingUser.password);
     if (!isValidPassword) {
       throw new Error("Old password is incorrect!");
     } else {
@@ -106,6 +113,7 @@ const resetPassword = async ({
 
 export default {
   loginUser,
+  loginFrontUser,
   registerUser,
   resetPassword,
 };

@@ -129,12 +129,13 @@ const resetPassword = async ({
   try {
     // Check if user_id exists
     const existingUser = await User.findOne({ _id: userId });
-
     if (!existingUser) {
-      throw new Error("User not found.");
+      throw new Error(
+        "The provided credentials are incorrect. Please try again."
+      );
     }
 
-    if (existingUser.lockPasswordChange == true) {
+    if (existingUser.lockPasswordChange === true) {
       throw new Error("You can not change password.");
     }
 
@@ -143,10 +144,11 @@ const resetPassword = async ({
       oldPassword,
       existingUser.password
     );
+
     if (!isValidPassword) {
       throw new Error("Old password is incorrect!");
     } else {
-      if (isForceChangePassword == "true") {
+      if (isForceChangePassword === "true") {
         existingUser.password = newPassword;
         existingUser.forcePasswordChange = false;
         existingUser.save();
@@ -155,8 +157,10 @@ const resetPassword = async ({
         existingUser.save();
       }
     }
+
     const loggedInUser = existingUser.toJSON();
     delete loggedInUser.password;
+
     return existingUser;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);

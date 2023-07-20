@@ -72,6 +72,9 @@ const userSchema = new mongoose.Schema({
   mobileNumber: { type: String, unique: true, sparse: true, default: null },
 
   // City of the user.
+  countryCode: { type: String },
+
+  // City of the user.
   city: { type: String },
 
   // Commission percentage rate between a parent and user. Values range from 0 to 100, defaulting to 0.

@@ -25,6 +25,9 @@ const sportsBetCategorySchema = new mongoose.Schema({
       },
     },
   ],
+  betDelay: {
+    type: Number, default: 0
+  },
   isActive: {
     type: Boolean,
     default: true,

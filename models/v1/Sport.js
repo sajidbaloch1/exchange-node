@@ -8,6 +8,10 @@ const sportSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  apiSportId: {
+    type: Number,
+    default: null
+  },
   isActive: {
     type: Boolean,
     default: true,

@@ -49,6 +49,7 @@ const createSportsBetCategory = async (req, res) => {
   const minBet = req.body?.minBet ? req.body.minBet : null;
   const notes = req.body?.notes ? req.body.notes : null;
   const isActive = req.body?.isActive ? req.body.isActive : true;
+  const betDelay = req.body?.betDelay ? req.body.betDelay : 0;
 
   if (!sportsId) {
     throw new Error("Sports Id is required!");
@@ -62,7 +63,8 @@ const createSportsBetCategory = async (req, res) => {
     maxBet,
     minBet,
     notes,
-    isActive
+    isActive,
+    betDelay
   });
 
   res.status(201).json({ success: true, data: { details: newSportsBetCategory } });
@@ -76,7 +78,8 @@ const updateSportsBetCategory = async (req, res) => {
   const maxBet = req.body?.maxBet ? req.body.maxBet : null;
   const minBet = req.body?.minBet ? req.body.minBet : null;
   const notes = req.body?.notes ? req.body.notes : null;
-  const isActive = req.body?.isActive ? req.body.isActive : null;
+  const isActive = req.body?.isActive ? req.body.isActive : true;
+  const betDelay = req.body?.betDelay ? req.body.betDelay : 0;
 
   if (!_id) {
     throw new Error("_id is required!");
@@ -89,7 +92,8 @@ const updateSportsBetCategory = async (req, res) => {
     maxBet,
     minBet,
     notes,
-    isActive
+    isActive,
+    betDelay
   });
 
   res.status(200).json({ success: true, data: { details: updatedSportsBetCategory } });

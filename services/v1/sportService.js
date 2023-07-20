@@ -84,6 +84,7 @@ const fetchSportId = async (_id) => {
       _id: sport._id,
       name: sport.name,
       isActive: sport.isActive,
+      apiSportId: sport.apiSportId,
       updatedAt: sport.updatedAt,
       createdAt: sport.createdAt,
       betCategory: betCatId

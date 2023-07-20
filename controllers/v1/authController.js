@@ -26,6 +26,28 @@ const login = async (req, res) => {
 };
 
 /**
+ * Role : User.
+ *
+ * @param {object} req - The request object.
+ * @param {object} res - The response object.
+ * @returns {object} Login for only front end user.
+ */
+const userlogin = async (req, res) => {
+  const { user, body } = await authRequest.userLoginRequest(req);
+
+  const userWithToken = await authService.loginFrontUser({ user, ...body });
+
+  await userActivityService.createUserActivity({
+    userId: userWithToken.user._id,
+    event: USER_ACTIVITY_EVENT.LOGIN,
+    ipAddress: body.ipAddress,
+    description: body.description,
+  });
+
+  return res.status(200).json({ success: true, data: userWithToken });
+};
+
+/**
  * Registers a new user.
  *
  * @param {object} req - The request object.
@@ -53,7 +75,7 @@ const register = async (req, res) => {
  * @async
  * @param {Object} req - The HTTP request object.
  * @param {Object} res - The HTTP response object.
- * @returns {Promise<Object>} A Promise that resolves to the JSON response 
+ * @returns {Promise<Object>} A Promise that resolves to the JSON response
  * containing the success status and reset password user data.
  */
 const resetPassword = async (req, res) => {
@@ -73,6 +95,7 @@ const resetPassword = async (req, res) => {
 
 export default {
   login,
+  userlogin,
   register,
   resetPassword,
 };

@@ -1,16 +1,31 @@
 import mongoose, { isValidObjectId } from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
+import {
+  generatePaginationQueries,
+  generateSearchFilters,
+} from "../../lib/helpers/filters.js";
 import { validateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import AppModule from "../../models/v1/AppModule.js";
-import User, { USER_ACCESSIBLE_ROLES, USER_ROLE } from "../../models/v1/User.js";
+import User, {
+  USER_ACCESSIBLE_ROLES,
+  USER_ROLE,
+} from "../../models/v1/User.js";
 import permissionService from "./permissionService.js";
 import { encryptPassword } from "../../lib/helpers/auth.js";
 
 // Fetch all users from the database
 const fetchAllUsers = async ({ user, ...reqBody }) => {
   try {
-    const { page, perPage, sortBy, direction, showDeleted, role, searchQuery, parentId } = reqBody;
+    const {
+      page,
+      perPage,
+      sortBy,
+      direction,
+      showDeleted,
+      role,
+      searchQuery,
+      parentId,
+    } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -87,7 +102,9 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
 
     if (users?.length) {
       data.records = users[0]?.paginatedResults || [];
-      data.totalRecords = users[0]?.totalRecords?.length ? users[0]?.totalRecords[0].count : 0;
+      data.totalRecords = users[0]?.totalRecords?.length
+        ? users[0]?.totalRecords[0].count
+        : 0;
     }
 
     return data;
@@ -131,6 +148,10 @@ const addUser = async ({ user, ...reqBody }) => {
     maxLoss,
     bonus,
     maxStake,
+
+    // Super Admin Params
+    domainUrl,
+    contactEmail,
   } = reqBody;
 
   try {
@@ -148,7 +169,7 @@ const addUser = async ({ user, ...reqBody }) => {
       forcePasswordChange,
     };
 
-    //For Role = User add other params
+    // For Role = User add other params
     if (newUserObj.role === USER_ROLE.USER) {
       newUserObj.isBetLock = isBetLock;
       newUserObj.forcePasswordChange = forcePasswordChange;
@@ -161,8 +182,14 @@ const addUser = async ({ user, ...reqBody }) => {
       newUserObj.maxStake = maxStake;
     }
 
-    if (currencyId) {
+    if (currencyId && loggedInUser.role === USER_ROLE.SYSTEM_OWNER) {
       newUserObj.currencyId = currencyId;
+    }
+
+    // Only for SUPER_ADMIN
+    if (role === USER_ROLE.SUPER_ADMIN) {
+      newUserObj.domainUrl = domainUrl;
+      newUserObj.contactEmail = contactEmail;
     }
 
     if (rate) {
@@ -204,7 +231,8 @@ const calculateUserPointBalance = async (currentUser, userReq) => {
 
     let userNewCreditPoints = currentUser.creditPoints;
     let userNewBalance = currentUser.balance;
-    const currentUserBalanceInUse = currentUser.creditPoints - currentUser.balance;
+    const currentUserBalanceInUse =
+      currentUser.creditPoints - currentUser.balance;
 
     let parentNewBalance = parentUser.balance;
 
@@ -266,11 +294,18 @@ const modifyUser = async ({ user, ...reqBody }) => {
       throw new Error("Failed to update user!");
     }
 
-    const { creditPoints, balance, parentBalance } = await calculateUserPointBalance(currentUser, reqBody);
+    const { creditPoints, balance, parentBalance } =
+      await calculateUserPointBalance(currentUser, reqBody);
 
     reqBody.creditPoints = creditPoints;
     reqBody.balance = balance;
     reqBody.password = await encryptPassword(reqBody.password);
+
+    // If currentUser is SUPER_ADMIN
+    if (currentUser.role !== USER_ROLE.SUPER_ADMIN) {
+      delete reqBody.domainUrl;
+      delete reqBody.contactEmail;
+    }
 
     const updatedUser = await User.findByIdAndUpdate(currentUser._id, reqBody, {
       new: true,
@@ -325,7 +360,10 @@ const statusModify = async ({ _id, isBetLock, isActive }) => {
 const fetchBalance = async ({ user, ...reqBody }) => {
   try {
     const { userId } = reqBody;
-    const user = await User.findOne({ _id: userId, role: { $ne: USER_ROLE.SYSTEM_OWNER } }, { balance: 1, _id: 0 });
+    const user = await User.findOne(
+      { _id: userId, role: { $ne: USER_ROLE.SYSTEM_OWNER } },
+      { balance: 1, _id: 0 }
+    );
     if (user) {
       return user;
     } else {
@@ -338,7 +376,8 @@ const fetchBalance = async ({ user, ...reqBody }) => {
 
 const cloneUser = async ({ user, ...reqBody }) => {
   try {
-    const { fullName, username, password, moduleIds, transactionCode } = reqBody;
+    const { fullName, username, password, moduleIds, transactionCode } =
+      reqBody;
 
     // Validate module ids
     const validModuleIds = [];
@@ -357,7 +396,10 @@ const cloneUser = async ({ user, ...reqBody }) => {
     if (!cloneParent || cloneParent.role === USER_ROLE.SYSTEM_OWNER) {
       throw new Error("Unauthorised request!");
     }
-    const isValidCode = validateTransactionCode(transactionCode, cloneParent?.transactionCode);
+    const isValidCode = validateTransactionCode(
+      transactionCode,
+      cloneParent?.transactionCode
+    );
     if (!isValidCode) {
       throw new Error("Invalid transactionCode!");
     }

@@ -17,9 +17,20 @@ export const USER_ROLE = {
 export const USER_ACCESSIBLE_ROLES = {
   [USER_ROLE.SYSTEM_OWNER]: Object.values(USER_ROLE),
 
-  [USER_ROLE.SUPER_ADMIN]: [USER_ROLE.ADMIN, USER_ROLE.SUPER_MASTER, USER_ROLE.MASTER, USER_ROLE.AGENT, USER_ROLE.USER],
+  [USER_ROLE.SUPER_ADMIN]: [
+    USER_ROLE.ADMIN,
+    USER_ROLE.SUPER_MASTER,
+    USER_ROLE.MASTER,
+    USER_ROLE.AGENT,
+    USER_ROLE.USER,
+  ],
 
-  [USER_ROLE.ADMIN]: [USER_ROLE.SUPER_MASTER, USER_ROLE.MASTER, USER_ROLE.AGENT, USER_ROLE.USER],
+  [USER_ROLE.ADMIN]: [
+    USER_ROLE.SUPER_MASTER,
+    USER_ROLE.MASTER,
+    USER_ROLE.AGENT,
+    USER_ROLE.USER,
+  ],
 
   [USER_ROLE.SUPER_MASTER]: [USER_ROLE.MASTER, USER_ROLE.AGENT, USER_ROLE.USER],
 
@@ -143,6 +154,10 @@ const userSchema = new mongoose.Schema({
 
   // User's maximum stake. This is the highest amount the user is allowed to wager across all events.
   maxStake: { type: Number, default: 0 },
+
+  // Only for SUPER_ADMIN
+  domainUrl: { type: String, default: null },
+  contactEmail: { type: String, default: null },
 });
 
 userSchema.plugin(timestampPlugin);
@@ -192,7 +207,9 @@ userSchema.pre("save", async function (next) {
   const user = this;
   try {
     if (!user.transactionCode) {
-      const transactionCodesInUse = await user.constructor.distinct("transactionCode").exec();
+      const transactionCodesInUse = await user.constructor
+        .distinct("transactionCode")
+        .exec();
       user.transactionCode = generateTransactionCode(transactionCodesInUse);
     } else if (!user.isModified("transactionCode")) {
       return next();

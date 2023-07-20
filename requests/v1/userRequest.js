@@ -1,5 +1,6 @@
 import { isValidObjectId } from "mongoose";
 import Yup from "yup";
+import { isValidUrl } from "../../lib/helpers/validation.js";
 import User, {
   USER_ACCESSIBLE_ROLES,
   USER_ROLE,
@@ -62,7 +63,7 @@ async function createUserRequest(req) {
   req.body.username = req.body.username?.trim();
   req.body.password = req.body.password?.trim();
 
-  //User Role extra values
+  // User Role extra values
   req.body.isBetLock = req.body?.isBetLock ? req.body.isBetLock : false;
   req.body.forcePasswordChange = req.body?.forcePasswordChange
     ? req.body.forcePasswordChange
@@ -123,6 +124,16 @@ async function createUserRequest(req) {
     bonus: Yup.number().min(0).nullable(true),
 
     maxStake: Yup.number().min(0).nullable(true),
+
+    // Only for SUPER_ADMIN
+    contactEmail: Yup.string().email().nullable(true),
+    domainUrl: Yup.string()
+      .nullable(true)
+      .test(
+        "domainUrl",
+        "Invalid URL format",
+        (value) => !value || isValidUrl(value)
+      ),
   });
 
   await validationSchema.validate(req.body);
@@ -164,6 +175,16 @@ async function updateUserRequest(req) {
     city: Yup.string(),
 
     mobileNumber: Yup.string().length(10),
+
+    // Only for SUPER_ADMIN
+    contactEmail: Yup.string().email().nullable(true),
+    domainUrl: Yup.string()
+      .nullable(true)
+      .test(
+        "domainUrl",
+        "Invalid URL format",
+        (value) => !value || isValidUrl(value)
+      ),
   });
 
   await validationSchema.validate(req.body);

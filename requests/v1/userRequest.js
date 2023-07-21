@@ -1,6 +1,10 @@
 import { isValidObjectId } from "mongoose";
 import Yup from "yup";
-import { isValidUrl } from "../../lib/helpers/validation.js";
+import {
+  isValidCountryCode,
+  isValidObjectIdArray,
+  isValidUrl,
+} from "../../lib/helpers/validation.js";
 import User, {
   USER_ACCESSIBLE_ROLES,
   USER_ROLE,
@@ -54,86 +58,79 @@ async function userListingRequest(req) {
   return req;
 }
 
+const userCreateUpdateCommonSchema = {
+  fullName: Yup.string().required(),
+
+  password: Yup.string().required(),
+
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Passwords must match.")
+    .required(),
+
+  rate: Yup.number().min(0).max(100).nullable(true),
+
+  creditPoints: Yup.number().min(0).nullable(true),
+
+  city: Yup.string(),
+
+  mobileNumber: Yup.string().length(10).required(),
+
+  countryCode: Yup.string().test(
+    "countryCode",
+    "Invalid country code.",
+    (value) => !value || isValidCountryCode(value)
+  ),
+
+  isBetLock: Yup.boolean(),
+
+  exposureLimit: Yup.number().min(0).nullable(true),
+
+  exposurePercentage: Yup.number().min(0).max(100).nullable(true),
+
+  stakeLimit: Yup.number().min(0).nullable(true),
+
+  maxProfit: Yup.number().min(0).nullable(true),
+
+  maxLoss: Yup.number().min(0).nullable(true),
+
+  bonus: Yup.number().min(0).nullable(true),
+
+  maxStake: Yup.number().min(0).nullable(true),
+
+  // Only for SUPER_ADMIN
+  contactEmail: Yup.string().email().nullable(true),
+  domainUrl: Yup.string().test(
+    "domainUrl",
+    "Invalid URL format",
+    (value) => !value || isValidUrl(value)
+  ),
+  availableSports: Yup.array().test(
+    "availableSports",
+    "One or more sport id(s) are invalid!",
+    (value) => value === [] || isValidObjectIdArray
+  ),
+};
+
 async function createUserRequest(req) {
-  req.body.rate = req.body?.rate ? Number(req.body.rate) : null;
-  req.body.creditPoints = req.body?.creditPoints
-    ? Number(req.body.creditPoints)
-    : null;
-  req.body.currencyId = req.body?.currencyId || null;
   req.body.username = req.body.username?.trim();
   req.body.password = req.body.password?.trim();
-
-  // User Role extra values
-  req.body.isBetLock = req.body?.isBetLock ? req.body.isBetLock : false;
-  req.body.forcePasswordChange = req.body?.forcePasswordChange
-    ? req.body.forcePasswordChange
-    : false;
-  req.body.exposureLimit = req.body?.exposureLimit
-    ? Number(req.body.exposureLimit)
-    : 0;
-  req.body.exposurePercentage = req.body?.exposurePercentage
-    ? Number(req.body.exposurePercentage)
-    : 0;
-  req.body.stakeLimit = req.body?.stakeLimit ? Number(req.body.stakeLimit) : 0;
-  req.body.maxProfit = req.body?.maxProfit ? Number(req.body.maxProfit) : 0;
-  req.body.maxLoss = req.body?.maxLoss ? Number(req.body.maxLoss) : 0;
-  req.body.bonus = req.body?.bonus ? Number(req.body.bonus) : 0;
-  req.body.maxStake = req.body?.maxStake ? Number(req.body.maxStake) : 0;
 
   const user = await User.findById(req.user._id, { role: 1 });
 
   const validationSchema = Yup.object().shape({
-    fullName: Yup.string().required(),
+    // Keep this on top so that
+    // we can override any field if required
+    ...userCreateUpdateCommonSchema,
 
     username: Yup.string().required(),
-
-    password: Yup.string().required(),
-
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password")], "Passwords must match.")
-      .required(),
-
-    rate: Yup.number().min(0).max(100).nullable(true),
 
     role: Yup.string()
       .oneOf(USER_ACCESSIBLE_ROLES[user.role], "Invalid user role!")
       .required(),
 
-    creditPoints: Yup.number().min(0).nullable(true),
-
     currencyId: Yup.string().nullable(true),
 
-    city: Yup.string(),
-
-    mobileNumber: Yup.string().length(10).required(),
-
-    isBetLock: Yup.boolean(),
-
     forcePasswordChange: Yup.boolean(),
-
-    exposureLimit: Yup.number().min(0).nullable(true),
-
-    exposurePercentage: Yup.number().min(0).max(100).nullable(true),
-
-    stakeLimit: Yup.number().min(0).nullable(true),
-
-    maxProfit: Yup.number().min(0).nullable(true),
-
-    maxLoss: Yup.number().min(0).nullable(true),
-
-    bonus: Yup.number().min(0).nullable(true),
-
-    maxStake: Yup.number().min(0).nullable(true),
-
-    // Only for SUPER_ADMIN
-    contactEmail: Yup.string().email().nullable(true),
-    domainUrl: Yup.string()
-      .nullable(true)
-      .test(
-        "domainUrl",
-        "Invalid URL format",
-        (value) => !value || isValidUrl(value)
-      ),
   });
 
   await validationSchema.validate(req.body);
@@ -142,21 +139,16 @@ async function createUserRequest(req) {
 }
 
 async function updateUserRequest(req) {
-  req.body._id = req.body?._id || null;
-  req.body.rate = req.body?.rate ? Number(req.body.rate) : null;
-  req.body.creditPoints = req.body?.creditPoints
-    ? Number(req.body.creditPoints)
-    : null;
   req.body.password = req.body?.password ? req.body.password.trim() : null;
 
   const validationSchema = Yup.object().shape({
+    // Keep this on top so that
+    // we can override any field if required
+    ...userCreateUpdateCommonSchema,
+
     _id: Yup.string()
       .required()
-      .test("_id", "Given _id is not valid!", (v) => isValidObjectId(v)),
-
-    fullName: Yup.string().required(),
-
-    password: Yup.string().nullable(true),
+      .test("_id", "Given _id is not valid!", isValidObjectId),
 
     confirmPassword: Yup.string()
       .nullable(true)
@@ -167,24 +159,6 @@ async function updateUserRequest(req) {
               .required()
           : schema;
       }),
-
-    rate: Yup.number().min(0).max(100).nullable(true),
-
-    creditPoints: Yup.number().min(0),
-
-    city: Yup.string(),
-
-    mobileNumber: Yup.string().length(10),
-
-    // Only for SUPER_ADMIN
-    contactEmail: Yup.string().email().nullable(true),
-    domainUrl: Yup.string()
-      .nullable(true)
-      .test(
-        "domainUrl",
-        "Invalid URL format",
-        (value) => !value || isValidUrl(value)
-      ),
   });
 
   await validationSchema.validate(req.body);
@@ -194,7 +168,9 @@ async function updateUserRequest(req) {
 
 async function fetchUserBalanceRequest(req) {
   const validationSchema = Yup.object().shape({
-    userId: Yup.string().required(),
+    userId: Yup.string()
+      .required()
+      .test("userId", "Given _id is not valid!", isValidObjectId),
   });
 
   await validationSchema.validate(req.body);

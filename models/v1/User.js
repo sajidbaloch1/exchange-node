@@ -82,8 +82,8 @@ const userSchema = new mongoose.Schema({
   // Mobile number of the user. It is unique and optional (sparse).
   mobileNumber: { type: String, unique: true, sparse: true, default: null },
 
-  // City of the user.
-  countryCode: { type: String },
+  // Country Code of the user.
+  countryCode: { type: String, default: null },
 
   // City of the user.
   city: { type: String },
@@ -158,6 +158,7 @@ const userSchema = new mongoose.Schema({
   // Only for SUPER_ADMIN
   domainUrl: { type: String, default: null },
   contactEmail: { type: String, default: null },
+  availableSports: [{ type: mongoose.Schema.Types.ObjectId, ref: "sport" }],
 });
 
 userSchema.plugin(timestampPlugin);

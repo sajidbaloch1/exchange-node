@@ -137,21 +137,12 @@ const addUser = async ({ user, ...reqBody }) => {
     role,
     currencyId,
     mobileNumber,
+    countryCode,
     city,
-    //User Role Params
-    isBetLock,
-    forcePasswordChange,
-    exposureLimit,
-    exposurePercentage,
-    stakeLimit,
-    maxProfit,
-    maxLoss,
-    bonus,
-    maxStake,
-
     // Super Admin Params
     domainUrl,
     contactEmail,
+    availableSports,
   } = reqBody;
 
   try {
@@ -163,39 +154,34 @@ const addUser = async ({ user, ...reqBody }) => {
       password,
       role,
       city,
+      rate,
       mobileNumber,
       currencyId: loggedInUser.currencyId,
       parentId: loggedInUser._id,
-      forcePasswordChange,
+      countryCode,
     };
 
     // For Role = User add other params
     if (newUserObj.role === USER_ROLE.USER) {
-      newUserObj.isBetLock = isBetLock;
-      newUserObj.forcePasswordChange = forcePasswordChange;
-      newUserObj.exposureLimit = exposureLimit;
-      newUserObj.exposurePercentage = exposurePercentage;
-      newUserObj.stakeLimit = stakeLimit;
-      newUserObj.maxProfit = maxProfit;
-      newUserObj.maxLoss = maxLoss;
-      newUserObj.bonus = bonus;
-      newUserObj.maxStake = maxStake;
-    }
-
-    if (currencyId && loggedInUser.role === USER_ROLE.SYSTEM_OWNER) {
-      newUserObj.currencyId = currencyId;
+      newUserObj.isBetLock = reqBody.isBetLock;
+      newUserObj.forcePasswordChange = reqBody.forcePasswordChange;
+      newUserObj.exposureLimit = reqBody.exposureLimit;
+      newUserObj.exposurePercentage = reqBody.exposurePercentage;
+      newUserObj.stakeLimit = reqBody.stakeLimit;
+      newUserObj.maxProfit = reqBody.maxProfit;
+      newUserObj.maxLoss = reqBody.maxLoss;
+      newUserObj.bonus = reqBody.bonus;
+      newUserObj.maxStake = reqBody.maxStake;
     }
 
     // Only for SUPER_ADMIN
     if (role === USER_ROLE.SUPER_ADMIN) {
       newUserObj.domainUrl = domainUrl;
       newUserObj.contactEmail = contactEmail;
+      newUserObj.availableSports = availableSports;
     }
 
-    if (rate) {
-      newUserObj.rate = rate;
-    }
-
+    // Credit Points and Balance
     if (creditPoints) {
       if (creditPoints > loggedInUser.balance) {
         throw new Error("Given credit points exceed the available balance!");
@@ -204,6 +190,7 @@ const addUser = async ({ user, ...reqBody }) => {
       newUserObj.balance = creditPoints;
     }
 
+    // Currency
     if (loggedInUser.role === USER_ROLE.SYSTEM_OWNER) {
       if (!currencyId) {
         throw new Error("currencyId is required!");
@@ -307,6 +294,11 @@ const modifyUser = async ({ user, ...reqBody }) => {
       delete reqBody.contactEmail;
     }
 
+    // Remove fields not allowed to be updated
+    delete reqBody.username;
+    delete reqBody.role;
+    delete reqBody.currencyId;
+
     const updatedUser = await User.findByIdAndUpdate(currentUser._id, reqBody, {
       new: true,
     });
@@ -339,9 +331,11 @@ const removeUser = async (_id) => {
 const statusModify = async ({ _id, isBetLock, isActive }) => {
   try {
     const user = await User.findById(_id);
+
     if (isBetLock) {
       user.isBetLock = isBetLock;
     }
+
     if (isActive) {
       user.isActive = isActive;
     }
@@ -379,7 +373,7 @@ const cloneUser = async ({ user, ...reqBody }) => {
     const { fullName, username, password, moduleIds, transactionCode } =
       reqBody;
 
-    // Validate module ids
+    // Only accept valid moduleIds
     const validModuleIds = [];
     for (const id of moduleIds) {
       if (!isValidObjectId(id)) {
@@ -391,11 +385,19 @@ const cloneUser = async ({ user, ...reqBody }) => {
       }
     }
 
-    // Validate parent
     const cloneParent = await User.findById(user._id).lean();
-    if (!cloneParent || cloneParent.role === USER_ROLE.SYSTEM_OWNER) {
+    // Throw error if user is not a clone parent
+    // Throw error if user is a system owner
+    // Throw error if user is a clone child
+    if (
+      !cloneParent ||
+      [USER_ROLE.SYSTEM_OWNER, USER_ROLE.USER].includes(cloneParent.role) ||
+      cloneParent.cloneParentId !== null
+    ) {
       throw new Error("Unauthorised request!");
     }
+
+    // Check if transactionCode is valid
     const isValidCode = validateTransactionCode(
       transactionCode,
       cloneParent?.transactionCode
@@ -413,13 +415,14 @@ const cloneUser = async ({ user, ...reqBody }) => {
       password,
     };
 
+    // Remove unwanted fields
     delete newUserObj._id;
     delete newUserObj.transactionCode;
     delete newUserObj.mobileNumber;
 
     const clonedUser = await User.create(newUserObj);
 
-    // Create permissions
+    // Set user permissions
     await permissionService.setUserPermissions({
       userId: clonedUser._id,
       moduleIds,

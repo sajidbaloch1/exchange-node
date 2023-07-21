@@ -1,7 +1,9 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generateJwtToken, validatePassword } from "../../lib/helpers/auth.js";
 import Currency from "../../models/v1/Currency.js";
+import { generateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import User, { USER_ROLE } from "../../models/v1/User.js";
+
 
 const loginUser = async ({ username, password }) => {
   try {
@@ -129,6 +131,10 @@ const resetPassword = async ({
   try {
     // Check if user_id exists
     const existingUser = await User.findOne({ _id: userId });
+    const transactionCodesInUse = await User
+      .distinct("transactionCode")
+      .exec();
+    
     if (!existingUser) {
       throw new Error(
         "The provided credentials are incorrect. Please try again."
@@ -151,9 +157,11 @@ const resetPassword = async ({
       if (isForceChangePassword === "true") {
         existingUser.password = newPassword;
         existingUser.forcePasswordChange = false;
+        existingUser.transactionCode = generateTransactionCode(transactionCodesInUse);
         existingUser.save();
       } else {
         existingUser.password = newPassword;
+        existingUser.transactionCode = generateTransactionCode(transactionCodesInUse);
         existingUser.save();
       }
     }

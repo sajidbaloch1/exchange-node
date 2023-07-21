@@ -137,6 +137,7 @@ const addUser = async ({ user, ...reqBody }) => {
     role,
     currencyId,
     mobileNumber,
+    countryCode,
     city,
     //User Role Params
     isBetLock,
@@ -148,10 +149,10 @@ const addUser = async ({ user, ...reqBody }) => {
     maxLoss,
     bonus,
     maxStake,
-
     // Super Admin Params
     domainUrl,
     contactEmail,
+    availableSports,
   } = reqBody;
 
   try {
@@ -167,6 +168,7 @@ const addUser = async ({ user, ...reqBody }) => {
       currencyId: loggedInUser.currencyId,
       parentId: loggedInUser._id,
       forcePasswordChange,
+      countryCode,
     };
 
     // For Role = User add other params
@@ -190,6 +192,7 @@ const addUser = async ({ user, ...reqBody }) => {
     if (role === USER_ROLE.SUPER_ADMIN) {
       newUserObj.domainUrl = domainUrl;
       newUserObj.contactEmail = contactEmail;
+      newUserObj.availableSports = availableSports;
     }
 
     if (rate) {
@@ -307,6 +310,11 @@ const modifyUser = async ({ user, ...reqBody }) => {
       delete reqBody.contactEmail;
     }
 
+    // Remove fields not allowed to be updated
+    delete reqBody.username;
+    delete reqBody.role;
+    delete reqBody.currencyId;
+
     const updatedUser = await User.findByIdAndUpdate(currentUser._id, reqBody, {
       new: true,
     });
@@ -339,9 +347,11 @@ const removeUser = async (_id) => {
 const statusModify = async ({ _id, isBetLock, isActive }) => {
   try {
     const user = await User.findById(_id);
+
     if (isBetLock) {
       user.isBetLock = isBetLock;
     }
+
     if (isActive) {
       user.isActive = isActive;
     }
@@ -379,7 +389,7 @@ const cloneUser = async ({ user, ...reqBody }) => {
     const { fullName, username, password, moduleIds, transactionCode } =
       reqBody;
 
-    // Validate module ids
+    // Only accept valid moduleIds
     const validModuleIds = [];
     for (const id of moduleIds) {
       if (!isValidObjectId(id)) {
@@ -391,11 +401,19 @@ const cloneUser = async ({ user, ...reqBody }) => {
       }
     }
 
-    // Validate parent
     const cloneParent = await User.findById(user._id).lean();
-    if (!cloneParent || cloneParent.role === USER_ROLE.SYSTEM_OWNER) {
+    // Throw error if user is not a clone parent
+    // Throw error if user is a system owner
+    // Throw error if user is a clone child
+    if (
+      !cloneParent ||
+      [USER_ROLE.SYSTEM_OWNER, USER_ROLE.USER].includes(cloneParent.role) ||
+      cloneParent.cloneParentId !== null
+    ) {
       throw new Error("Unauthorised request!");
     }
+
+    // Check if transactionCode is valid
     const isValidCode = validateTransactionCode(
       transactionCode,
       cloneParent?.transactionCode
@@ -413,13 +431,14 @@ const cloneUser = async ({ user, ...reqBody }) => {
       password,
     };
 
+    // Remove unwanted fields
     delete newUserObj._id;
     delete newUserObj.transactionCode;
     delete newUserObj.mobileNumber;
 
     const clonedUser = await User.create(newUserObj);
 
-    // Create permissions
+    // Set user permissions
     await permissionService.setUserPermissions({
       userId: clonedUser._id,
       moduleIds,

@@ -1,6 +1,10 @@
 import { isValidObjectId } from "mongoose";
 import Yup from "yup";
-import { isValidUrl } from "../../lib/helpers/validation.js";
+import {
+  isValidCountryCode,
+  isValidObjectIdArray,
+  isValidUrl,
+} from "../../lib/helpers/validation.js";
 import User, {
   USER_ACCESSIBLE_ROLES,
   USER_ROLE,
@@ -107,6 +111,12 @@ async function createUserRequest(req) {
 
     mobileNumber: Yup.string().length(10).required(),
 
+    countryCode: Yup.string().test(
+      "countryCode",
+      "Invalid country code.",
+      (value) => !value || isValidCountryCode(value)
+    ),
+
     isBetLock: Yup.boolean(),
 
     forcePasswordChange: Yup.boolean(),
@@ -127,13 +137,16 @@ async function createUserRequest(req) {
 
     // Only for SUPER_ADMIN
     contactEmail: Yup.string().email().nullable(true),
-    domainUrl: Yup.string()
-      .nullable(true)
-      .test(
-        "domainUrl",
-        "Invalid URL format",
-        (value) => !value || isValidUrl(value)
-      ),
+    domainUrl: Yup.string().test(
+      "domainUrl",
+      "Invalid URL format",
+      (value) => !value || isValidUrl(value)
+    ),
+    availableSports: Yup.array().test(
+      "availableSports",
+      "One or more sport id(s) are invalid!",
+      (value) => value === [] || isValidObjectIdArray
+    ),
   });
 
   await validationSchema.validate(req.body);
@@ -185,6 +198,11 @@ async function updateUserRequest(req) {
         "Invalid URL format",
         (value) => !value || isValidUrl(value)
       ),
+    availableSports: Yup.array().test(
+      "availableSports",
+      "One or more sport id(s) are invalid!",
+      (value) => value === [] || isValidObjectIdArray
+    ),
   });
 
   await validationSchema.validate(req.body);

@@ -139,16 +139,6 @@ const addUser = async ({ user, ...reqBody }) => {
     mobileNumber,
     countryCode,
     city,
-    //User Role Params
-    isBetLock,
-    forcePasswordChange,
-    exposureLimit,
-    exposurePercentage,
-    stakeLimit,
-    maxProfit,
-    maxLoss,
-    bonus,
-    maxStake,
     // Super Admin Params
     domainUrl,
     contactEmail,
@@ -164,28 +154,24 @@ const addUser = async ({ user, ...reqBody }) => {
       password,
       role,
       city,
+      rate,
       mobileNumber,
       currencyId: loggedInUser.currencyId,
       parentId: loggedInUser._id,
-      forcePasswordChange,
       countryCode,
     };
 
     // For Role = User add other params
     if (newUserObj.role === USER_ROLE.USER) {
-      newUserObj.isBetLock = isBetLock;
-      newUserObj.forcePasswordChange = forcePasswordChange;
-      newUserObj.exposureLimit = exposureLimit;
-      newUserObj.exposurePercentage = exposurePercentage;
-      newUserObj.stakeLimit = stakeLimit;
-      newUserObj.maxProfit = maxProfit;
-      newUserObj.maxLoss = maxLoss;
-      newUserObj.bonus = bonus;
-      newUserObj.maxStake = maxStake;
-    }
-
-    if (currencyId && loggedInUser.role === USER_ROLE.SYSTEM_OWNER) {
-      newUserObj.currencyId = currencyId;
+      newUserObj.isBetLock = reqBody.isBetLock;
+      newUserObj.forcePasswordChange = reqBody.forcePasswordChange;
+      newUserObj.exposureLimit = reqBody.exposureLimit;
+      newUserObj.exposurePercentage = reqBody.exposurePercentage;
+      newUserObj.stakeLimit = reqBody.stakeLimit;
+      newUserObj.maxProfit = reqBody.maxProfit;
+      newUserObj.maxLoss = reqBody.maxLoss;
+      newUserObj.bonus = reqBody.bonus;
+      newUserObj.maxStake = reqBody.maxStake;
     }
 
     // Only for SUPER_ADMIN
@@ -195,10 +181,7 @@ const addUser = async ({ user, ...reqBody }) => {
       newUserObj.availableSports = availableSports;
     }
 
-    if (rate) {
-      newUserObj.rate = rate;
-    }
-
+    // Credit Points and Balance
     if (creditPoints) {
       if (creditPoints > loggedInUser.balance) {
         throw new Error("Given credit points exceed the available balance!");
@@ -207,6 +190,7 @@ const addUser = async ({ user, ...reqBody }) => {
       newUserObj.balance = creditPoints;
     }
 
+    // Currency
     if (loggedInUser.role === USER_ROLE.SYSTEM_OWNER) {
       if (!currencyId) {
         throw new Error("currencyId is required!");

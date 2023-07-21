@@ -112,17 +112,14 @@ const userCreateUpdateCommonSchema = {
 };
 
 async function createUserRequest(req) {
-  req.body.rate = req.body?.rate ? Number(req.body.rate) : null;
-  req.body.creditPoints = req.body?.creditPoints
-    ? Number(req.body.creditPoints)
-    : null;
-  req.body.currencyId = req.body?.currencyId || null;
   req.body.username = req.body.username?.trim();
   req.body.password = req.body.password?.trim();
 
   const user = await User.findById(req.user._id, { role: 1 });
 
   const validationSchema = Yup.object().shape({
+    // Keep this on top so that
+    // we can override any field if required
     ...userCreateUpdateCommonSchema,
 
     username: Yup.string().required(),
@@ -142,11 +139,6 @@ async function createUserRequest(req) {
 }
 
 async function updateUserRequest(req) {
-  req.body._id = req.body?._id || null;
-  req.body.rate = req.body?.rate ? Number(req.body.rate) : null;
-  req.body.creditPoints = req.body?.creditPoints
-    ? Number(req.body.creditPoints)
-    : null;
   req.body.password = req.body?.password ? req.body.password.trim() : null;
 
   const validationSchema = Yup.object().shape({

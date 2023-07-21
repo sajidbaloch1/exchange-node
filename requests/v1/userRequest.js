@@ -1,5 +1,6 @@
 import { isValidObjectId } from "mongoose";
 import Yup from "yup";
+import { isValidUrl } from "../../lib/helpers/validation.js";
 import User, {
   USER_ACCESSIBLE_ROLES,
   USER_ROLE,
@@ -62,6 +63,23 @@ async function createUserRequest(req) {
   req.body.username = req.body.username?.trim();
   req.body.password = req.body.password?.trim();
 
+  // User Role extra values
+  req.body.isBetLock = req.body?.isBetLock ? req.body.isBetLock : false;
+  req.body.forcePasswordChange = req.body?.forcePasswordChange
+    ? req.body.forcePasswordChange
+    : false;
+  req.body.exposureLimit = req.body?.exposureLimit
+    ? Number(req.body.exposureLimit)
+    : 0;
+  req.body.exposurePercentage = req.body?.exposurePercentage
+    ? Number(req.body.exposurePercentage)
+    : 0;
+  req.body.stakeLimit = req.body?.stakeLimit ? Number(req.body.stakeLimit) : 0;
+  req.body.maxProfit = req.body?.maxProfit ? Number(req.body.maxProfit) : 0;
+  req.body.maxLoss = req.body?.maxLoss ? Number(req.body.maxLoss) : 0;
+  req.body.bonus = req.body?.bonus ? Number(req.body.bonus) : 0;
+  req.body.maxStake = req.body?.maxStake ? Number(req.body.maxStake) : 0;
+
   const user = await User.findById(req.user._id, { role: 1 });
 
   const validationSchema = Yup.object().shape({
@@ -88,6 +106,34 @@ async function createUserRequest(req) {
     city: Yup.string(),
 
     mobileNumber: Yup.string().length(10).required(),
+
+    isBetLock: Yup.boolean(),
+
+    forcePasswordChange: Yup.boolean(),
+
+    exposureLimit: Yup.number().min(0).nullable(true),
+
+    exposurePercentage: Yup.number().min(0).max(100).nullable(true),
+
+    stakeLimit: Yup.number().min(0).nullable(true),
+
+    maxProfit: Yup.number().min(0).nullable(true),
+
+    maxLoss: Yup.number().min(0).nullable(true),
+
+    bonus: Yup.number().min(0).nullable(true),
+
+    maxStake: Yup.number().min(0).nullable(true),
+
+    // Only for SUPER_ADMIN
+    contactEmail: Yup.string().email().nullable(true),
+    domainUrl: Yup.string()
+      .nullable(true)
+      .test(
+        "domainUrl",
+        "Invalid URL format",
+        (value) => !value || isValidUrl(value)
+      ),
   });
 
   await validationSchema.validate(req.body);
@@ -129,6 +175,16 @@ async function updateUserRequest(req) {
     city: Yup.string(),
 
     mobileNumber: Yup.string().length(10),
+
+    // Only for SUPER_ADMIN
+    contactEmail: Yup.string().email().nullable(true),
+    domainUrl: Yup.string()
+      .nullable(true)
+      .test(
+        "domainUrl",
+        "Invalid URL format",
+        (value) => !value || isValidUrl(value)
+      ),
   });
 
   await validationSchema.validate(req.body);

@@ -138,6 +138,20 @@ const addUser = async ({ user, ...reqBody }) => {
     currencyId,
     mobileNumber,
     city,
+    //User Role Params
+    isBetLock,
+    forcePasswordChange,
+    exposureLimit,
+    exposurePercentage,
+    stakeLimit,
+    maxProfit,
+    maxLoss,
+    bonus,
+    maxStake,
+
+    // Super Admin Params
+    domainUrl,
+    contactEmail,
   } = reqBody;
 
   try {
@@ -152,11 +166,30 @@ const addUser = async ({ user, ...reqBody }) => {
       mobileNumber,
       currencyId: loggedInUser.currencyId,
       parentId: loggedInUser._id,
-      forcePasswordChange: true,
+      forcePasswordChange,
     };
 
-    if (currencyId) {
+    // For Role = User add other params
+    if (newUserObj.role === USER_ROLE.USER) {
+      newUserObj.isBetLock = isBetLock;
+      newUserObj.forcePasswordChange = forcePasswordChange;
+      newUserObj.exposureLimit = exposureLimit;
+      newUserObj.exposurePercentage = exposurePercentage;
+      newUserObj.stakeLimit = stakeLimit;
+      newUserObj.maxProfit = maxProfit;
+      newUserObj.maxLoss = maxLoss;
+      newUserObj.bonus = bonus;
+      newUserObj.maxStake = maxStake;
+    }
+
+    if (currencyId && loggedInUser.role === USER_ROLE.SYSTEM_OWNER) {
       newUserObj.currencyId = currencyId;
+    }
+
+    // Only for SUPER_ADMIN
+    if (role === USER_ROLE.SUPER_ADMIN) {
+      newUserObj.domainUrl = domainUrl;
+      newUserObj.contactEmail = contactEmail;
     }
 
     if (rate) {
@@ -267,6 +300,12 @@ const modifyUser = async ({ user, ...reqBody }) => {
     reqBody.creditPoints = creditPoints;
     reqBody.balance = balance;
     reqBody.password = await encryptPassword(reqBody.password);
+
+    // If currentUser is SUPER_ADMIN
+    if (currentUser.role !== USER_ROLE.SUPER_ADMIN) {
+      delete reqBody.domainUrl;
+      delete reqBody.contactEmail;
+    }
 
     const updatedUser = await User.findByIdAndUpdate(currentUser._id, reqBody, {
       new: true,

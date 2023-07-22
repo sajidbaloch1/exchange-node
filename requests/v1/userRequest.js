@@ -107,7 +107,7 @@ const userCreateUpdateCommonSchema = {
   availableSports: Yup.array().test(
     "availableSports",
     "One or more sport id(s) are invalid!",
-    (value) => value === [] || isValidObjectIdArray
+    (value) => !value || isValidObjectIdArray
   ),
 };
 

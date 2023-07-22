@@ -107,7 +107,7 @@ const userCreateUpdateCommonSchema = {
   availableSports: Yup.array().test(
     "availableSports",
     "One or more sport id(s) are invalid!",
-    (value) => value === [] || isValidObjectIdArray
+    (value) => !value || isValidObjectIdArray
   ),
 };
 
@@ -149,6 +149,8 @@ async function updateUserRequest(req) {
     _id: Yup.string()
       .required()
       .test("_id", "Given _id is not valid!", isValidObjectId),
+
+    password: Yup.string(),
 
     confirmPassword: Yup.string()
       .nullable(true)

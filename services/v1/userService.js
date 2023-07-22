@@ -1,5 +1,6 @@
 import mongoose, { isValidObjectId } from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
+import { encryptPassword } from "../../lib/helpers/auth.js";
 import {
   generatePaginationQueries,
   generateSearchFilters,
@@ -11,7 +12,6 @@ import User, {
   USER_ROLE,
 } from "../../models/v1/User.js";
 import permissionService from "./permissionService.js";
-import { encryptPassword } from "../../lib/helpers/auth.js";
 
 // Fetch all users from the database
 const fetchAllUsers = async ({ user, ...reqBody }) => {
@@ -262,13 +262,20 @@ const calculateUserPointBalance = async (currentUser, userReq) => {
  */
 const modifyUser = async ({ user, ...reqBody }) => {
   try {
+    const exisitngUsername = await User.findOne({
+      username: reqBody.username,
+      _id: { $ne: reqBody._id },
+    });
+    if (exisitngUsername) {
+      throw new Error("Username already exists!");
+    }
+
     const currentUser = await User.findById(reqBody._id);
     if (currentUser.role === USER_ROLE.SYSTEM_OWNER) {
       throw new Error("Failed to update user!");
     }
 
     const loggedInUser = await User.findById(user._id);
-
     // Logged in user should have access to the current user's role
     // Logged in user should be direct parent or System Owner
     if (

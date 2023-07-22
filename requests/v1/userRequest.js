@@ -150,6 +150,8 @@ async function updateUserRequest(req) {
       .required()
       .test("_id", "Given _id is not valid!", isValidObjectId),
 
+    password: Yup.string(),
+
     confirmPassword: Yup.string()
       .nullable(true)
       .when(["password"], (password, schema) => {

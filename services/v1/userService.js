@@ -293,7 +293,9 @@ const modifyUser = async ({ user, ...reqBody }) => {
 
     reqBody.creditPoints = creditPoints;
     reqBody.balance = balance;
-    reqBody.password = await encryptPassword(reqBody.password);
+    if (reqBody?.password) {
+      reqBody.password = await encryptPassword(reqBody.password);
+    }
 
     // If currentUser is SUPER_ADMIN
     if (currentUser.role !== USER_ROLE.SUPER_ADMIN) {
@@ -358,7 +360,7 @@ const statusModify = async ({ _id, isBetLock, isActive }) => {
 /**
  * fetch balance
  */
-const fetchBalance = async ({ user, ...reqBody }) => {
+const fetchBalance = async ({ ...reqBody }) => {
   try {
     const { userId } = reqBody;
     const user = await User.findOne(

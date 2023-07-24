@@ -51,6 +51,7 @@ async function createEventRequest(req) {
         minStackSession: Yup.number(),
         maxStack: Yup.number(),
         maxStackSession: Yup.number(),
+        matchDate: Yup.date(),
     });
 
     await validationSchema.validate(req.body);
@@ -75,7 +76,8 @@ async function updateEventRequest(req) {
         betDeleted: Yup.boolean(),
         hardBetDeleted: Yup.boolean(),
         completed: Yup.boolean(),
-        isActive: Yup.boolean()
+        isActive: Yup.boolean(),
+        matchDate: Yup.date(),
     });
 
     await validationSchema.validate(req.body);

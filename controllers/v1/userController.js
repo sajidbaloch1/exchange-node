@@ -136,6 +136,13 @@ const getUserPermissions = async (req, res) => {
   res.status(200).json({ success: true, data: { details: userPermissions } });
 };
 
+// Get appModule listing
+const getAppModuleListing = async (req, res) => {
+  const appModuleList = await permissionService.appModuleListing();
+
+  res.status(200).json({ success: true, data: { details: appModuleList } });
+};
+
 export default {
   getAllUser,
   getUserById,
@@ -147,4 +154,5 @@ export default {
   createUserClone,
   getUserTransactionCode,
   getUserPermissions,
+  getAppModuleListing,
 };

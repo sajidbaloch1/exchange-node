@@ -17,6 +17,13 @@ route(router, "post", "/createUserClone", userController.createUserClone);
 route(
   router,
   "post",
+  "/getAppModuleListing",
+  userController.getAppModuleListing
+);
+
+route(
+  router,
+  "post",
   "/getUserTransactionCode",
   userController.getUserTransactionCode
 );

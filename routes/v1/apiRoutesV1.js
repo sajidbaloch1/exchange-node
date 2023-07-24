@@ -6,6 +6,7 @@ import userRoutes from "./routes/userRoutes.js";
 import betCategoryRoutes from "./routes/betCategoryRoutes.js";
 import sportsBetCategoryRoutes from "./routes/sportsBetCategoryRoutes.js";
 import competitionRoutes from "./routes/competitionRoutes.js";
+import eventRoutes from "./routes/eventRoutes.js";
 
 const app = express();
 
@@ -16,5 +17,6 @@ app.use("/currencies", currencyRoutes);
 app.use("/betCategories", betCategoryRoutes);
 app.use("/sportsBetCategories", sportsBetCategoryRoutes);
 app.use("/competition", competitionRoutes);
+app.use("/event", eventRoutes);
 
 export default app;

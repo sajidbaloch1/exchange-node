@@ -143,6 +143,7 @@ const addEvent = async ({ ...reqBody }) => {
     name,
     sportId,
     competitionId,
+    matchDate,
     oddsLimit,
     volumeLimit,
     minStack,
@@ -161,6 +162,7 @@ const addEvent = async ({ ...reqBody }) => {
       name,
       sportId,
       competitionId,
+      matchDate,
       oddsLimit,
       volumeLimit,
       minStack,
@@ -194,6 +196,7 @@ const modifyEvent = async ({ ...reqBody }) => {
     event.competitionId = reqBody.competitionId;
     event.oddsLimit = reqBody.oddsLimit;
     event.volumeLimit = reqBody.volumeLimit;
+    event.matchDate = reqBody.matchDate;
     event.minStack = reqBody.minStack;
     event.minStackSession = reqBody.minStackSession;
     event.maxStack = reqBody.maxStack;

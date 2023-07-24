@@ -64,17 +64,17 @@ const deleteCompetition = async (req, res) => {
 
 const updateCompetitionStatus = async (req, res) => {
   const _id = req.body?._id || null;
-  const isActive = req.body?.isActive || null;
-  const isManual = req.body?.isManual || null;
-  if (!_id) {
-    throw new Error("_id is required!");
+  const fieldName = req.body?.fieldName || null;
+  const status = req.body?.status || null;
+  if (!(_id && fieldName && status)) {
+    throw new Error("_id && fieldName && status is required!");
   }
 
   const updatedCompetitionStatus =
     await competitionService.competitionStatusModify({
       _id,
-      isActive,
-      isManual,
+      fieldName,
+      status,
     });
 
   res

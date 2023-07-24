@@ -16,7 +16,7 @@ const fetchAllEvent = async ({ ...reqBody }) => {
       direction,
       searchQuery,
       showDeleted,
-      showRecord
+      showRecord,
     } = reqBody;
 
     // Pagination and Sorting
@@ -30,11 +30,10 @@ const fetchAllEvent = async ({ ...reqBody }) => {
       filters = {
         isDeleted: showDeleted,
       };
-    }
-    else {
+    } else {
       filters = {
         isDeleted: showDeleted,
-        isManual: true
+        isManual: true,
       };
     }
 
@@ -149,11 +148,10 @@ const addEvent = async ({ ...reqBody }) => {
     minStack,
     minStackSession,
     maxStack,
-    maxStackSession
+    maxStackSession,
   } = reqBody;
 
   try {
-
     const existingEvent = await Event.findOne({ name: name });
 
     if (existingEvent) {
@@ -186,7 +184,6 @@ const addEvent = async ({ ...reqBody }) => {
  */
 const modifyEvent = async ({ ...reqBody }) => {
   try {
-
     const event = await Event.findById(reqBody._id);
 
     if (!event) {
@@ -228,10 +225,24 @@ const removeEvent = async (_id) => {
   }
 };
 
+const eventStatusModify = async ({ _id, fieldName, status }) => {
+  try {
+    const event = await Event.findById(_id);
+
+    event[fieldName] = status;
+    await event.save();
+
+    return event;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   fetchAllEvent,
   fetchEventId,
   addEvent,
   modifyEvent,
   removeEvent,
+  eventStatusModify,
 };

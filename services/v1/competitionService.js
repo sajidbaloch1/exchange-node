@@ -178,17 +178,11 @@ const removeCompetition = async (_id) => {
     throw new ErrorResponse(e.message).status(200);
   }
 };
-const competitionStatusModify = async ({ _id, isActive, isManual }) => {
+const competitionStatusModify = async ({ _id, fieldName, status }) => {
   try {
     const competition = await Competition.findById(_id);
 
-    if (isActive) {
-      competition.isActive = isActive;
-    }
-    if (isManual) {
-      competition.isManual = isManual;
-    }
-
+    competition[fieldName] = status;
     await competition.save();
 
     return competition;

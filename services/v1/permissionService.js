@@ -1,7 +1,7 @@
 import CryptoJS from "crypto-js";
 import mongoose from "mongoose";
 import { appConfig } from "../../config/app.js";
-import { APP_MODULES } from "../../models/v1/AppModule.js";
+import AppModule, { APP_MODULES } from "../../models/v1/AppModule.js";
 import Permission from "../../models/v1/Permission.js";
 
 const encryptModules = (modulesObj) => {
@@ -87,8 +87,18 @@ const setUserPermissions = async ({ userId, moduleIds }) => {
   }
 };
 
+const appModuleListing = async () => {
+  try {
+    const appModule = await AppModule.find({}, { name: 1 });
+    return appModule;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 export default {
   fetchAppModules,
   fetchUserPermissions,
   setUserPermissions,
+  appModuleListing,
 };

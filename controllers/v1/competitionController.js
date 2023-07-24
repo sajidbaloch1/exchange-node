@@ -66,6 +66,7 @@ const updateCompetitionStatus = async (req, res) => {
   const _id = req.body?._id || null;
   const fieldName = req.body?.fieldName || null;
   const status = req.body?.status || null;
+
   if (!(_id && fieldName && status)) {
     throw new Error("_id && fieldName && status is required!");
   }

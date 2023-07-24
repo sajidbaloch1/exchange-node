@@ -17,10 +17,7 @@ const competitionSchema = new mongoose.Schema({
   // API identifier for the sport (if applicable)
   apiSportId: {
     type: Number,
-  },
-  // API identifier for the event (if applicable)
-  apiEventId: {
-    type: Number,
+    default: null
   },
   // Date when the competition was created
   createdOn: {

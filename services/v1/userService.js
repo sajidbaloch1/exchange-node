@@ -139,6 +139,7 @@ const addUser = async ({ user, ...reqBody }) => {
     mobileNumber,
     countryCode,
     city,
+    forcePasswordChange,
     // Super Admin Params
     domainUrl,
     contactEmail,
@@ -159,12 +160,13 @@ const addUser = async ({ user, ...reqBody }) => {
       currencyId: loggedInUser.currencyId,
       parentId: loggedInUser._id,
       countryCode,
+      forcePasswordChange
     };
 
     // For Role = User add other params
     if (newUserObj.role === USER_ROLE.USER) {
       newUserObj.isBetLock = reqBody.isBetLock;
-      newUserObj.forcePasswordChange = reqBody.forcePasswordChange;
+      newUserObj.forcePasswordChange = forcePasswordChange;
       newUserObj.exposureLimit = reqBody.exposureLimit;
       newUserObj.exposurePercentage = reqBody.exposurePercentage;
       newUserObj.stakeLimit = reqBody.stakeLimit;
@@ -176,6 +178,7 @@ const addUser = async ({ user, ...reqBody }) => {
 
     // Only for SUPER_ADMIN
     if (role === USER_ROLE.SUPER_ADMIN) {
+      newUserObj.forcePasswordChange = forcePasswordChange;
       newUserObj.domainUrl = domainUrl;
       newUserObj.contactEmail = contactEmail;
       newUserObj.availableSports = availableSports;

@@ -17,7 +17,7 @@ const eventSchema = new mongoose.Schema({
   // API identifier for the sport (if applicable)
   apiSportId: {
     type: Number,
-    default: null
+    default: null,
   },
   // Reference to the competition associated with this event
   competitionId: {
@@ -28,17 +28,17 @@ const eventSchema = new mongoose.Schema({
   // API identifier for the competition (if applicable)
   apiCompetitionId: {
     type: Number,
-    default: null
+    default: null,
   },
   // API identifier for the specific match of the event (if applicable)
   apiMatchId: {
     type: Number,
-    default: null
+    default: null,
   },
   // Date of the match
   matchDate: {
     type: Date,
-    default: null
+    default: null,
   },
   // Number of markets available for this event (default is 0)
   marketCount: {
@@ -111,7 +111,6 @@ const eventSchema = new mongoose.Schema({
     default: false,
   },
 });
-
 
 eventSchema.plugin(timestampPlugin);
 eventSchema.plugin(softDeletePlugin);

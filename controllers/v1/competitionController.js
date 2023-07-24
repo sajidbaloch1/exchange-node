@@ -5,7 +5,9 @@ import competitionService from "../../services/v1/competitionService.js";
 const getAllCompetition = async (req, res) => {
   const { body } = await competitionRequest.competitionListingRequest(req);
 
-  const competitions = await competitionService.fetchAllCompetition({ ...body });
+  const competitions = await competitionService.fetchAllCompetition({
+    ...body,
+  });
 
   return res.status(200).json({ success: true, data: competitions });
 };
@@ -36,9 +38,13 @@ const createCompetition = async (req, res) => {
 const updateCompetition = async (req, res) => {
   const { body } = await competitionRequest.updateCompetitionRequest(req);
 
-  const updatedCompetition = await competitionService.modifyCompetition({ ...body });
+  const updatedCompetition = await competitionService.modifyCompetition({
+    ...body,
+  });
 
-  res.status(200).json({ success: true, data: { details: updatedCompetition } });
+  res
+    .status(200)
+    .json({ success: true, data: { details: updatedCompetition } });
 };
 
 // Delete a competition
@@ -51,7 +57,30 @@ const deleteCompetition = async (req, res) => {
 
   const deletedCompetition = await competitionService.removeCompetition(_id);
 
-  res.status(200).json({ success: true, data: { details: deletedCompetition } });
+  res
+    .status(200)
+    .json({ success: true, data: { details: deletedCompetition } });
+};
+
+const updateCompetitionStatus = async (req, res) => {
+  const _id = req.body?._id || null;
+  const fieldName = req.body?.fieldName || null;
+  const status = req.body?.status || null;
+
+  if (!(_id && fieldName && status)) {
+    throw new Error("_id && fieldName && status is required!");
+  }
+
+  const updatedCompetitionStatus =
+    await competitionService.competitionStatusModify({
+      _id,
+      fieldName,
+      status,
+    });
+
+  res
+    .status(200)
+    .json({ success: true, data: { details: updatedCompetitionStatus } });
 };
 
 export default {
@@ -60,4 +89,5 @@ export default {
   createCompetition,
   updateCompetition,
   deleteCompetition,
+  updateCompetitionStatus,
 };

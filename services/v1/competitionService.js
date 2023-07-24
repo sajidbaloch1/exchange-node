@@ -17,7 +17,7 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
       direction,
       searchQuery,
       showDeleted,
-      showRecord
+      showRecord,
     } = reqBody;
 
     // Pagination and Sorting
@@ -31,16 +31,12 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
       filters = {
         isDeleted: showDeleted,
       };
-    }
-    else {
+    } else {
       filters = {
         isDeleted: showDeleted,
-        isManual: true
+        isManual: true,
       };
     }
-
-
-
 
     if (searchQuery) {
       const fields = ["name", "sportId"];
@@ -124,13 +120,9 @@ const fetchCompetitionId = async (_id) => {
  * Create competition in the database
  */
 const addCometition = async ({ ...reqBody }) => {
-  const {
-    name,
-    sportId,
-  } = reqBody;
+  const { name, sportId } = reqBody;
 
   try {
-
     const existingCompetition = await Competition.findOne({ name: name });
 
     if (existingCompetition) {
@@ -157,7 +149,6 @@ const addCometition = async ({ ...reqBody }) => {
  */
 const modifyCompetition = async ({ ...reqBody }) => {
   try {
-
     const competition = await Competition.findById(reqBody._id);
 
     if (!competition) {
@@ -187,6 +178,18 @@ const removeCompetition = async (_id) => {
     throw new ErrorResponse(e.message).status(200);
   }
 };
+const competitionStatusModify = async ({ _id, fieldName, status }) => {
+  try {
+    const competition = await Competition.findById(_id);
+
+    competition[fieldName] = status;
+    await competition.save();
+
+    return competition;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
 
 export default {
   fetchAllCompetition,
@@ -194,4 +197,5 @@ export default {
   addCometition,
   modifyCompetition,
   removeCompetition,
+  competitionStatusModify,
 };

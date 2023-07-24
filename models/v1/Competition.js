@@ -19,11 +19,6 @@ const competitionSchema = new mongoose.Schema({
     type: Number,
     default: null
   },
-  // API identifier for the event (if applicable)
-  apiEventId: {
-    type: Number,
-    default: null
-  },
   // Date when the competition was created
   createdOn: {
     type: Date,

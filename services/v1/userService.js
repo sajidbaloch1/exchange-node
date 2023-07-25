@@ -12,6 +12,7 @@ import User, {
   USER_ROLE,
 } from "../../models/v1/User.js";
 import permissionService from "./permissionService.js";
+import transactionActivityService from "../../services/v1/transactionActivityService.js";
 
 // Fetch all users from the database
 const fetchAllUsers = async ({ user, ...reqBody }) => {
@@ -199,6 +200,16 @@ const addUser = async ({ user, ...reqBody }) => {
     }
 
     const newUser = await User.create(newUserObj);
+
+    await transactionActivityService.createTransaction({
+      points: creditPoints,
+      balancePoints: loggedInUser.balance - creditPoints,
+      type: 'debit',
+      remark: 'User creation',
+      fromId: loggedInUser._id,
+      toId: newUser._id,
+      fromtoName: loggedInUser.fullName + " / " + fullName
+    });
 
     // Update logged in users balance and child status
     loggedInUser.balance = loggedInUser.balance - creditPoints;

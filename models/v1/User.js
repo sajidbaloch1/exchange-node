@@ -80,7 +80,7 @@ const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
 
   // Mobile number of the user. It is unique and optional (sparse).
-  mobileNumber: { type: String, unique: true, sparse: true, default: null },
+  mobileNumber: { type: String, unique: true, sparse: true },
 
   // Country Code of the user.
   countryCode: { type: String, default: null },

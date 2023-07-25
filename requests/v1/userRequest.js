@@ -177,7 +177,7 @@ async function fetchUserBalanceRequest(req) {
 }
 
 async function cloneUserRequest(req) {
-  req.body.moduleIds = req.body.moduleIds ? req.body.moduleIds.split(",") : [];
+  req.body.moduleIds = req.body.moduleIds || [];
   req.body.username = req.body.username?.trim();
   req.body.password = req.body.password?.trim();
 

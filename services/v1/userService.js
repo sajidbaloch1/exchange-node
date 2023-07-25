@@ -401,7 +401,7 @@ const cloneUser = async ({ user, ...reqBody }) => {
     if (
       !cloneParent ||
       [USER_ROLE.SYSTEM_OWNER, USER_ROLE.USER].includes(cloneParent.role) ||
-      cloneParent.cloneParentId !== null
+      !!cloneParent.cloneParentId
     ) {
       throw new Error("Unauthorised request!");
     }

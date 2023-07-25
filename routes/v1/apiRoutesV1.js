@@ -1,5 +1,6 @@
 import express from "express";
 import authRoutes from "./routes/authRoutes.js";
+import cronRoutes from "./routes/cronRoutes.js";
 import currencyRoutes from "./routes/currencyRoutes.js";
 import sportRoutes from "./routes/sportRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -11,6 +12,7 @@ import eventRoutes from "./routes/eventRoutes.js";
 const app = express();
 
 app.use("/auth", authRoutes);
+app.use("/cron", cronRoutes);
 app.use("/users", userRoutes);
 app.use("/sport", sportRoutes);
 app.use("/currencies", currencyRoutes);

@@ -34,6 +34,15 @@ const competitionSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  // Number of markets available for this competition (default is 0)
+  marketCount: {
+    type: Number,
+    default: 0,
+  },
+  // Region or location associated with this competition
+  competitionRegion: {
+    type: String,
+  },
 });
 
 competitionSchema.plugin(timestampPlugin);

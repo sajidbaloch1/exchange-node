@@ -61,12 +61,6 @@ async function userListingRequest(req) {
 const userCreateUpdateCommonSchema = {
   fullName: Yup.string().required(),
 
-  password: Yup.string().required(),
-
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password")], "Passwords must match.")
-    .required(),
-
   rate: Yup.number().min(0).max(100).nullable(true),
 
   creditPoints: Yup.number().min(0).nullable(true),
@@ -107,7 +101,7 @@ const userCreateUpdateCommonSchema = {
   availableSports: Yup.array().test(
     "availableSports",
     "One or more sport id(s) are invalid!",
-    (value) => value === [] || isValidObjectIdArray
+    (value) => !value || isValidObjectIdArray
   ),
 };
 
@@ -124,6 +118,12 @@ async function createUserRequest(req) {
 
     username: Yup.string().required(),
 
+    password: Yup.string().required(),
+
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref("password")], "Passwords must match.")
+      .required(),
+
     role: Yup.string()
       .oneOf(USER_ACCESSIBLE_ROLES[user.role], "Invalid user role!")
       .required(),
@@ -139,9 +139,7 @@ async function createUserRequest(req) {
 }
 
 async function updateUserRequest(req) {
-  req.body.password = req.body?.password ? req.body.password.trim() : null;
-
-  const validationSchema = Yup.object().shape({
+  const schemaObj = {
     // Keep this on top so that
     // we can override any field if required
     ...userCreateUpdateCommonSchema,
@@ -150,16 +148,16 @@ async function updateUserRequest(req) {
       .required()
       .test("_id", "Given _id is not valid!", isValidObjectId),
 
-    confirmPassword: Yup.string()
-      .nullable(true)
-      .when(["password"], (password, schema) => {
-        return password
-          ? schema
-              .oneOf([Yup.ref("password")], "Passwords should match.")
-              .required()
-          : schema;
-      }),
-  });
+    password: Yup.string().nullable(true),
+  };
+
+  if (req.body.password) {
+    schemaObj.confirmPassword = Yup.string()
+      .oneOf([Yup.ref("password")], "Passwords must match.")
+      .required();
+  }
+
+  const validationSchema = Yup.object().shape(schemaObj);
 
   await validationSchema.validate(req.body);
 

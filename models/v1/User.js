@@ -195,8 +195,10 @@ userSchema.pre("save", async function (next) {
     if (!user.isModified("password")) {
       return next();
     }
-    const hashedPassword = await encryptPassword(user.password);
-    user.password = hashedPassword;
+    if (user?.password) {
+      const hashedPassword = await encryptPassword(user.password);
+      user.password = hashedPassword;
+    }
     next();
   } catch (error) {
     next(error);

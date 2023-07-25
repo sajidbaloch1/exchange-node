@@ -146,10 +146,10 @@ const addEvent = async ({ ...reqBody }) => {
     matchDate,
     oddsLimit,
     volumeLimit,
-    minStack,
-    minStackSession,
-    maxStack,
-    maxStackSession,
+    minStake,
+    minStakeSession,
+    maxStake,
+    maxStakeSession,
   } = reqBody;
 
   try {
@@ -165,10 +165,10 @@ const addEvent = async ({ ...reqBody }) => {
       matchDate,
       oddsLimit,
       volumeLimit,
-      minStack,
-      minStackSession,
-      maxStack,
-      maxStackSession,
+      minStake,
+      minStakeSession,
+      maxStake,
+      maxStakeSession,
       isActive: true,
       isManual: true,
     };
@@ -197,10 +197,10 @@ const modifyEvent = async ({ ...reqBody }) => {
     event.oddsLimit = reqBody.oddsLimit;
     event.volumeLimit = reqBody.volumeLimit;
     event.matchDate = reqBody.matchDate;
-    event.minStack = reqBody.minStack;
-    event.minStackSession = reqBody.minStackSession;
-    event.maxStack = reqBody.maxStack;
-    event.maxStackSession = reqBody.maxStackSession;
+    event.minStake = reqBody.minStake;
+    event.minStakeSession = reqBody.minStakeSession;
+    event.maxStake = reqBody.maxStake;
+    event.maxStakeSession = reqBody.maxStakeSession;
     event.betDeleted = reqBody.betDeleted;
     event.hardBetDeleted = reqBody.hardBetDeleted;
     event.completed = reqBody.completed;

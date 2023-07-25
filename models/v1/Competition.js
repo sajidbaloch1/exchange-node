@@ -17,12 +17,15 @@ const competitionSchema = new mongoose.Schema({
   // API identifier for the sport (if applicable)
   apiSportId: {
     type: Number,
-    default: null
+    default: null,
+  },
+  apiCompetitionId: {
+    type: Number,
+    default: null,
   },
   // Date when the competition was created
   createdOn: {
     type: Date,
-    required: true,
   },
   // Indicates if the competition is currently active or not
   isActive: {
@@ -42,6 +45,25 @@ const competitionSchema = new mongoose.Schema({
   // Region or location associated with this competition
   competitionRegion: {
     type: String,
+  },
+  //Max Stake
+  maxStake: {
+    type: Number,
+    default: null,
+  },
+  //Max Market
+  maxMarket: {
+    type: Number,
+    default: null,
+  },
+  //Add delay in bet
+  betDelay: {
+    type: Number,
+    default: null,
+  },
+  visibleToPlayer: {
+    type: Boolean,
+    default: true,
   },
 });
 

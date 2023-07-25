@@ -31,7 +31,7 @@ const eventSchema = new mongoose.Schema({
     default: null,
   },
   // API identifier for the specific match of the event (if applicable)
-  apiMatchId: {
+  apiEventId: {
     type: Number,
     default: null,
   },
@@ -55,23 +55,23 @@ const eventSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
-  // Minimum stack allowed for bets (default is 0, which could mean no minimum)
-  minStack: {
+  // Minimum stake allowed for bets (default is 0, which could mean no minimum)
+  minStake: {
     type: Number,
     default: 0,
   },
-  // Minimum stack allowed for session bets (default is 0, which could mean no minimum)
-  minStackSession: {
+  // Minimum stake allowed for session bets (default is 0, which could mean no minimum)
+  minStakeSession: {
     type: Number,
     default: 0,
   },
-  // Maximum stack allowed for bets (default is 0, which could mean no maximum)
-  maxStack: {
+  // Maximum stake allowed for bets (default is 0, which could mean no maximum)
+  maxStake: {
     type: Number,
     default: 0,
   },
-  // Maximum stack allowed for session bets (default is 0, which could mean no maximum)
-  maxStackSession: {
+  // Maximum stake allowed for session bets (default is 0, which could mean no maximum)
+  maxStakeSession: {
     type: Number,
     default: 0,
   },

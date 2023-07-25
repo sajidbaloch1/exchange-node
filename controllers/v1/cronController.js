@@ -86,19 +86,20 @@ async function syncCompetition() {
           apiCompetitionId: competition.competition.id,
           marketCount: competition.marketCount,
           competitionRegion: competition.competitionRegion,
-          isActive: true,
+          isActive: false,
         };
 
         // Find the competition based on apiSportId and apiCompetitionId
         // Update it if exists or create a new entry (upsert: true)
-        await Competition.findOneAndUpdate(
-          {
-            apiSportId: sport.apiSportId,
-            apiCompetitionId: competition.competition.id,
-          },
-          { $set: competitionObj }, // Set the competitionObj properties
-          { new: true, upsert: true } // Create new entry if not found
-        );
+        var checkCompetition = await Competition.findOne({
+          apiSportId: sport.apiSportId,
+          apiCompetitionId: competition.competition.id,
+        });
+
+        if (!checkCompetition) {
+          var competitionInfo = new Competition(competitionObj);
+          await competitionInfo.save();
+        }
       }
     }
   }
@@ -137,15 +138,16 @@ async function syncEvents() {
 
         // Find the event based on apiEventId
         // Update it if exists or create a new entry (upsert: true)
-        await Event.findOneAndUpdate(
-          {
-            apiEventId: event.event.id,
-            apiSportId: competition.apiSportId,
-            apiCompetitionId: competition.apiCompetitionId,
-          },
-          { $set: eventObj }, // Set the eventObj properties
-          { new: true, upsert: true } // Create new entry if not found
-        );
+        var checkEvent = await Event.findOne({
+          apiEventId: event.event.id,
+          apiSportId: competition.apiSportId,
+          apiCompetitionId: competition.apiCompetitionId,
+        });
+
+        if (!checkEvent) {
+          var eventInfo = new Event(eventObj);
+          await eventInfo.save();
+        }
       }
     }
   }

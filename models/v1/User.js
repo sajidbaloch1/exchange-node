@@ -33,20 +33,9 @@ export const SETTLEMENT_DAY = {
 export const USER_ACCESSIBLE_ROLES = {
   [USER_ROLE.SYSTEM_OWNER]: Object.values(USER_ROLE),
 
-  [USER_ROLE.SUPER_ADMIN]: [
-    USER_ROLE.ADMIN,
-    USER_ROLE.SUPER_MASTER,
-    USER_ROLE.MASTER,
-    USER_ROLE.AGENT,
-    USER_ROLE.USER,
-  ],
+  [USER_ROLE.SUPER_ADMIN]: [USER_ROLE.ADMIN, USER_ROLE.SUPER_MASTER, USER_ROLE.MASTER, USER_ROLE.AGENT, USER_ROLE.USER],
 
-  [USER_ROLE.ADMIN]: [
-    USER_ROLE.SUPER_MASTER,
-    USER_ROLE.MASTER,
-    USER_ROLE.AGENT,
-    USER_ROLE.USER,
-  ],
+  [USER_ROLE.ADMIN]: [USER_ROLE.SUPER_MASTER, USER_ROLE.MASTER, USER_ROLE.AGENT, USER_ROLE.USER],
 
   [USER_ROLE.SUPER_MASTER]: [USER_ROLE.MASTER, USER_ROLE.AGENT, USER_ROLE.USER],
 
@@ -59,11 +48,8 @@ export const USER_ACCESSIBLE_ROLES = {
 
 const userSchema = new mongoose.Schema({
   // Parent user ID. If null, user doesn't have a parent. This refers to the parent user in a hierarchical system.
-  parentId: {
-    type: mongoose.Schema.Types.ObjectId,
-    default: null,
-    ref: "user",
-  },
+  parentId: { type: mongoose.Schema.Types.ObjectId, default: null, ref: "user" },
+
   // Parent user ID which this user is cloned from. If a user is cloned, it points to the original user ID.
   cloneParentId: { type: mongoose.Schema.Types.ObjectId, ref: "user" },
 
@@ -71,11 +57,7 @@ const userSchema = new mongoose.Schema({
   hasChild: { type: Boolean, default: false },
 
   // The currency ID which the user uses for transactions.
-  currencyId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "currency",
-    required: true,
-  },
+  currencyId: { type: mongoose.Schema.Types.ObjectId, ref: "currency", required: true },
 
   // Flag to check if user account is active.
   isActive: { type: Boolean, default: true },
@@ -108,33 +90,8 @@ const userSchema = new mongoose.Schema({
   rate: { type: Number, min: 0, max: 100, default: 0 },
 
   // User's role in the system. Default role is 'USER'.
-  role: {
-    type: String,
-    enum: Object.values(USER_ROLE),
-    default: USER_ROLE.USER,
-  },
-  //Settlement Duration Type
-  settlementDurationType: {
-    type: "string",
-    enum: Object.values(SETTLEMENT_DURATION),
-  },
-  //Settlement Date
-  settlementDate: {
-    type: String,
-    format: Date,
-    default: null,
-  },
-  //Settlement Day
-  settlementDay: {
-    type: String,
-    enum: [...Object.values(SETTLEMENT_DAY), null],
-    default: null,
-  },
-  //Settlement Time
-  settlementTime: {
-    type: String,
-    default: null,
-  },
+  role: { type: String, enum: Object.values(USER_ROLE), default: USER_ROLE.USER },
+
   // Number of credit points user has. Default is 0.
   creditPoints: { type: Number, default: 0 },
 
@@ -194,8 +151,24 @@ const userSchema = new mongoose.Schema({
 
   // Only for SUPER_ADMIN
   domainUrl: { type: String, default: null },
+
+  // Contact email for super admin
   contactEmail: { type: String, default: null },
+
+  // Sports available for the super admin
   availableSports: [{ type: mongoose.Schema.Types.ObjectId, ref: "sport" }],
+
+  // Settlement Duration Type
+  settlementDurationType: { type: "string", enum: Object.values(SETTLEMENT_DURATION) },
+
+  // Settlement Date
+  settlementDate: { type: String, format: Date, default: null },
+
+  // Settlement Day
+  settlementDay: { type: String, enum: [...Object.values(SETTLEMENT_DAY), null], default: null },
+
+  // Settlement Time
+  settlementTime: { type: String, default: null },
 });
 
 userSchema.plugin(timestampPlugin);
@@ -247,9 +220,7 @@ userSchema.pre("save", async function (next) {
   const user = this;
   try {
     if (!user.transactionCode) {
-      const transactionCodesInUse = await user.constructor
-        .distinct("transactionCode")
-        .exec();
+      const transactionCodesInUse = await user.constructor.distinct("transactionCode").exec();
       user.transactionCode = generateTransactionCode(transactionCodesInUse);
     } else if (!user.isModified("transactionCode")) {
       return next();

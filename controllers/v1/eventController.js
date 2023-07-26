@@ -74,13 +74,13 @@ const updateEventStatus = async (req, res) => {
 
 // Active all event
 const activeAllEvent = async (req, res) => {
-  const { _id, competitionId } = req.body;
+  const { eventIds, competitionId } = req.body;
 
-  if (!(_id && competitionId)) {
+  if (!(eventIds.length && competitionId)) {
     throw new Error("_id && competitionId is required!");
   }
 
-  await eventService.activeEvent({ _id, competitionId });
+  await eventService.activeEvent({ eventIds, competitionId });
 
   res.status(200).json({ success: true, data: { details: {} } });
 };

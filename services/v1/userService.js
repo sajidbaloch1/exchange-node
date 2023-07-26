@@ -1,34 +1,17 @@
 import mongoose, { isValidObjectId } from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { encryptPassword } from "../../lib/helpers/auth.js";
-import {
-  generatePaginationQueries,
-  generateSearchFilters,
-} from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import { validateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import AppModule from "../../models/v1/AppModule.js";
-import User, {
-  USER_ACCESSIBLE_ROLES,
-  USER_ROLE,
-  SETTLEMENT_DURATION,
-  SETTLEMENT_DAY,
-} from "../../models/v1/User.js";
-import permissionService from "./permissionService.js";
+import User, { SETTLEMENT_DURATION, USER_ACCESSIBLE_ROLES, USER_ROLE } from "../../models/v1/User.js";
 import transactionActivityService from "../../services/v1/transactionActivityService.js";
+import permissionService from "./permissionService.js";
 
 // Fetch all users from the database
 const fetchAllUsers = async ({ user, ...reqBody }) => {
   try {
-    const {
-      page,
-      perPage,
-      sortBy,
-      direction,
-      showDeleted,
-      role,
-      searchQuery,
-      parentId,
-    } = reqBody;
+    const { page, perPage, sortBy, direction, showDeleted, role, searchQuery, parentId } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -105,9 +88,7 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
 
     if (users?.length) {
       data.records = users[0]?.paginatedResults || [];
-      data.totalRecords = users[0]?.totalRecords?.length
-        ? users[0]?.totalRecords[0].count
-        : 0;
+      data.totalRecords = users[0]?.totalRecords?.length ? users[0]?.totalRecords[0].count : 0;
     }
 
     return data;
@@ -223,11 +204,11 @@ const addUser = async ({ user, ...reqBody }) => {
     await transactionActivityService.createTransaction({
       points: creditPoints,
       balancePoints: loggedInUser.balance - creditPoints,
-      type: 'debit',
-      remark: 'User creation',
+      type: "debit",
+      remark: "User creation",
       userId: loggedInUser._id,
       fromId: newUser._id,
-      fromtoName: loggedInUser.username + " / " + username
+      fromtoName: loggedInUser.username + " / " + username,
     });
 
     // Create entry in transaction type credit
@@ -235,11 +216,11 @@ const addUser = async ({ user, ...reqBody }) => {
     await transactionActivityService.createTransaction({
       points: creditPoints,
       balancePoints: creditPoints,
-      type: 'credit',
-      remark: 'User creation',
+      type: "credit",
+      remark: "User creation",
       userId: newUser._id,
       fromId: loggedInUser._id,
-      fromtoName: loggedInUser.username + " / " + username
+      fromtoName: loggedInUser.username + " / " + username,
     });
 
     // Update logged in users balance and child status
@@ -260,8 +241,7 @@ const calculateUserPointBalance = async (currentUser, userReq) => {
 
     let userNewCreditPoints = currentUser.creditPoints;
     let userNewBalance = currentUser.balance;
-    const currentUserBalanceInUse =
-      currentUser.creditPoints - currentUser.balance;
+    const currentUserBalanceInUse = currentUser.creditPoints - currentUser.balance;
 
     let parentNewBalance = parentUser.balance;
 
@@ -336,8 +316,7 @@ const modifyUser = async ({ user, ...reqBody }) => {
       reqBody.settlementDate = null;
     }
 
-    const { creditPoints, balance, parentBalance } =
-      await calculateUserPointBalance(currentUser, reqBody);
+    const { creditPoints, balance, parentBalance } = await calculateUserPointBalance(currentUser, reqBody);
 
     reqBody.creditPoints = creditPoints;
     reqBody.balance = balance;
@@ -410,10 +389,7 @@ const statusModify = async ({ _id, isBetLock, isActive }) => {
 const fetchBalance = async ({ ...reqBody }) => {
   try {
     const { userId } = reqBody;
-    const user = await User.findOne(
-      { _id: userId, role: { $ne: USER_ROLE.SYSTEM_OWNER } },
-      { balance: 1, _id: 0 }
-    );
+    const user = await User.findOne({ _id: userId, role: { $ne: USER_ROLE.SYSTEM_OWNER } }, { balance: 1, _id: 0 });
     if (user) {
       return user;
     } else {
@@ -426,8 +402,7 @@ const fetchBalance = async ({ ...reqBody }) => {
 
 const cloneUser = async ({ user, ...reqBody }) => {
   try {
-    const { fullName, username, password, moduleIds, transactionCode } =
-      reqBody;
+    const { fullName, username, password, moduleIds, transactionCode } = reqBody;
 
     // Only accept valid moduleIds
     const validModuleIds = [];
@@ -454,10 +429,7 @@ const cloneUser = async ({ user, ...reqBody }) => {
     }
 
     // Check if transactionCode is valid
-    const isValidCode = validateTransactionCode(
-      transactionCode,
-      cloneParent?.transactionCode
-    );
+    const isValidCode = validateTransactionCode(transactionCode, cloneParent?.transactionCode);
     if (!isValidCode) {
       throw new Error("Invalid transactionCode!");
     }

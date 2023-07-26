@@ -153,7 +153,7 @@ const fetchCompetitionId = async (_id) => {
  * Create competition in the database
  */
 const addCometition = async ({ ...reqBody }) => {
-  const { name, sportId, maxStake, maxMarket, betDelay, visibleToPlayer } = reqBody;
+  const { name, sportId, maxStake, maxMarket, betDelay, visibleToPlayer, isCustomised = false } = reqBody;
 
   try {
     const existingCompetition = await Competition.findOne({ name: name });
@@ -161,6 +161,7 @@ const addCometition = async ({ ...reqBody }) => {
     if (existingCompetition) {
       throw new Error("Competition already exists!");
     }
+
     const newCompetitionObj = {
       name,
       sportId,
@@ -171,6 +172,7 @@ const addCometition = async ({ ...reqBody }) => {
       createdOn: new Date(),
       isActive: true,
       isManual: true,
+      isCustomised,
     };
 
     const newCompetition = await Competition.create(newCompetitionObj);
@@ -197,6 +199,7 @@ const modifyCompetition = async ({ ...reqBody }) => {
     competition.maxMarket = reqBody.maxMarket;
     competition.betDelay = reqBody.betDelay;
     competition.visibleToPlayer = reqBody.visibleToPlayer;
+    competition.isCustomised = reqBody.isCustomised;
     await competition.save();
 
     return competition;
@@ -232,15 +235,10 @@ const competitionStatusModify = async ({ _id, fieldName, status }) => {
   }
 };
 
-const activeCompetition = async (_id) => {
+const activeCompetition = async ({ _id, sportId }) => {
   try {
-    for (var i = 0; i < _id.length > 0; i++) {
-      const competition = await Competition.findById(_id[i]);
-      competition.isActive = true;
-      await competition.save();
-    }
-
-    return;
+    await Competition.updateMany({ sportId }, { isActive: false });
+    await Competition.findByIdAndUpdate(_id, { isActive: true });
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -254,5 +252,5 @@ export default {
   modifyCompetition,
   removeCompetition,
   competitionStatusModify,
-  activeCompetition
+  activeCompetition,
 };

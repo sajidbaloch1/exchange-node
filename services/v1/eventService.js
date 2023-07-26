@@ -1,23 +1,11 @@
-import mongoose, { isValidObjectId } from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import {
-  generatePaginationQueries,
-  generateSearchFilters,
-} from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import Event from "../../models/v1/Event.js";
 
 // Fetch all event from the database
 const fetchAllEvent = async ({ ...reqBody }) => {
   try {
-    const {
-      page,
-      perPage,
-      sortBy,
-      direction,
-      searchQuery,
-      showDeleted,
-      showRecord,
-    } = reqBody;
+    const { page, perPage, sortBy, direction, searchQuery, showDeleted, showRecord } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -113,9 +101,7 @@ const fetchAllEvent = async ({ ...reqBody }) => {
 
     if (event?.length) {
       data.records = event[0]?.paginatedResults || [];
-      data.totalRecords = event[0]?.totalRecords?.length
-        ? event[0]?.totalRecords[0].count
-        : 0;
+      data.totalRecords = event[0]?.totalRecords?.length ? event[0]?.totalRecords[0].count : 0;
     }
 
     return data;
@@ -241,15 +227,10 @@ const eventStatusModify = async ({ _id, fieldName, status }) => {
   }
 };
 
-const activeEvent = async (_id) => {
+const activeEvent = async ({ _id, competitionId }) => {
   try {
-    for (var i = 0; i < _id.length > 0; i++) {
-      const event = await Event.findById(_id[i]);
-      event.isActive = true;
-      await event.save();
-    }
-
-    return;
+    await Event.updateMany({ competitionId }, { isActive: false });
+    await Event.updateOne({ _id }, { isActive: true });
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -262,5 +243,5 @@ export default {
   modifyEvent,
   removeEvent,
   eventStatusModify,
-  activeEvent
+  activeEvent,
 };

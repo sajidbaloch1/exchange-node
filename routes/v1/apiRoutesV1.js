@@ -10,6 +10,7 @@ import competitionRoutes from "./routes/competitionRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import exchangeHomeRoutes from "./routes/exchangeHomeRoutes.js";
 import themeSettingRoutes from "./routes/themeSettingRoutes.js";
+import transactionActivityRoutes from "./routes/transactionActivityRoutes.js";
 
 const app = express();
 
@@ -24,5 +25,6 @@ app.use("/competition", competitionRoutes);
 app.use("/event", eventRoutes);
 app.use("/exchangeHome", exchangeHomeRoutes);
 app.use("/themeSetting", themeSettingRoutes);
+app.use("/transactionActivity", transactionActivityRoutes);
 
 export default app;

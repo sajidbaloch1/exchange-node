@@ -69,21 +69,20 @@ const updateEventStatus = async (req, res) => {
     status,
   });
 
-  res
-    .status(200)
-    .json({ success: true, data: { details: updatedEventStatus } });
+  res.status(200).json({ success: true, data: { details: updatedEventStatus } });
 };
 
 // Active all event
 const activeAllEvent = async (req, res) => {
-  const { _id } = req.body;
-  if (!_id) {
-    throw new Error("_id is required!");
+  const { _id, competitionId } = req.body;
+
+  if (!(_id && competitionId)) {
+    throw new Error("_id && competitionId is required!");
   }
 
-  const activeEvent = await eventService.activeEvent(_id);
+  await eventService.activeEvent({ _id, competitionId });
 
-  res.status(200).json({ success: true, data: _id });
+  res.status(200).json({ success: true, data: { details: {} } });
 };
 export default {
   getAllEvent,
@@ -92,5 +91,5 @@ export default {
   updateEvent,
   deleteEvent,
   updateEventStatus,
-  activeAllEvent
+  activeAllEvent,
 };

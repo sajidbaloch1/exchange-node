@@ -9,12 +9,9 @@ import sportsBetCategoryRoutes from "./routes/sportsBetCategoryRoutes.js";
 import competitionRoutes from "./routes/competitionRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import exchangeHomeRoutes from "./routes/exchangeHomeRoutes.js";
-<<<<<<< HEAD
 import userstakeRoutes from "./routes/userStakeRoutes.js";
-============
 import themeSettingRoutes from "./routes/themeSettingRoutes.js";
 import transactionActivityRoutes from "./routes/transactionActivityRoutes.js";
->>>>>>> stage
 
 const app = express();
 

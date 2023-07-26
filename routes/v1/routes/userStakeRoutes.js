@@ -4,7 +4,6 @@ import { route } from "../../../lib/error-handling/routes-error-boundary.js";
 
 const router = express.Router();
 
-route(router, "post", "/getAllStake", userStakeController.getAllStake);
 route(router, "post", "/getStakeById", userStakeController.getStakeById);
 route(router, "post", "/createStake", userStakeController.createStake);
 route(router, "post", "/updateStake", userStakeController.updateStake);

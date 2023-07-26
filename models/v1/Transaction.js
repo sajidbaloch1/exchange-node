@@ -20,12 +20,12 @@ const transactionSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  fromId: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "user", // References the 'User' model for the user who initiated the transaction.
     required: true,
   },
-  toId: {
+  fromId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "user", // References the 'User' model for the user who is the recipient of the transaction.
     required: true,

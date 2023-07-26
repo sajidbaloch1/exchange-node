@@ -223,8 +223,8 @@ const addUser = async ({ user, ...reqBody }) => {
       balancePoints: loggedInUser.balance - creditPoints,
       type: 'debit',
       remark: 'User creation',
-      fromId: loggedInUser._id,
-      toId: newUser._id,
+      userId: loggedInUser._id,
+      fromId: newUser._id,
       fromtoName: loggedInUser.username + " / " + username
     });
 
@@ -233,8 +233,8 @@ const addUser = async ({ user, ...reqBody }) => {
       balancePoints: creditPoints,
       type: 'credit',
       remark: 'User creation',
+      userId: newUser._id,
       fromId: loggedInUser._id,
-      toId: newUser._id,
       fromtoName: loggedInUser.username + " / " + username
     });
 

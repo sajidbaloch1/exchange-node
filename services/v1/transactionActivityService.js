@@ -5,8 +5,8 @@ const createTransaction = async ({
     balancePoints,
     type,
     remark,
+    userId,
     fromId,
-    toId,
     fromtoName
 }) => {
     try {
@@ -15,8 +15,8 @@ const createTransaction = async ({
             balancePoints,
             type,
             remark,
+            userId,
             fromId,
-            toId,
             fromtoName
         });
         await userTransaction.save();

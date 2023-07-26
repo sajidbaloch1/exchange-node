@@ -1,6 +1,7 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import Competition from "../../models/v1/Competition.js";
+import Sport from "../../models/v1/Sport.js";
 
 // Fetch all competition from the database
 const fetchAllCompetition = async ({ ...reqBody }) => {
@@ -93,38 +94,51 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
 // Fetch all competition events from the database
 const fetchAllCompetitionEvents = async () => {
   try {
-    const competitionEvents = await Competition.aggregate(
+    const competitionEvents = await Sport.aggregate(
       [
         {
           $match: { isDeleted: false },
         },
         {
           $lookup: {
-            from: "events",
+            from: "competitions",
             localField: "_id",
-            foreignField: "competitionId",
-            as: "events",
+            foreignField: "sportId",
+            as: "competitions",
             pipeline: [
               {
-                $match: { isDeleted: false },
+                $lookup: {
+                  from: "events",
+                  localField: "_id",
+                  foreignField: "competitionId",
+                  as: "events",
+                  pipeline: [
+                    {
+                      $match: { isDeleted: false },
+                    },
+                    {
+                      $project: { name: 1 },
+                    },
+                    {
+                      $sort: { name: 1 },
+                    },
+                  ],
+                },
               },
               {
-                $project: { name: 1 },
-              },
-              {
-                $sort: { name: 1 },
+                $project: { name: 1, events: 1 },
               },
             ],
           },
         },
         {
-          $project: {
-            name: 1,
-            events: 1,
-          },
+          $sort: { name: 1 },
         },
         {
-          $sort: { name: 1 },
+          $project: {
+            name: 1,
+            competitions: 1,
+          },
         },
       ],
       { collation: { locale: "en", strength: 2 } }

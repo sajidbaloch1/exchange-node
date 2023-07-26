@@ -1,24 +1,11 @@
-import mongoose, { isValidObjectId } from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { encryptPassword } from "../../lib/helpers/auth.js";
-import {
-  generatePaginationQueries,
-  generateSearchFilters,
-} from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import Competition from "../../models/v1/Competition.js";
 
 // Fetch all competition from the database
 const fetchAllCompetition = async ({ ...reqBody }) => {
   try {
-    const {
-      page,
-      perPage,
-      sortBy,
-      direction,
-      searchQuery,
-      showDeleted,
-      showRecord,
-    } = reqBody;
+    const { page, perPage, sortBy, direction, searchQuery, showDeleted, showRecord } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -94,12 +81,56 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
 
     if (competition?.length) {
       data.records = competition[0]?.paginatedResults || [];
-      data.totalRecords = competition[0]?.totalRecords?.length
-        ? competition[0]?.totalRecords[0].count
-        : 0;
+      data.totalRecords = competition[0]?.totalRecords?.length ? competition[0]?.totalRecords[0].count : 0;
     }
 
     return data;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
+// Fetch all competition events from the database
+const fetchAllCompetitionEvents = async () => {
+  try {
+    const competitionEvents = await Competition.aggregate(
+      [
+        {
+          $match: { isDeleted: false },
+        },
+        {
+          $lookup: {
+            from: "events",
+            localField: "_id",
+            foreignField: "competitionId",
+            as: "events",
+            pipeline: [
+              {
+                $match: { isDeleted: false },
+              },
+              {
+                $project: { name: 1 },
+              },
+              {
+                $sort: { name: 1 },
+              },
+            ],
+          },
+        },
+        {
+          $project: {
+            name: 1,
+            events: 1,
+          },
+        },
+        {
+          $sort: { name: 1 },
+        },
+      ],
+      { collation: { locale: "en", strength: 2 } }
+    );
+
+    return competitionEvents;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -120,8 +151,7 @@ const fetchCompetitionId = async (_id) => {
  * Create competition in the database
  */
 const addCometition = async ({ ...reqBody }) => {
-  const { name, sportId, maxStake, maxMarket, betDelay, visibleToPlayer } =
-    reqBody;
+  const { name, sportId, maxStake, maxMarket, betDelay, visibleToPlayer } = reqBody;
 
   try {
     const existingCompetition = await Competition.findOne({ name: name });
@@ -202,6 +232,7 @@ const competitionStatusModify = async ({ _id, fieldName, status }) => {
 
 export default {
   fetchAllCompetition,
+  fetchAllCompetitionEvents,
   fetchCompetitionId,
   addCometition,
   modifyCompetition,

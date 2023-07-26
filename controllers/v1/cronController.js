@@ -1,7 +1,7 @@
 import { Curl } from "node-libcurl";
-import Sport from "../../models/v1/Sport.js";
 import Competition from "../../models/v1/Competition.js";
 import Event from "../../models/v1/Event.js";
+import Sport from "../../models/v1/Sport.js";
 
 const BASE_URL = "http://3.6.84.17/exchange/api.php";
 

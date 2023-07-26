@@ -9,6 +9,7 @@ import sportsBetCategoryRoutes from "./routes/sportsBetCategoryRoutes.js";
 import competitionRoutes from "./routes/competitionRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import exchangeHomeRoutes from "./routes/exchangeHomeRoutes.js";
+import userstakeRoutes from "./routes/userStakeRoutes.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use("/auth", authRoutes);
 app.use("/cron", cronRoutes);
 app.use("/users", userRoutes);
 app.use("/sport", sportRoutes);
+app.use("/stake", userstakeRoutes);
 app.use("/currencies", currencyRoutes);
 app.use("/betCategories", betCategoryRoutes);
 app.use("/sportsBetCategories", sportsBetCategoryRoutes);

@@ -1,3 +1,4 @@
+import User, { USER_ROLE } from "../../models/v1/User.js";
 import competitionRequest from "../../requests/v1/competitionRequest.js";
 import competitionService from "../../services/v1/competitionService.js";
 
@@ -10,6 +11,20 @@ const getAllCompetition = async (req, res) => {
   });
 
   return res.status(200).json({ success: true, data: competitions });
+};
+
+const getAllCompetitionEvents = async (req, res) => {
+  const { user } = req;
+
+  const loggedInUser = await User.findOne({ _id: user._id });
+
+  if (loggedInUser.role !== USER_ROLE.SYSTEM_OWNER) {
+    throw new Error("You are not authorized to access this resource!");
+  }
+
+  const competitionEvents = await competitionService.fetchAllCompetitionEvents();
+
+  return res.status(200).json({ success: true, data: competitionEvents });
 };
 
 // Get competition by ID
@@ -42,9 +57,7 @@ const updateCompetition = async (req, res) => {
     ...body,
   });
 
-  res
-    .status(200)
-    .json({ success: true, data: { details: updatedCompetition } });
+  res.status(200).json({ success: true, data: { details: updatedCompetition } });
 };
 
 // Delete a competition
@@ -57,9 +70,7 @@ const deleteCompetition = async (req, res) => {
 
   const deletedCompetition = await competitionService.removeCompetition(_id);
 
-  res
-    .status(200)
-    .json({ success: true, data: { details: deletedCompetition } });
+  res.status(200).json({ success: true, data: { details: deletedCompetition } });
 };
 
 const updateCompetitionStatus = async (req, res) => {
@@ -71,20 +82,18 @@ const updateCompetitionStatus = async (req, res) => {
     throw new Error("_id && fieldName && status is required!");
   }
 
-  const updatedCompetitionStatus =
-    await competitionService.competitionStatusModify({
-      _id,
-      fieldName,
-      status,
-    });
+  const updatedCompetitionStatus = await competitionService.competitionStatusModify({
+    _id,
+    fieldName,
+    status,
+  });
 
-  res
-    .status(200)
-    .json({ success: true, data: { details: updatedCompetitionStatus } });
+  res.status(200).json({ success: true, data: { details: updatedCompetitionStatus } });
 };
 
 export default {
   getAllCompetition,
+  getAllCompetitionEvents,
   getCompetitionById,
   createCompetition,
   updateCompetition,

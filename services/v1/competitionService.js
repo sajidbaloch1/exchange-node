@@ -117,28 +117,16 @@ const fetchAllCompetitionEvents = async () => {
                       $match: { isDeleted: false },
                     },
                     {
-                      $project: { name: 1 },
-                    },
-                    {
                       $sort: { name: 1 },
                     },
                   ],
                 },
-              },
-              {
-                $project: { name: 1, events: 1 },
               },
             ],
           },
         },
         {
           $sort: { name: 1 },
-        },
-        {
-          $project: {
-            name: 1,
-            competitions: 1,
-          },
         },
       ],
       { collation: { locale: "en", strength: 2 } }

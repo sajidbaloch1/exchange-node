@@ -14,6 +14,22 @@ export const USER_ROLE = {
   USER: "user",
 };
 
+export const SETTLEMENT_DURATION = {
+  DAILY: "daily",
+  WEEKLY: "weekly",
+  MONTHLY: "monthly",
+};
+
+export const SETTLEMENT_DAY = {
+  MONDAY: "monday",
+  TUESDAY: "tuesday",
+  WEDNESDAY: "wednesday",
+  THURSDAY: "thursday",
+  FRIDAY: "friday",
+  SATURDAY: "saturday",
+  SUNDAY: "sunday",
+};
+
 export const USER_ACCESSIBLE_ROLES = {
   [USER_ROLE.SYSTEM_OWNER]: Object.values(USER_ROLE),
 
@@ -97,7 +113,28 @@ const userSchema = new mongoose.Schema({
     enum: Object.values(USER_ROLE),
     default: USER_ROLE.USER,
   },
-
+  //Settlement Duration Type
+  settlementDurationType: {
+    type: "string",
+    enum: Object.values(SETTLEMENT_DURATION),
+  },
+  //Settlement Date
+  settlementDate: {
+    type: String,
+    format: Date,
+    default: null,
+  },
+  //Settlement Day
+  settlementDay: {
+    type: String,
+    enum: [...Object.values(SETTLEMENT_DAY), null],
+    default: null,
+  },
+  //Settlement Time
+  settlementTime: {
+    type: String,
+    default: null,
+  },
   // Number of credit points user has. Default is 0.
   creditPoints: { type: Number, default: 0 },
 

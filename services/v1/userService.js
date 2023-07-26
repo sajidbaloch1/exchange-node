@@ -10,6 +10,8 @@ import AppModule from "../../models/v1/AppModule.js";
 import User, {
   USER_ACCESSIBLE_ROLES,
   USER_ROLE,
+  SETTLEMENT_DURATION,
+  SETTLEMENT_DAY,
 } from "../../models/v1/User.js";
 import permissionService from "./permissionService.js";
 import transactionActivityService from "../../services/v1/transactionActivityService.js";
@@ -139,6 +141,10 @@ const addUser = async ({ user, ...reqBody }) => {
     currencyId,
     mobileNumber,
     countryCode,
+    settlementDurationType,
+    settlementDate,
+    settlementDay,
+    settlementTime,
     city,
     // Super Admin Params
     domainUrl,
@@ -156,6 +162,10 @@ const addUser = async ({ user, ...reqBody }) => {
       role,
       city,
       rate,
+      settlementDurationType,
+      settlementDate,
+      settlementDay,
+      settlementTime,
       mobileNumber,
       currencyId: loggedInUser.currencyId,
       parentId: loggedInUser._id,
@@ -180,6 +190,13 @@ const addUser = async ({ user, ...reqBody }) => {
       newUserObj.domainUrl = domainUrl;
       newUserObj.contactEmail = contactEmail;
       newUserObj.availableSports = availableSports;
+    }
+    if (settlementDurationType === SETTLEMENT_DURATION.DAILY) {
+      newUserObj.settlementDate = null;
+      newUserObj.settlementDay = null;
+    }
+    if (settlementDurationType === SETTLEMENT_DURATION.WEEKLY) {
+      newUserObj.settlementDate = null;
     }
 
     // Credit Points and Balance
@@ -290,7 +307,6 @@ const modifyUser = async ({ user, ...reqBody }) => {
     if (exisitngUsername) {
       throw new Error("Username already exists!");
     }
-
     const currentUser = await User.findById(reqBody._id);
     if (currentUser.role === USER_ROLE.SYSTEM_OWNER) {
       throw new Error("Failed to update user!");
@@ -308,6 +324,13 @@ const modifyUser = async ({ user, ...reqBody }) => {
     ) {
       throw new Error("Failed to update user!");
     }
+    if (reqBody.settlementDurationType === SETTLEMENT_DURATION.DAILY) {
+      reqBody.settlementDay = null;
+      reqBody.settlementDate = null;
+    }
+    if (reqBody.settlementDurationType === SETTLEMENT_DURATION.WEEKLY) {
+      reqBody.settlementDate = null;
+    }
 
     const { creditPoints, balance, parentBalance } =
       await calculateUserPointBalance(currentUser, reqBody);
@@ -317,7 +340,6 @@ const modifyUser = async ({ user, ...reqBody }) => {
     if (reqBody?.password) {
       reqBody.password = await encryptPassword(reqBody.password);
     }
-
     // If currentUser is SUPER_ADMIN
     if (currentUser.role !== USER_ROLE.SUPER_ADMIN) {
       delete reqBody.domainUrl;

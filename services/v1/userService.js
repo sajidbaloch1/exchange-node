@@ -208,7 +208,17 @@ const addUser = async ({ user, ...reqBody }) => {
       remark: 'User creation',
       fromId: loggedInUser._id,
       toId: newUser._id,
-      fromtoName: loggedInUser.fullName + " / " + fullName
+      fromtoName: loggedInUser.username + " / " + username
+    });
+
+    await transactionActivityService.createTransaction({
+      points: creditPoints,
+      balancePoints: creditPoints,
+      type: 'credit',
+      remark: 'User creation',
+      fromId: loggedInUser._id,
+      toId: newUser._id,
+      fromtoName: loggedInUser.username + " / " + username
     });
 
     // Update logged in users balance and child status

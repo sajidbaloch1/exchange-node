@@ -93,13 +93,13 @@ const updateCompetitionStatus = async (req, res) => {
 
 // Active all competition
 const activeAllCompetition = async (req, res) => {
-  const { _id, sportId } = req.body;
+  const { competitionIds, sportId } = req.body;
 
-  if (!(_id && sportId)) {
+  if (!(competitionIds.length && sportId)) {
     throw new Error("_id && sportId is required!");
   }
 
-  await competitionService.activeCompetition({ _id, sportId });
+  await competitionService.activeCompetition({ competitionIds, sportId });
 
   res.status(200).json({ success: true, data: { details: {} } });
 };

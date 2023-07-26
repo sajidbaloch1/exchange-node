@@ -235,10 +235,10 @@ const competitionStatusModify = async ({ _id, fieldName, status }) => {
   }
 };
 
-const activeCompetition = async ({ _id, sportId }) => {
+const activeCompetition = async ({ competitionIds, sportId }) => {
   try {
     await Competition.updateMany({ sportId }, { isActive: false });
-    await Competition.findByIdAndUpdate(_id, { isActive: true });
+    await Competition.updateMany({ _id: { $in: competitionIds } }, { isActive: true });
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

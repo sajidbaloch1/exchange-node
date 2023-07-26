@@ -10,4 +10,6 @@ route(router, "post", "/createEvent", eventController.createEvent);
 route(router, "post", "/updateEvent", eventController.updateEvent);
 route(router, "post", "/deleteEvent", eventController.deleteEvent);
 route(router, "post", "/updateEventStatus", eventController.updateEventStatus);
+route(router, "post", "/activeAllEvent", eventController.activeAllEvent);
+
 export default router;

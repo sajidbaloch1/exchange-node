@@ -241,6 +241,20 @@ const eventStatusModify = async ({ _id, fieldName, status }) => {
   }
 };
 
+const activeEvent = async (_id) => {
+  try {
+    for (var i = 0; i < _id.length > 0; i++) {
+      const event = await Event.findById(_id[i]);
+      event.isActive = true;
+      await event.save();
+    }
+
+    return;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   fetchAllEvent,
   fetchEventId,
@@ -248,4 +262,5 @@ export default {
   modifyEvent,
   removeEvent,
   eventStatusModify,
+  activeEvent
 };

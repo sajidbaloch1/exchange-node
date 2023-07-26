@@ -232,6 +232,20 @@ const competitionStatusModify = async ({ _id, fieldName, status }) => {
   }
 };
 
+const activeCompetition = async (_id) => {
+  try {
+    for (var i = 0; i < _id.length > 0; i++) {
+      const competition = await Competition.findById(_id[i]);
+      competition.isActive = true;
+      await competition.save();
+    }
+
+    return;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   fetchAllCompetition,
   fetchAllCompetitionEvents,
@@ -240,4 +254,5 @@ export default {
   modifyCompetition,
   removeCompetition,
   competitionStatusModify,
+  activeCompetition
 };

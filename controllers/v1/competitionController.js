@@ -91,6 +91,18 @@ const updateCompetitionStatus = async (req, res) => {
   res.status(200).json({ success: true, data: { details: updatedCompetitionStatus } });
 };
 
+// Active all competition
+const activeAllCompetition = async (req, res) => {
+  const { _id } = req.body;
+  if (!_id) {
+    throw new Error("_id is required!");
+  }
+
+  const activeCompetition = await competitionService.activeCompetition(_id);
+
+  res.status(200).json({ success: true, data: _id });
+};
+
 export default {
   getAllCompetition,
   getAllCompetitionEvents,
@@ -99,4 +111,5 @@ export default {
   updateCompetition,
   deleteCompetition,
   updateCompetitionStatus,
+  activeAllCompetition
 };

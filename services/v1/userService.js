@@ -218,6 +218,8 @@ const addUser = async ({ user, ...reqBody }) => {
 
     const newUser = await User.create(newUserObj);
 
+    // Create entry in transaction type debit
+
     await transactionActivityService.createTransaction({
       points: creditPoints,
       balancePoints: loggedInUser.balance - creditPoints,
@@ -227,6 +229,8 @@ const addUser = async ({ user, ...reqBody }) => {
       fromId: newUser._id,
       fromtoName: loggedInUser.username + " / " + username
     });
+
+    // Create entry in transaction type credit
 
     await transactionActivityService.createTransaction({
       points: creditPoints,

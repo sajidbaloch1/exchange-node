@@ -1,6 +1,7 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import Competition from "../../models/v1/Competition.js";
+import Sport from "../../models/v1/Sport.js";
 
 // Fetch all competition from the database
 const fetchAllCompetition = async ({ ...reqBody }) => {
@@ -93,34 +94,35 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
 // Fetch all competition events from the database
 const fetchAllCompetitionEvents = async () => {
   try {
-    const competitionEvents = await Competition.aggregate(
+    const competitionEvents = await Sport.aggregate(
       [
         {
           $match: { isDeleted: false },
         },
         {
           $lookup: {
-            from: "events",
+            from: "competitions",
             localField: "_id",
-            foreignField: "competitionId",
-            as: "events",
+            foreignField: "sportId",
+            as: "competitions",
             pipeline: [
               {
-                $match: { isDeleted: false },
-              },
-              {
-                $project: { name: 1 },
-              },
-              {
-                $sort: { name: 1 },
+                $lookup: {
+                  from: "events",
+                  localField: "_id",
+                  foreignField: "competitionId",
+                  as: "events",
+                  pipeline: [
+                    {
+                      $match: { isDeleted: false },
+                    },
+                    {
+                      $sort: { name: 1 },
+                    },
+                  ],
+                },
               },
             ],
-          },
-        },
-        {
-          $project: {
-            name: 1,
-            events: 1,
           },
         },
         {
@@ -230,6 +232,20 @@ const competitionStatusModify = async ({ _id, fieldName, status }) => {
   }
 };
 
+const activeCompetition = async (_id) => {
+  try {
+    for (var i = 0; i < _id.length > 0; i++) {
+      const competition = await Competition.findById(_id[i]);
+      competition.isActive = true;
+      await competition.save();
+    }
+
+    return;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   fetchAllCompetition,
   fetchAllCompetitionEvents,
@@ -238,4 +254,5 @@ export default {
   modifyCompetition,
   removeCompetition,
   competitionStatusModify,
+  activeCompetition
 };

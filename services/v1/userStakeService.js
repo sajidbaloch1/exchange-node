@@ -87,7 +87,7 @@ const addStake = async ({ userId, inputValues }) => {
 /**
  * update Stake in the database
  */
-const modifyStake = async ({ _id, userId, inputValues }) => {
+const modifyStake = async ({ _id, inputValues }) => {
   try {
     if (!_id) {
       throw new Error("Missing _id in the request body.");

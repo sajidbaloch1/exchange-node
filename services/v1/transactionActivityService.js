@@ -2,6 +2,7 @@ import Transaction from "../../models/v1/Transaction.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
+import User from "../../models/v1/User.js";
 
 // Create transaction in database
 const createTransaction = async ({
@@ -107,5 +108,71 @@ const fetchAllTransaction = async ({ ...reqBody }) => {
     }
 };
 
+// Add transaction in database
+const addTransaction = async ({
+    points,
+    type,
+    remark,
+    userId,
+    fromId
+}) => {
+    try {
+        const userIdFind = await User.findOne({ _id: userId });
+        const fromIdFind = await User.findOne({ _id: fromId });
+        let userTransaction, fromTransaction;
+        if (type == 'credit') {
+            userTransaction = new Transaction({
+                points,
+                balancePoints: userIdFind.balance + points,
+                type: 'credit',
+                remark,
+                userId,
+                fromId,
+                fromtoName: userIdFind.username + " / " + fromIdFind.username
+            });
+            await userTransaction.save();
 
-export default { createTransaction, fetchAllTransaction };
+            fromTransaction = new Transaction({
+                points,
+                balancePoints: fromIdFind.balance - points,
+                type: 'debit',
+                remark,
+                userId: fromId,
+                fromId: userId,
+                fromtoName: userIdFind.username + " / " + fromIdFind.username
+            });
+
+            await fromTransaction.save();
+        }
+        else {
+            userTransaction = new Transaction({
+                points,
+                balancePoints: userIdFind.balance - points,
+                type: 'debit',
+                remark,
+                userId,
+                fromId,
+                fromtoName: userIdFind.username + " / " + fromIdFind.username
+            });
+            await userTransaction.save();
+
+            fromTransaction = new Transaction({
+                points,
+                balancePoints: fromIdFind.balance + points,
+                type: 'credit',
+                remark,
+                userId: fromId,
+                fromId: userId,
+                fromtoName: userIdFind.username + " / " + fromIdFind.username
+            });
+
+            await fromTransaction.save();
+        }
+
+        return userTransaction;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+export default { createTransaction, fetchAllTransaction, addTransaction };

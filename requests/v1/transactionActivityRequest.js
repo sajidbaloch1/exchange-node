@@ -41,6 +41,22 @@ async function transactionActivityListingRequest(req) {
   return req;
 }
 
+async function createTransactionRequest(req) {
+
+  const validationSchema = Yup.object().shape({
+    userId: Yup.string().required().test("userId", "Given userId is not valid!", isValidObjectId),
+    fromId: Yup.string().required().test("fromId", "Given userId is not valid!", isValidObjectId),
+    points: Yup.number().required(),
+    type: Yup.string().required(),
+    remark: Yup.string().required(),
+  });
+
+  await validationSchema.validate(req.body);
+
+  return req;
+}
+
 export default {
   transactionActivityListingRequest,
+  createTransactionRequest
 };

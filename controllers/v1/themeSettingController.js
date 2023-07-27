@@ -14,15 +14,6 @@ const getThemeSettingById = async (req, res) => {
     res.status(200).json({ success: true, data: { details: themeSetting } });
 };
 
-// Create a new themeSetting
-const createThemeSetting = async (req, res) => {
-    const { body } = await themeSettingRequest.createThemeSettingRequest(req);
-
-    const newThemeSetting = await themeSettingService.addThemeSetting({ ...body });
-
-    res.status(201).json({ success: true, data: { details: newThemeSetting } });
-};
-
 // Update a themeSetting
 const updateThemeSetting = async (req, res) => {
     const { body } = await themeSettingRequest.updateThemeSettingRequest(req);
@@ -35,6 +26,5 @@ const updateThemeSetting = async (req, res) => {
 
 export default {
     getThemeSettingById,
-    createThemeSetting,
     updateThemeSetting
 };

@@ -17,55 +17,6 @@ const fetchThemeSettingId = async (userId) => {
   }
 };
 
-/**
- * Create themeSetting in the database
- */
-const addThemeSetting = async ({ ...reqBody }) => {
-  const {
-    userId,
-    facebookLink,
-    twitterLink,
-    instagramLink,
-    telegramLink,
-    youtubeLink,
-    whatsappLink,
-    blogLink,
-    footerMessage,
-    news,
-    supportNumber,
-    forgotPasswordLink,
-    depositePopupNumber,
-    welcomeMessage
-  } = reqBody;
-
-  try {
-    const newThemeSettingObj = {
-      userId,
-      facebookLink,
-      twitterLink,
-      instagramLink,
-      telegramLink,
-      youtubeLink,
-      whatsappLink,
-      blogLink,
-      footerMessage,
-      news,
-      supportNumber,
-      forgotPasswordLink,
-      depositePopupNumber,
-      welcomeMessage
-    };
-    const existingThemeSetting = await ThemeSetting.findOne({ userId: userId });
-    if (existingThemeSetting) {
-      throw new Error("Theme Setting already exists!");
-    }
-    const newThemeSetting = await ThemeSetting.create(newThemeSettingObj);
-
-    return newThemeSetting;
-  } catch (e) {
-    throw new ErrorResponse(e.message).status(200);
-  }
-};
 
 /**
  * update themeSetting in the database
@@ -75,25 +26,60 @@ const modifyThemeSetting = async ({ ...reqBody }) => {
     const themeSetting = await ThemeSetting.findOne({ userId: reqBody.userId });
 
     if (!themeSetting) {
-      throw new Error("ThemeSetting not found.");
+      const {
+        userId,
+        facebookLink,
+        twitterLink,
+        instagramLink,
+        telegramLink,
+        youtubeLink,
+        whatsappLink,
+        blogLink,
+        footerMessage,
+        news,
+        supportNumber,
+        forgotPasswordLink,
+        depositePopupNumber,
+        welcomeMessage
+      } = reqBody;
+      const newThemeSettingObj = {
+        userId,
+        facebookLink,
+        twitterLink,
+        instagramLink,
+        telegramLink,
+        youtubeLink,
+        whatsappLink,
+        blogLink,
+        footerMessage,
+        news,
+        supportNumber,
+        forgotPasswordLink,
+        depositePopupNumber,
+        welcomeMessage
+      };
+      const newThemeSetting = await ThemeSetting.create(newThemeSettingObj);
+      return newThemeSetting;
     }
-    themeSetting.facebookLink = reqBody.facebookLink;
-    themeSetting.twitterLink = reqBody.twitterLink;
-    themeSetting.instagramLink = reqBody.instagramLink;
-    themeSetting.telegramLink = reqBody.telegramLink;
-    themeSetting.youtubeLink = reqBody.youtubeLink;
-    themeSetting.whatsappLink = reqBody.whatsappLink;
-    themeSetting.blogLink = reqBody.blogLink;
-    themeSetting.footerMessage = reqBody.footerMessage;
-    themeSetting.news = reqBody.news;
-    themeSetting.supportNumber = reqBody.supportNumber;
-    themeSetting.forgotPasswordLink = reqBody.forgotPasswordLink;
-    themeSetting.hardBetDeleted = reqBody.hardBetDeleted;
-    themeSetting.depositePopupNumber = reqBody.depositePopupNumber;
-    themeSetting.welcomeMessage = reqBody.welcomeMessage;
-    await themeSetting.save();
+    else {
+      themeSetting.facebookLink = reqBody.facebookLink;
+      themeSetting.twitterLink = reqBody.twitterLink;
+      themeSetting.instagramLink = reqBody.instagramLink;
+      themeSetting.telegramLink = reqBody.telegramLink;
+      themeSetting.youtubeLink = reqBody.youtubeLink;
+      themeSetting.whatsappLink = reqBody.whatsappLink;
+      themeSetting.blogLink = reqBody.blogLink;
+      themeSetting.footerMessage = reqBody.footerMessage;
+      themeSetting.news = reqBody.news;
+      themeSetting.supportNumber = reqBody.supportNumber;
+      themeSetting.forgotPasswordLink = reqBody.forgotPasswordLink;
+      themeSetting.hardBetDeleted = reqBody.hardBetDeleted;
+      themeSetting.depositePopupNumber = reqBody.depositePopupNumber;
+      themeSetting.welcomeMessage = reqBody.welcomeMessage;
+      await themeSetting.save();
+      return themeSetting;
+    }
 
-    return themeSetting;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -102,6 +88,5 @@ const modifyThemeSetting = async ({ ...reqBody }) => {
 
 export default {
   fetchThemeSettingId,
-  addThemeSetting,
   modifyThemeSetting,
 };

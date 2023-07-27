@@ -19,10 +19,10 @@ const competitionSchema = new mongoose.Schema({
   createdOn: { type: Date },
 
   // Start date of the competition
-  startDate: { type: Date },
+  startDate: { type: Date, default: null },
 
   // End date of the competition
-  endDate: { type: Date },
+  endDate: { type: Date, default: null },
 
   // Indicates if the competition is currently active or not
   isActive: { type: Boolean, default: true },

@@ -153,7 +153,17 @@ const fetchCompetitionId = async (_id) => {
  * Create competition in the database
  */
 const addCometition = async ({ ...reqBody }) => {
-  const { name, sportId, maxStake, maxMarket, betDelay, visibleToPlayer, isCustomised = false } = reqBody;
+  const {
+    name,
+    sportId,
+    maxStake,
+    maxMarket,
+    betDelay,
+    startDate,
+    endDate,
+    visibleToPlayer,
+    isCustomised = false,
+  } = reqBody;
 
   try {
     const existingCompetition = await Competition.findOne({ name: name });
@@ -168,6 +178,8 @@ const addCometition = async ({ ...reqBody }) => {
       maxStake,
       maxMarket,
       betDelay,
+      startDate,
+      endDate,
       visibleToPlayer,
       createdOn: new Date(),
       isActive: true,
@@ -198,6 +210,8 @@ const modifyCompetition = async ({ ...reqBody }) => {
     competition.maxStake = reqBody.maxStake;
     competition.maxMarket = reqBody.maxMarket;
     competition.betDelay = reqBody.betDelay;
+    competition.startDate = reqBody.startDate;
+    competition.endDate = reqBody.endDate;
     competition.visibleToPlayer = reqBody.visibleToPlayer;
     competition.isCustomised = reqBody.isCustomised;
     await competition.save();

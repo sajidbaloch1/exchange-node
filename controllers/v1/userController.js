@@ -1,5 +1,6 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
+import AppModule from "../../models/v1/AppModule.js";
 import User from "../../models/v1/User.js";
 import { USER_ACTIVITY_EVENT } from "../../models/v1/UserActivity.js";
 import userRequest from "../../requests/v1/userRequest.js";
@@ -136,11 +137,10 @@ const getUserPermissions = async (req, res) => {
   res.status(200).json({ success: true, data: { details: userPermissions } });
 };
 
-// Get appModule listing
-const getAppModuleListing = async (req, res) => {
-  const appModuleList = await permissionService.appModuleListing();
+const getAppModulesList = async (req, res) => {
+  const appModules = await AppModule.find({}, { name: 1, key: 1 });
 
-  res.status(200).json({ success: true, data: { details: appModuleList } });
+  res.status(200).json({ success: true, data: { details: appModules } });
 };
 
 export default {
@@ -154,5 +154,5 @@ export default {
   createUserClone,
   getUserTransactionCode,
   getUserPermissions,
-  getAppModuleListing,
+  getAppModulesList,
 };

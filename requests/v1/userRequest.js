@@ -40,9 +40,7 @@ async function userListingRequest(req) {
 
     showDeleted: Yup.boolean(),
 
-    role: Yup.string()
-      .oneOf(Object.values(USER_ROLE), "Invalid role.")
-      .nullable(true),
+    role: Yup.array().nullable(true),
 
     searchQuery: Yup.string().nullable(true),
 
@@ -193,8 +191,8 @@ async function cloneUserRequest(req) {
       .when(["password"], (password, schema) => {
         return password
           ? schema
-              .oneOf([Yup.ref("password")], "Passwords should match.")
-              .required()
+            .oneOf([Yup.ref("password")], "Passwords should match.")
+            .required()
           : schema;
       }),
 

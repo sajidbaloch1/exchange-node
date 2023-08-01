@@ -3,6 +3,7 @@ import { encryptPassword, generateJwtToken, getTrimmedUser, validatePassword } f
 import { generateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import Currency from "../../models/v1/Currency.js";
 import User, { USER_ROLE } from "../../models/v1/User.js";
+import permissionService from "./permissionService.js";
 
 const loginUser = async ({ username, password }) => {
   try {
@@ -39,8 +40,11 @@ const loginUser = async ({ username, password }) => {
     const loggedInUser = existingUser.toJSON();
 
     const user = getTrimmedUser(loggedInUser);
+    const userPermissions = await permissionService.fetchUserPermissions({
+      userId: loggedInUser._id,
+    });
 
-    return { user, token };
+    return { user, token, userPermissions };
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

@@ -24,8 +24,10 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
       role: { $ne: USER_ROLE.SYSTEM_OWNER },
     };
 
-    if (role && role != USER_ROLE.SYSTEM_OWNER) {
-      filters.role = role;
+    if (role) {
+      // Remove system_owner role
+      let showRole = role.filter(function (e) { return e !== USER_ROLE.SYSTEM_OWNER })
+      filters.role = { $in: showRole };
     }
 
     if (parentId) {

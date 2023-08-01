@@ -219,7 +219,7 @@ const addUser = async ({ user, ...reqBody }) => {
       points: creditPoints,
       balancePoints: creditPoints,
       type: "credit",
-      remark: "User creation",
+      remark: "Opening pts",
       userId: newUser._id,
       fromId: loggedInUser._id,
       fromtoName: loggedInUser.username + " / " + username,

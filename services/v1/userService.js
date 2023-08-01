@@ -235,8 +235,8 @@ const addUser = async ({ user, ...reqBody }) => {
     await transactionActivityService.createTransaction({
       points: creditPoints,
       balancePoints: creditPoints,
-      type: 'credit',
-      remark: 'User creation',
+      type: "credit",
+      remark: "Opening pts",
       userId: newUser._id,
       fromId: loggedInUser._id,
       fromtoName: loggedInUser.username + " / " + username

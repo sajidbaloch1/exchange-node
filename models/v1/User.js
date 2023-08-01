@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import { encryptPassword } from "../../lib/helpers/auth.js";
-import { generateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import softDeletePlugin from "../plugins/soft-delete.js";
 import timestampPlugin from "../plugins/timestamp.js";
 
@@ -197,39 +195,6 @@ userSchema.path("username").validate(async function (value) {
   });
   return count === 0;
 }, "Username already exists. Please choose a different username.");
-
-// Encrypt password before saving
-userSchema.pre("save", async function (next) {
-  const user = this;
-  try {
-    if (!user.isModified("password")) {
-      return next();
-    }
-    if (user?.password) {
-      const hashedPassword = await encryptPassword(user.password);
-      user.password = hashedPassword;
-    }
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Generate and encrypt transaction code before saving
-userSchema.pre("save", async function (next) {
-  const user = this;
-  try {
-    if (!user.transactionCode) {
-      const transactionCodesInUse = await user.constructor.distinct("transactionCode").exec();
-      user.transactionCode = generateTransactionCode(transactionCodesInUse);
-    } else if (!user.isModified("transactionCode")) {
-      return next();
-    }
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
 
 const User = mongoose.model("user", userSchema);
 

@@ -100,9 +100,13 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
 /**
  * Fetch user by Id from the database
  */
-const fetchUserId = async (_id) => {
+const fetchUserId = async (_id, fields) => {
   try {
-    return await User.findById(_id, { password: 0 });
+    let project = { password: 0 };
+    if (fields) {
+      project = fields;
+    }
+    return await User.findById(_id, project);
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -139,7 +143,7 @@ const addUser = async ({ user, ...reqBody }) => {
     const newUserObj = {
       fullName,
       username,
-      password,
+      password: await encryptPassword(password),
       role,
       city,
       rate,
@@ -320,10 +324,14 @@ const modifyUser = async ({ user, ...reqBody }) => {
 
     reqBody.creditPoints = creditPoints;
     reqBody.balance = balance;
+
     if (reqBody?.password) {
       reqBody.password = await encryptPassword(reqBody.password);
+    } else {
+      delete reqBody.password;
     }
-    // If currentUser is SUPER_ADMIN
+
+    // If currentUser is not SUPER_ADMIN
     if (currentUser.role !== USER_ROLE.SUPER_ADMIN) {
       delete reqBody.domainUrl;
       delete reqBody.contactEmail;

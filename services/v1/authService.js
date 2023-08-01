@@ -1,9 +1,8 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { generateJwtToken, validatePassword } from "../../lib/helpers/auth.js";
-import Currency from "../../models/v1/Currency.js";
+import { encryptPassword, generateJwtToken, getTrimmedUser, validatePassword } from "../../lib/helpers/auth.js";
 import { generateTransactionCode } from "../../lib/helpers/transaction-code.js";
+import Currency from "../../models/v1/Currency.js";
 import User, { USER_ROLE } from "../../models/v1/User.js";
-
 
 const loginUser = async ({ username, password }) => {
   try {
@@ -16,8 +15,7 @@ const loginUser = async ({ username, password }) => {
       USER_ROLE.AGENT,
     ];
 
-    const errorMessage =
-      "The provided credentials are incorrect. Please try again.";
+    const errorMessage = "The provided credentials are incorrect. Please try again.";
 
     // Check if username exists
     const existingUser = await User.findOne({ username: username });
@@ -31,10 +29,7 @@ const loginUser = async ({ username, password }) => {
     }
 
     // Check if password is valid
-    const isValidPassword = await validatePassword(
-      password,
-      existingUser.password
-    );
+    const isValidPassword = await validatePassword(password, existingUser.password);
     if (!isValidPassword) {
       throw new Error(errorMessage);
     }
@@ -42,9 +37,10 @@ const loginUser = async ({ username, password }) => {
     const token = generateJwtToken({ _id: existingUser._id });
 
     const loggedInUser = existingUser.toJSON();
-    delete loggedInUser.password;
 
-    return { user: loggedInUser, token };
+    const user = getTrimmedUser(loggedInUser);
+
+    return { user, token };
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -54,8 +50,7 @@ const loginFrontUser = async ({ username, password }) => {
   try {
     const allowedRoles = [USER_ROLE.USER];
 
-    const errorMessage =
-      "The provided credentials are incorrect. Please try again.";
+    const errorMessage = "The provided credentials are incorrect. Please try again.";
 
     // Check if username exists
     const existingUser = await User.findOne({
@@ -72,10 +67,7 @@ const loginFrontUser = async ({ username, password }) => {
     }
 
     // Check if password is valid
-    const isValidPassword = await validatePassword(
-      password,
-      existingUser.password
-    );
+    const isValidPassword = await validatePassword(password, existingUser.password);
     if (!isValidPassword) {
       throw new Error(errorMessage);
     }
@@ -83,21 +75,16 @@ const loginFrontUser = async ({ username, password }) => {
     const token = generateJwtToken({ _id: existingUser._id });
 
     const loggedInUser = existingUser.toJSON();
-    delete loggedInUser.password;
 
-    return { user: loggedInUser, token };
+    const user = getTrimmedUser(loggedInUser);
+
+    return { user, token };
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
 };
 
-const registerUser = async ({
-  username,
-  password,
-  fullName,
-  currencyId,
-  mobileNumber,
-}) => {
+const registerUser = async ({ username, password, fullName, currencyId, mobileNumber }) => {
   try {
     // Check if currency exists
     const currency = await Currency.findById(currencyId);
@@ -114,31 +101,21 @@ const registerUser = async ({
     });
 
     const registeredUser = createdUser.toJSON();
-    delete registeredUser.password;
 
-    return registeredUser;
+    const user = getTrimmedUser(registeredUser);
+
+    return user;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
 };
 
-const resetPassword = async ({
-  userId,
-  oldPassword,
-  newPassword,
-  isForceChangePassword,
-}) => {
+const resetPassword = async ({ userId, oldPassword, newPassword, isForceChangePassword }) => {
   try {
-    // Check if user_id exists
+    // Check if username exists
     const existingUser = await User.findOne({ _id: userId });
-    const transactionCodesInUse = await User
-      .distinct("transactionCode")
-      .exec();
-    
     if (!existingUser) {
-      throw new Error(
-        "The provided credentials are incorrect. Please try again."
-      );
+      throw new Error("The provided credentials are incorrect. Please try again.");
     }
 
     if (existingUser.lockPasswordChange === true) {
@@ -146,30 +123,23 @@ const resetPassword = async ({
     }
 
     // Check if password is valid
-    const isValidPassword = await validatePassword(
-      oldPassword,
-      existingUser.password
-    );
-
+    const isValidPassword = await validatePassword(oldPassword, existingUser.password);
     if (!isValidPassword) {
       throw new Error("Old password is incorrect!");
-    } else {
-      if (isForceChangePassword === "true") {
-        existingUser.password = newPassword;
-        existingUser.forcePasswordChange = false;
-        existingUser.transactionCode = generateTransactionCode(transactionCodesInUse);
-        existingUser.save();
-      } else {
-        existingUser.password = newPassword;
-        existingUser.transactionCode = generateTransactionCode(transactionCodesInUse);
-        existingUser.save();
-      }
     }
 
-    const loggedInUser = existingUser.toJSON();
-    delete loggedInUser.password;
+    // Reset force password change
+    if (["true", true].includes(isForceChangePassword)) {
+      existingUser.forcePasswordChange = false;
+    }
+    existingUser.password = await encryptPassword(newPassword);
+    existingUser.transactionCode = await generateTransactionCode();
 
-    return existingUser;
+    await existingUser.save();
+
+    const user = getTrimmedUser(existingUser.toJSON(), ["transactionCode"]);
+
+    return user;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

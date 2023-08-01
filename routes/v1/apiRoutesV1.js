@@ -12,6 +12,7 @@ import exchangeHomeRoutes from "./routes/exchangeHomeRoutes.js";
 import userstakeRoutes from "./routes/userStakeRoutes.js";
 import themeSettingRoutes from "./routes/themeSettingRoutes.js";
 import transactionActivityRoutes from "./routes/transactionActivityRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 const app = express();
 
@@ -28,5 +29,6 @@ app.use("/event", eventRoutes);
 app.use("/exchangeHome", exchangeHomeRoutes);
 app.use("/themeSetting", themeSettingRoutes);
 app.use("/transactionActivity", transactionActivityRoutes);
+app.use("/dashboard", dashboardRoutes);
 
 export default app;

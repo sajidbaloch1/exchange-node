@@ -14,19 +14,8 @@ route(router, "post", "/updateUserStatus", userController.updateUserStatus);
 route(router, "post", "/fetchUserBalance", userController.fetchUserBalance);
 route(router, "post", "/createUserClone", userController.createUserClone);
 
-route(
-  router,
-  "post",
-  "/getAppModuleListing",
-  userController.getAppModuleListing
-);
-
-route(
-  router,
-  "post",
-  "/getUserTransactionCode",
-  userController.getUserTransactionCode
-);
+route(router, "post", "/getUserTransactionCode", userController.getUserTransactionCode);
 route(router, "post", "/getUserPermissions", userController.getUserPermissions);
+route(router, "post", "/getAppModulesList", userController.getAppModulesList);
 
 export default router;

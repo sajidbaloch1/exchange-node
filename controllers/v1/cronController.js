@@ -3,6 +3,9 @@ import Competition from "../../models/v1/Competition.js";
 import Event from "../../models/v1/Event.js";
 import Sport from "../../models/v1/Sport.js";
 
+//Import Service
+import MarketService from "../../services/v1/marketService.js";
+
 const BASE_URL = "http://3.6.84.17/exchange/api.php";
 
 //Sync all APIs for Sports, Competitions, Events
@@ -26,6 +29,28 @@ const syncDetail = async (req, res) => {
     // Handle any errors that occurred during the sync process
     res.status(500).json({ error: "An error occurred" });
   }
+};
+
+//Sync All Market
+const marketSync = async (req, res) => {
+  //try {
+  // Construct the URL to fetch sports data from the API
+  var url = `${BASE_URL}`;
+  // Fetch sports data from the API using the fetchData function
+  const { statusCode, data } = await fetchData(url);
+
+  // Check if the API request was successful (status code 200)
+  if (statusCode === 200) {
+    var marketResponse = await MarketService.syncMarkets(data);
+    res.status(200).json({ data: marketResponse });
+  } else {
+    // Handle any errors that occurred during the sync process
+    res.status(500).json({ error: "Issue occured while getting data from API!" });
+  }
+  // } catch (e) {
+  //   // Handle any errors that occurred during the sync process
+  //   res.status(500).json({ error: "An error occurred" });
+  // }
 };
 
 // Common Function to Sync Sports
@@ -180,4 +205,5 @@ async function fetchData(url) {
 
 export default {
   syncDetail,
+  marketSync,
 };

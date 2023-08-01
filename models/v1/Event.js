@@ -4,112 +4,77 @@ import timestampPlugin from "../plugins/timestamp.js";
 
 const eventSchema = new mongoose.Schema({
   // Name of the event
-  name: {
-    type: String,
-    require: true,
-  },
+  name: { type: String, require: true },
+
   // Reference to the sport associated with this event
-  sportId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "sport",
-    required: [true, "Sport is Required!"],
-  },
+  sportId: { type: mongoose.Schema.Types.ObjectId, ref: "sport", required: [true, "Sport is Required!"] },
+
   // API identifier for the sport (if applicable)
-  apiSportId: {
-    type: Number,
-    default: null,
-  },
+  apiSportId: { type: Number, default: null },
+
   // Reference to the competition associated with this event
   competitionId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "competition",
     required: [true, "Competition is Required!"],
   },
+
   // API identifier for the competition (if applicable)
-  apiCompetitionId: {
-    type: Number,
-    default: null,
-  },
+  apiCompetitionId: { type: Number, default: null },
+
   // API identifier for the specific match of the event (if applicable)
-  apiEventId: {
-    type: Number,
-    default: null,
-  },
+  apiEventId: { type: Number, default: null },
+
   // Date of the match
-  matchDate: {
-    type: Date,
-    default: null,
-  },
+  matchDate: { type: Date, default: null },
+
   // Number of markets available for this event (default is 0)
-  marketCount: {
-    type: Number,
-    default: 0,
-  },
+  marketCount: { type: Number, default: 0 },
+
   // Limit for the odds (default is 0, which could mean no limit)
-  oddsLimit: {
-    type: Number,
-    default: 0,
-  },
+  oddsLimit: { type: Number, default: 0 },
+
   // Limit for the total volume of bets (default is 0, which could mean no limit)
-  volumeLimit: {
-    type: Number,
-    default: 0,
-  },
+  volumeLimit: { type: Number, default: 0 },
+
   // Minimum stake allowed for bets (default is 0, which could mean no minimum)
-  minStake: {
-    type: Number,
-    default: 0,
-  },
+  minStake: { type: Number, default: 0 },
+
   // Minimum stake allowed for session bets (default is 0, which could mean no minimum)
-  minStakeSession: {
-    type: Number,
-    default: 0,
-  },
+  minStakeSession: { type: Number, default: 0 },
+
   // Maximum stake allowed for bets (default is 0, which could mean no maximum)
-  maxStake: {
-    type: Number,
-    default: 0,
-  },
+  maxStake: { type: Number, default: 0 },
+
   // Maximum stake allowed for session bets (default is 0, which could mean no maximum)
-  maxStakeSession: {
-    type: Number,
-    default: 0,
-  },
+  maxStakeSession: { type: Number, default: 0 },
+
   // Scoreboard data for the event (stored as a flexible, unstructured object)
-  scoreboard: {
-    type: mongoose.Schema.Types.Mixed,
-    default: {},
-  },
+  scoreboard: { type: mongoose.Schema.Types.Mixed, default: {} },
+
   // Runner data for the event (stored as a flexible, unstructured object)
-  runner: {
-    type: mongoose.Schema.Types.Mixed,
-    default: {},
-  },
+  runner: { type: mongoose.Schema.Types.Mixed, default: {} },
+
   // Indicates if a bet associated with this event is deleted
-  betDeleted: {
-    type: Boolean,
-    default: false,
-  },
+  betDeleted: { type: Boolean, default: false },
+
   // Indicates if a hard bet (a specific type of bet) associated with this event is deleted
-  hardBetDeleted: {
-    type: Boolean,
-    default: false,
-  },
+  hardBetDeleted: { type: Boolean, default: false },
+
   // Indicates if the event is completed
-  completed: {
-    type: Boolean,
-    default: false,
-  },
+  completed: { type: Boolean, default: false },
+
   // Indicates if the event is active
-  isActive: {
-    type: Boolean,
-    default: false,
-  },
+  isActive: { type: Boolean, default: false },
+
   // Indicates if the event is manually created (as opposed to being imported from an external API)
-  isManual: {
-    type: Boolean,
-    default: false,
-  },
+  isManual: { type: Boolean, default: false },
+
+  // Indicates if the event is settled or not
+  isSettled: { type: Boolean, default: false },
+
+  // Indicates the time of event settlement
+  settledTime: { type: Date, default: null },
 });
 
 eventSchema.plugin(timestampPlugin);

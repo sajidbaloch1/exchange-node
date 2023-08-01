@@ -3,6 +3,7 @@ import { generateJwtToken, validatePassword } from "../../lib/helpers/auth.js";
 import Currency from "../../models/v1/Currency.js";
 import { generateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import User, { USER_ROLE } from "../../models/v1/User.js";
+import permissionService from "./permissionService.js";
 
 
 const loginUser = async ({ username, password }) => {
@@ -43,8 +44,11 @@ const loginUser = async ({ username, password }) => {
 
     const loggedInUser = existingUser.toJSON();
     delete loggedInUser.password;
+    const userPermissions = await permissionService.fetchUserPermissions({
+      userId: loggedInUser._id,
+    });
 
-    return { user: loggedInUser, token };
+    return { user: loggedInUser, token, userPermissions };
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -134,7 +138,7 @@ const resetPassword = async ({
     const transactionCodesInUse = await User
       .distinct("transactionCode")
       .exec();
-    
+
     if (!existingUser) {
       throw new Error(
         "The provided credentials are incorrect. Please try again."

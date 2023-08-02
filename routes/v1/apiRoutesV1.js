@@ -10,6 +10,7 @@ import sportRoutes from "./routes/sportRoutes.js";
 import sportsBetCategoryRoutes from "./routes/sportsBetCategoryRoutes.js";
 import themeSettingRoutes from "./routes/themeSettingRoutes.js";
 import transactionActivityRoutes from "./routes/transactionActivityRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import userstakeRoutes from "./routes/userStakeRoutes.js";
 
@@ -28,5 +29,6 @@ app.use("/event", eventRoutes);
 app.use("/exchangeHome", exchangeHomeRoutes);
 app.use("/themeSetting", themeSettingRoutes);
 app.use("/transactionActivity", transactionActivityRoutes);
+app.use("/dashboard", dashboardRoutes);
 
 export default app;

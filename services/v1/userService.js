@@ -322,6 +322,7 @@ const modifyUser = async ({ user, ...reqBody }) => {
       username: reqBody.username,
       _id: { $ne: reqBody._id },
     });
+
     if (exisitngUsername) {
       throw new Error("Username already exists!");
     }
@@ -331,6 +332,14 @@ const modifyUser = async ({ user, ...reqBody }) => {
     }
 
     const loggedInUser = await User.findById(user._id);
+
+    if (reqBody?.transactionCode) {
+      const isValidCode = validateTransactionCode(reqBody.transactionCode, loggedInUser.transactionCode);
+      if (!isValidCode) {
+        throw new Error("Invalid transactionCode!");
+      }
+    }
+
     if (currentUser?.cloneParentId) {
       // If user is cloned user, then logged in user should be the parent of the cloned user
       if (!(currentUser.cloneParentId.toString() === loggedInUser._id.toString())) {
@@ -368,6 +377,7 @@ const modifyUser = async ({ user, ...reqBody }) => {
       reqBody.transactionCode = await generateTransactionCode();
     } else {
       delete reqBody.password;
+      delete reqBody.transactionCode;
     }
 
     // If currentUser is not SUPER_ADMIN

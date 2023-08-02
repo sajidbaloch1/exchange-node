@@ -316,7 +316,7 @@ const calculateUserPointBalance = async (currentUser, userReq) => {
 /**
  * update user in the database
  */
-const modifyUser = async ({ user, isTransactionCode, ...reqBody }) => {
+const modifyUser = async ({ user, ...reqBody }) => {
   try {
     const exisitngUsername = await User.findOne({
       username: reqBody.username,
@@ -333,7 +333,7 @@ const modifyUser = async ({ user, isTransactionCode, ...reqBody }) => {
 
     const loggedInUser = await User.findById(user._id);
 
-    if (reqBody?.transactionCode) {
+    if (reqBody?.isTransactionCode === true || reqBody.transactionCode) {
       const isValidCode = validateTransactionCode(reqBody.transactionCode, loggedInUser.transactionCode);
       if (!isValidCode) {
         throw new Error("Invalid transactionCode!");

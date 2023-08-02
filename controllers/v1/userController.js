@@ -19,13 +19,13 @@ const getAllUser = async (req, res) => {
 
 // Get user by ID
 const getUserById = async (req, res) => {
-  const { _id = null } = req.body;
+  const { _id = null, fields = {} } = req.body;
 
   if (!_id) {
     throw new Error("_id is required");
   }
 
-  const user = await userService.fetchUserId(_id);
+  const user = await userService.fetchUserId(_id, fields);
 
   res.status(200).json({ success: true, data: { details: user } });
 };

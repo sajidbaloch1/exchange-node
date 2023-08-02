@@ -130,7 +130,6 @@ dist
 .pnp.*
 
 # local
-.nvmrc
 .zshrc
 
 .DS_Store

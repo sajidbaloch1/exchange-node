@@ -112,7 +112,7 @@ const addTransaction = async ({ points, type, remark, userId, fromId, user, tran
         fromtoName: userIdFind.username + " / " + fromIdFind.username,
       });
       const loggedInUser = await User.findById(user._id).select("transactionCode");
-      const isValidCode = validateTransactionCode(transactionCode, loggedInUser?.transactionCode);
+      const isValidCode = validateTransactionCode(transactionCode, loggedInUser.transactionCode);
       if (!isValidCode) {
         throw new Error("Invalid transactionCode!");
       }
@@ -140,7 +140,7 @@ const addTransaction = async ({ points, type, remark, userId, fromId, user, tran
         fromtoName: userIdFind.username + " / " + fromIdFind.username,
       });
       const loggedInUser = await User.findById(user._id).select("transactionCode");
-      const isValidCode = validateTransactionCode(transactionCode, loggedInUser?.transactionCode);
+      const isValidCode = validateTransactionCode(transactionCode, loggedInUser.transactionCode);
       if (!isValidCode) {
         throw new Error("Invalid transactionCode!");
       }

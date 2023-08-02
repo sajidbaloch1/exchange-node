@@ -96,13 +96,19 @@ const registerUser = async ({ username, password, fullName, currencyId, mobileNu
       throw new Error("Currency not found!");
     }
 
-    const createdUser = await User.create({
+    const encryptedPassword = await encryptPassword(password);
+    const encryptedTransactionCode = await generateTransactionCode();
+
+    const newUser = {
       username,
-      password,
+      password: encryptedPassword,
       fullName,
       currencyId,
       mobileNumber,
-    });
+      transactionCode: encryptedTransactionCode,
+    };
+
+    const createdUser = await User.create(newUser);
 
     const registeredUser = createdUser.toJSON();
 

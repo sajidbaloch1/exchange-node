@@ -6,7 +6,7 @@ import Permission from "../../models/v1/Permission.js";
 
 const encryptModules = (modulesObj) => {
   const modules = JSON.stringify(modulesObj);
-  const encryptedModules = CryptoJS.AES.encrypt(modules, appConfig.PERMISSIONS_AES_SECRET);
+  const encryptedModules = CryptoJS.AES.encrypt(modules, appConfig.PERMISSIONS_AES_SECRET).toString();
   return encryptedModules;
 };
 
@@ -21,7 +21,7 @@ const fetchAppModules = () => {
 
 const fetchUserPermissions = async ({ userId }) => {
   try {
-    const permission = await Permission.aggregate([
+    const permissions = await Permission.aggregate([
       {
         $match: {
           userId: new mongoose.Types.ObjectId(userId),
@@ -43,20 +43,25 @@ const fetchUserPermissions = async ({ userId }) => {
         },
       },
       {
+        $unwind: "$appModules",
+      },
+      {
         $project: {
-          activeModules: {
-            $map: {
-              input: "$appModules",
-              as: "module",
-              in: "$$module.key",
-            },
+          moduleKey: "$appModules.key",
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          moduleKeys: {
+            $push: "$moduleKey",
           },
         },
       },
     ]);
 
-    if (permission.length) {
-      const encryptedModules = encryptModules(permission[0].activeModules);
+    if (permissions.length && permissions[0].moduleKeys?.length) {
+      const encryptedModules = encryptModules(permissions[0].moduleKeys);
       return encryptedModules;
     }
 
@@ -76,6 +81,18 @@ const setUserPermissions = async ({ userId, moduleIds }) => {
       })),
     };
 
+    // Check if user already has permissions and update it
+    const existingPermissions = await Permission.findOne({ userId: userId });
+    if (existingPermissions) {
+      const updatedUserPermissions = await Permission.findOneAndUpdate(
+        { userId: userId },
+        { $set: { modules: newPermissions.modules } },
+        { new: true }
+      );
+      return updatedUserPermissions;
+    }
+
+    // Create new permissions
     const createdUserPermissions = await Permission.create(newPermissions);
 
     return createdUserPermissions;

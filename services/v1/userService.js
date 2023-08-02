@@ -2,7 +2,7 @@ import mongoose, { isValidObjectId } from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { encryptPassword } from "../../lib/helpers/auth.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
-import { validateTransactionCode } from "../../lib/helpers/transaction-code.js";
+import { generateTransactionCode, validateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import AppModule from "../../models/v1/AppModule.js";
 import User, { SETTLEMENT_DURATION, USER_ACCESSIBLE_ROLES, USER_ROLE } from "../../models/v1/User.js";
 import transactionActivityService from "../../services/v1/transactionActivityService.js";
@@ -11,7 +11,18 @@ import permissionService from "./permissionService.js";
 // Fetch all users from the database
 const fetchAllUsers = async ({ user, ...reqBody }) => {
   try {
-    const { page, perPage, sortBy, direction, showDeleted, role, searchQuery, parentId } = reqBody;
+    const {
+      page,
+      perPage,
+      sortBy,
+      direction,
+      showDeleted,
+      role,
+      searchQuery,
+      parentId,
+      cloneParentId,
+      withPermissions,
+    } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -26,8 +37,14 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
 
     if (role) {
       // Remove system_owner role
-      let showRole = role.filter(function (e) { return e !== USER_ROLE.SYSTEM_OWNER })
+      let showRole = role.filter(function (e) {
+        return e !== USER_ROLE.SYSTEM_OWNER;
+      });
       filters.role = { $in: showRole };
+    }
+
+    if (cloneParentId) {
+      filters.cloneParentId = new mongoose.Types.ObjectId(cloneParentId);
     }
 
     if (parentId) {
@@ -41,7 +58,11 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
 
     const loggedInUser = await User.findById(user._id, { role: 1 });
     if (loggedInUser.role !== USER_ROLE.SYSTEM_OWNER) {
-      filters.parentId = new mongoose.Types.ObjectId(user._id);
+      if (cloneParentId) {
+        filters.cloneParentId = new mongoose.Types.ObjectId(cloneParentId);
+      } else {
+        filters.parentId = new mongoose.Types.ObjectId(user._id);
+      }
     }
 
     const users = await User.aggregate([
@@ -91,6 +112,14 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
     if (users?.length) {
       data.records = users[0]?.paginatedResults || [];
       data.totalRecords = users[0]?.totalRecords?.length ? users[0]?.totalRecords[0].count : 0;
+    }
+
+    // User permissions
+    if (withPermissions) {
+      for (const user of data.records) {
+        const permissions = await permissionService.fetchUserPermissions({ userId: user._id });
+        user.permissions = permissions || null;
+      }
     }
 
     return data;
@@ -146,6 +175,7 @@ const addUser = async ({ user, ...reqBody }) => {
       fullName,
       username,
       password: await encryptPassword(password),
+      transactionCode: await generateTransactionCode(),
       role,
       city,
       rate,
@@ -206,7 +236,6 @@ const addUser = async ({ user, ...reqBody }) => {
     const newUser = await User.create(newUserObj);
 
     // Create entry in transaction type debit
-
     await transactionActivityService.createTransaction({
       points: creditPoints,
       balancePoints: loggedInUser.balance - creditPoints,
@@ -218,7 +247,6 @@ const addUser = async ({ user, ...reqBody }) => {
     });
 
     // Create entry in transaction type credit
-
     await transactionActivityService.createTransaction({
       points: creditPoints,
       balancePoints: creditPoints,
@@ -303,17 +331,25 @@ const modifyUser = async ({ user, ...reqBody }) => {
     }
 
     const loggedInUser = await User.findById(user._id);
-    // Logged in user should have access to the current user's role
-    // Logged in user should be direct parent or System Owner
-    if (
-      !(
-        USER_ACCESSIBLE_ROLES[loggedInUser.role].includes(currentUser.role) &&
-        (currentUser.parentId.toString() === loggedInUser._id.toString() ||
-          loggedInUser.role === USER_ROLE.SYSTEM_OWNER)
-      )
-    ) {
-      throw new Error("Failed to update user!");
+    if (currentUser?.cloneParentId) {
+      // If user is cloned user, then logged in user should be the parent of the cloned user
+      if (!(currentUser.cloneParentId.toString() === loggedInUser._id.toString())) {
+        throw new Error("Failed to update user!");
+      }
+    } else {
+      // Logged in user should have access to the current user's role
+      // Logged in user should be direct parent or System Owner
+      if (
+        !(
+          USER_ACCESSIBLE_ROLES[loggedInUser.role].includes(currentUser.role) &&
+          (currentUser.parentId.toString() === loggedInUser._id.toString() ||
+            loggedInUser.role === USER_ROLE.SYSTEM_OWNER)
+        )
+      ) {
+        throw new Error("Failed to update user!");
+      }
     }
+
     if (reqBody.settlementDurationType === SETTLEMENT_DURATION.DAILY) {
       reqBody.settlementDay = null;
       reqBody.settlementDate = null;
@@ -329,6 +365,7 @@ const modifyUser = async ({ user, ...reqBody }) => {
 
     if (reqBody?.password) {
       reqBody.password = await encryptPassword(reqBody.password);
+      reqBody.transactionCode = await generateTransactionCode();
     } else {
       delete reqBody.password;
     }
@@ -348,6 +385,15 @@ const modifyUser = async ({ user, ...reqBody }) => {
       new: true,
     });
 
+    // Update user's permissions if it's a cloned user
+    if (currentUser?.cloneParentId) {
+      await permissionService.setUserPermissions({
+        userId: currentUser._id,
+        moduleIds: reqBody.moduleIds,
+      });
+    }
+
+    // Update parent's balance
     await User.findOneAndUpdate(updatedUser.parentId, {
       balance: parentBalance,
     });

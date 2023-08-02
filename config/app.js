@@ -25,4 +25,5 @@ export const appConfig = {
   PERMISSIONS_AES_SECRET: env.PERMISSIONS_AES_SECRET,
 
   MONGO_URL: env.MONGO_URL,
+  BASE_URL: env.BASE_URL
 };

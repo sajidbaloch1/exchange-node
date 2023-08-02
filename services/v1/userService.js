@@ -316,7 +316,7 @@ const calculateUserPointBalance = async (currentUser, userReq) => {
 /**
  * update user in the database
  */
-const modifyUser = async ({ user, ...reqBody }) => {
+const modifyUser = async ({ user, isTransactionCode, ...reqBody }) => {
   try {
     const exisitngUsername = await User.findOne({
       username: reqBody.username,

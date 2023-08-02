@@ -1,13 +1,15 @@
-import mongoose, { isValidObjectId } from "mongoose";
-import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { encryptPassword } from "../../lib/helpers/auth.js";
-import {
-    generatePaginationQueries,
-    generateSearchFilters,
-} from "../../lib/helpers/filters.js";
 import Sport from "../../models/v1/Sport.js";
 import Competition from "../../models/v1/Competition.js";
 import Event from "../../models/v1/Event.js";
+import BetCategory from "../../models/v1/BetCategory.js";
+import Market from "../../models/v1/Market.js";
+import { DEFAULT_CATEGORIES } from "../../models/v1/BetCategory.js";
+import commonService from "./commonService.js";
+import { appConfig } from "../../config/app.js";
+
+
+const BASE_URL = "http://3.6.84.17/exchange/api.php";
+
 
 /**
  *  Sidebar Sports List
@@ -39,6 +41,68 @@ const sportsList = async () => {
     }
 };
 
+
+// Sport wise match list
+const sportWiseTodayEvent = async (sportId) => {
+    try {
+        const startOfDay = new Date(new Date().setUTCHours(0, 0, 0, 0)).toISOString()
+        const endOfDay = new Date(new Date().setUTCHours(23, 59, 59, 999)).toISOString()
+
+        let findMatchOdds = await BetCategory.findOne({
+            name: DEFAULT_CATEGORIES[0]
+        }, { _id: 1 });
+
+        let findEvents = await Event.find({
+            sportId: sportId,
+            matchDate: {
+                $gte: startOfDay,
+                $lt: endOfDay
+            }
+        }, { name: 1, matchDate: 1, _id: 1, apiCompetitionId: 1 });
+        let ids = findEvents.map((item) => item._id);
+
+        let findMarketIds = await Market.find({
+            typeId: findMatchOdds._id,
+            eventId: { $in: ids }
+        }, { _id: 0, marketId: 1, eventId: 1 });
+
+        let allMarketId = findMarketIds.map((item) => item.marketId).toString().replace(/["']/g, "");
+
+        var marketUrl = `${appConfig.BASE_URL}?action=matchodds&mid=${allMarketId}`;
+        const { statusCode, data } = await commonService.fetchData(
+            marketUrl
+        );
+
+        let allData = [];
+        if (statusCode === 200) {
+            for (const market of data) {
+                let eventId = findMarketIds.filter(item => item.marketId == market.stMarketID);
+                let eventInfo = findEvents.filter(item => item._id == eventId[0].eventId.toString());
+                let findCompetition = await Competition.findOne({
+                    apiCompetitionId: eventInfo[0].apiCompetitionId,
+                }, { name: 1 });
+                if (eventInfo.length > 0 && findCompetition) {
+                    allData.push({
+                        eventName: eventInfo[0].name,
+                        competitionName: findCompetition.name,
+                        matchDate: eventInfo[0].matchDate,
+                        matchOdds: {
+                            back: market['selectionDepth'][0]['Back'][0]['Price'],
+                            lay: market['selectionDepth'][0]['Lay'][0]['Price']
+                        }
+                    })
+                }
+            }
+        }
+        return allData;
+    } catch (e) {
+        throw new Error(e);
+    }
+};
+
+
+
 export default {
-    sportsList
+    sportsList,
+    sportWiseTodayEvent
 };

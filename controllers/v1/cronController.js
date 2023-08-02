@@ -5,8 +5,9 @@ import Sport from "../../models/v1/Sport.js";
 
 //Import Service
 import MarketService from "../../services/v1/marketService.js";
+import commonService from "../../services/v1/commonService.js";
 
-const BASE_URL = "http://3.6.84.17/exchange/api.php";
+import { appConfig } from "../../config/app.js";
 
 //Sync all APIs for Sports, Competitions, Events
 const syncDetail = async (req, res) => {
@@ -35,9 +36,12 @@ const syncDetail = async (req, res) => {
 const marketSync = async (req, res) => {
   //try {
   // Construct the URL to fetch sports data from the API
-  var url = `${BASE_URL}`;
+  var url = `${appConfig.BASE_URL}`;
   // Fetch sports data from the API using the fetchData function
-  const { statusCode, data } = await fetchData(url);
+  const { statusCode, data } = await commonService.fetchData(
+    url
+  );
+
 
   // Check if the API request was successful (status code 200)
   if (statusCode === 200) {
@@ -56,10 +60,12 @@ const marketSync = async (req, res) => {
 // Common Function to Sync Sports
 async function syncSports() {
   // Construct the URL to fetch sports data from the API
-  var url = `${BASE_URL}?action=sports`;
+  var url = `${appConfig.BASE_URL}?action=sports`;
 
   // Fetch sports data from the API using the fetchData function
-  const { statusCode, data } = await fetchData(url);
+  const { statusCode, data } = await commonService.fetchData(
+    url
+  );
 
   // Check if the API request was successful (status code 200)
   if (statusCode === 200) {
@@ -94,10 +100,12 @@ async function syncCompetition() {
   // Iterate through each sport to fetch competitions for it
   for (const sport of allSports) {
     // Construct the URL to fetch competitions data for the current sport
-    var competitionUrl = `${BASE_URL}?action=serise&sport_id=${sport.apiSportId}`;
+    var competitionUrl = `${appConfig.BASE_URL}?action=serise&sport_id=${sport.apiSportId}`;
 
     // Fetch competitions data from the API for the current sport
-    const { statusCode, data } = await fetchData(competitionUrl);
+    const { statusCode, data } = await commonService.fetchData(
+      competitionUrl
+    );
 
     // Check if the API request was successful (status code 200)
     if (statusCode === 200) {
@@ -140,10 +148,12 @@ async function syncEvents() {
   // Iterate through each competition to fetch events for it
   for (const competition of allCompetition) {
     // Construct the URL to fetch events data for the current competition
-    var eventUrl = `${BASE_URL}?action=event&sport_id=${competition.apiSportId}&competition_id=${competition.apiCompetitionId}`;
+    var eventUrl = `${appConfig.BASE_URL}?action=event&sport_id=${competition.apiSportId}&competition_id=${competition.apiCompetitionId}`;
 
     // Fetch events data from the API for the current competition
-    const { statusCode, data } = await fetchData(eventUrl);
+    const { statusCode, data } = await commonService.fetchData(
+      eventUrl
+    );
 
     // Check if the API request was successful (status code 200)
     if (statusCode === 200) {
@@ -176,31 +186,6 @@ async function syncEvents() {
       }
     }
   }
-}
-
-// Common function to make CURL request to any URL
-async function fetchData(url) {
-  const curl = new Curl();
-  curl.setOpt(Curl.option.URL, url);
-  curl.setOpt(Curl.option.HTTPGET, 1);
-
-  return new Promise((resolve, reject) => {
-    curl.on("end", (statusCode, body) => {
-      // Parse the response body into a JavaScript object
-      const parsedData = JSON.parse(body);
-
-      // Resolve the promise with the parsed data and the status code
-      resolve({ statusCode, data: parsedData });
-    });
-
-    curl.on("error", (error) => {
-      reject(error);
-    });
-
-    curl.perform();
-  }).finally(() => {
-    curl.close();
-  });
 }
 
 export default {

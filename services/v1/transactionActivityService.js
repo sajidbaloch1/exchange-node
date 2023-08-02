@@ -3,7 +3,7 @@ import { generatePaginationQueries, generateSearchFilters } from "../../lib/help
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import User from "../../models/v1/User.js";
-
+import { validateTransactionCode } from "../../lib/helpers/transaction-code.js";
 // Create transaction in database
 const createTransaction = async ({ points, balancePoints, type, remark, userId, fromId, fromtoName }) => {
   try {
@@ -16,6 +16,7 @@ const createTransaction = async ({ points, balancePoints, type, remark, userId, 
       fromId,
       fromtoName,
     });
+
     await userTransaction.save();
     return userTransaction;
   } catch (error) {
@@ -95,7 +96,7 @@ const fetchAllTransaction = async ({ user, ...reqBody }) => {
 };
 
 // Add transaction in database
-const addTransaction = async ({ points, type, remark, userId, fromId }) => {
+const addTransaction = async ({ points, type, remark, userId, fromId, user, transactionCode }) => {
   try {
     const userIdFind = await User.findOne({ _id: userId });
     const fromIdFind = await User.findOne({ _id: fromId });
@@ -110,6 +111,12 @@ const addTransaction = async ({ points, type, remark, userId, fromId }) => {
         fromId,
         fromtoName: userIdFind.username + " / " + fromIdFind.username,
       });
+      const loggedInUser = await User.findById(user._id);
+
+      const isValidCode = validateTransactionCode(transactionCode, loggedInUser?.transactionCode);
+      if (!isValidCode) {
+        throw new Error("Invalid transactionCode!");
+      }
       await userTransaction.save();
 
       fromTransaction = new Transaction({
@@ -133,6 +140,12 @@ const addTransaction = async ({ points, type, remark, userId, fromId }) => {
         fromId,
         fromtoName: userIdFind.username + " / " + fromIdFind.username,
       });
+      const loggedInUser = await User.findById(user._id);
+
+      const isValidCode = validateTransactionCode(transactionCode, loggedInUser?.transactionCode);
+      if (!isValidCode) {
+        throw new Error("Invalid transactionCode!");
+      }
       await userTransaction.save();
 
       fromTransaction = new Transaction({
@@ -144,7 +157,6 @@ const addTransaction = async ({ points, type, remark, userId, fromId }) => {
         fromId: userId,
         fromtoName: userIdFind.username + " / " + fromIdFind.username,
       });
-
       await fromTransaction.save();
     }
 

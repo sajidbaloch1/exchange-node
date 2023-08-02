@@ -24,7 +24,7 @@ const createTransaction = async ({ points, balancePoints, type, remark, userId, 
 };
 
 // Fetch all transaction from the database
-const fetchAllTransaction = async ({ ...reqBody }) => {
+const fetchAllTransaction = async ({ user, ...reqBody }) => {
   try {
     const { page, perPage, sortBy, direction, searchQuery, userId } = reqBody;
 
@@ -44,14 +44,18 @@ const fetchAllTransaction = async ({ ...reqBody }) => {
     if (fromDate && toDate) {
       filters = {
         createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) },
-        userId: new mongoose.Types.ObjectId(userId),
+        userId: new mongoose.Types.ObjectId(user._id),
       };
     } else {
       filters = {
-        userId: new mongoose.Types.ObjectId(userId),
+        userId: new mongoose.Types.ObjectId(user._id),
       };
     }
 
+    if (userId) {
+      filters.userId = new mongoose.Types.ObjectId(userId);
+      filters.fromId = new mongoose.Types.ObjectId(user._id);
+    }
     if (searchQuery) {
       const fields = ["fromtoName"];
       filters.$or = generateSearchFilters(searchQuery, fields);

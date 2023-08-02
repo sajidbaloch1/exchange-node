@@ -5,7 +5,7 @@ import Competition from "../../models/v1/Competition.js";
 async function competitionListingRequest(req) {
     req.body.page = req.body?.page ? Number(req.body.page) : null;
     req.body.perPage = req.body?.perPage ? Number(req.body.perPage) : 10;
-    req.body.sortBy = req.body?.sortBy ? req.body.sortBy : "createdAt";
+    req.body.sortBy = req.body?.sortBy ? req.body.sortBy : "isActive";
     req.body.direction = req.body?.direction ? req.body.direction : "desc";
     req.body.searchQuery = req.body?.searchQuery
         ? req.body.searchQuery?.trim()
@@ -16,6 +16,20 @@ async function competitionListingRequest(req) {
     req.body.showRecord = req.body?.showRecord
         ? req.body.showRecord?.trim()
         : 'All';
+    req.body.sportId = req.body?.sportId
+        ? req.body.sportId?.trim()
+        : null;
+    req.body.status = req.body?.status
+        ? req.body.status?.trim()
+        : null;
+    req.body.fromDate = req.body?.fromDate
+        ? req.body.fromDate
+        : null;
+    req.body.toDate = req.body?.toDate
+        ? req.body.toDate
+        : null;
+
+
 
     const validationSchema = Yup.object().shape({
         page: Yup.number().nullable(true),
@@ -33,6 +47,10 @@ async function competitionListingRequest(req) {
             .nullable(true),
 
         searchQuery: Yup.string().nullable(true),
+        status: Yup.boolean().nullable(true),
+        fromDate: Yup.date().nullable(true),
+        toDate: Yup.date().nullable(true),
+        sportId: Yup.string().nullable(true),
     });
 
     await validationSchema.validate(req.body);

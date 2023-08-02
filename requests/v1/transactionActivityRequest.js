@@ -33,7 +33,7 @@ async function transactionActivityListingRequest(req) {
     searchQuery: Yup.string().nullable(true),
     fromDate: Yup.date().nullable(true),
     toDate: Yup.date().nullable(true),
-    userId: Yup.string().required().test("userId", "Given userId is not valid!", isValidObjectId),
+    userId: Yup.string().nullable(true),
   });
 
   await validationSchema.validate(req.body);

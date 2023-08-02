@@ -2,17 +2,24 @@ import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import Competition from "../../models/v1/Competition.js";
 import Sport from "../../models/v1/Sport.js";
+import Event from "../../models/v1/Event.js";
+import mongoose from "mongoose";
 
 // Fetch all competition from the database
 const fetchAllCompetition = async ({ ...reqBody }) => {
   try {
-    const { page, perPage, sortBy, direction, searchQuery, showDeleted, showRecord } = reqBody;
+    const { page, perPage, sortBy, direction, searchQuery, showDeleted, showRecord, sportId, status } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
 
     const paginationQueries = generatePaginationQueries(page, perPage);
 
+    let fromDate, toDate;
+    if (reqBody.fromDate && reqBody.toDate) {
+      fromDate = new Date(new Date(reqBody.fromDate).setUTCHours(0, 0, 0)).toISOString();
+      toDate = new Date(new Date(reqBody.toDate).setUTCHours(23, 59, 59)).toISOString();
+    }
     // Filters
     let filters = {};
     if (showRecord == "All") {
@@ -24,6 +31,25 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
         isDeleted: showDeleted,
         isManual: true,
       };
+    }
+    if (sportId) {
+      filters.sportId = new mongoose.Types.ObjectId(sportId)
+    }
+
+    if (status) {
+      if (status == 'true') {
+        filters.isActive = true
+      }
+      else {
+        filters.isActive = false
+      }
+    }
+
+    if (fromDate && toDate) {
+      filters = {
+        startDate: { $lte: new Date(toDate) },
+        endDate: { $gte: new Date(fromDate) },
+      }
     }
 
     if (searchQuery) {
@@ -75,6 +101,28 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
       },
     ]);
 
+    for (var i = 0; i < competition[0].paginatedResults.length; i++) {
+
+      // Condition for competition status
+      if (competition[0].paginatedResults[i].startDate <= new Date() && competition[0].paginatedResults[i].endDate >= new Date()) {
+        competition[0].paginatedResults[i].competitionStatus = "Ongoing"
+      }
+      else if (competition[0].paginatedResults[i].startDate > new Date()) {
+        competition[0].paginatedResults[i].competitionStatus = "Upcoming"
+      }
+      else if (competition[0].paginatedResults[i].endDate < new Date()) {
+        competition[0].paginatedResults[i].competitionStatus = "Completed"
+      }
+      else {
+        competition[0].paginatedResults[i].competitionStatus = "None"
+      }
+
+      // Condition For Total Event 
+      let totalEvent = await Event.count({ competitionId: competition[0].paginatedResults[i]._id });
+      competition[0].paginatedResults[i].totalEvent = totalEvent;
+
+    }
+
     const data = {
       records: [],
       totalRecords: 0,
@@ -84,7 +132,6 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
       data.records = competition[0]?.paginatedResults || [];
       data.totalRecords = competition[0]?.totalRecords?.length ? competition[0]?.totalRecords[0].count : 0;
     }
-
     return data;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);

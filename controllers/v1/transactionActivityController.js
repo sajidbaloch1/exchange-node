@@ -3,9 +3,9 @@ import transactionActivityService from "../../services/v1/transactionActivitySer
 
 // Get all transactionActivitys
 const getAllTransaction = async (req, res) => {
-    const { body } = await transactionActivityRequest.transactionActivityListingRequest(req);
+    const { user, body } = await transactionActivityRequest.transactionActivityListingRequest(req);
 
-    const transactionActivitys = await transactionActivityService.fetchAllTransaction({ ...body });
+    const transactionActivitys = await transactionActivityService.fetchAllTransaction({ user, ...body });
 
     return res.status(200).json({ success: true, data: transactionActivitys });
 };

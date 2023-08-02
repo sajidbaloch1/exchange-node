@@ -1,16 +1,23 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import Event from "../../models/v1/Event.js";
+import mongoose from "mongoose";
 
 // Fetch all event from the database
 const fetchAllEvent = async ({ ...reqBody }) => {
   try {
-    const { page, perPage, sortBy, direction, searchQuery, showDeleted, showRecord } = reqBody;
+    const { page, perPage, sortBy, direction, searchQuery, showDeleted, showRecord, status, sportId, competitionId } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
 
     const paginationQueries = generatePaginationQueries(page, perPage);
+
+    let fromDate, toDate;
+    if (reqBody.fromDate && reqBody.toDate) {
+      fromDate = new Date(new Date(reqBody.fromDate).setUTCHours(0, 0, 0)).toISOString();
+      toDate = new Date(new Date(reqBody.toDate).setUTCHours(23, 59, 59)).toISOString();
+    }
 
     // Filters
     let filters = {};
@@ -23,6 +30,29 @@ const fetchAllEvent = async ({ ...reqBody }) => {
         isDeleted: showDeleted,
         isManual: true,
       };
+    }
+
+    if (sportId) {
+      filters.sportId = new mongoose.Types.ObjectId(sportId)
+    }
+
+    if (competitionId) {
+      filters.competitionId = new mongoose.Types.ObjectId(competitionId)
+    }
+
+    if (status) {
+      if (status == 'true') {
+        filters.isActive = true
+      }
+      else {
+        filters.isActive = false
+      }
+    }
+
+    if (fromDate && toDate) {
+      filters = {
+        matchDate: { $gte: new Date(fromDate), $lte: new Date(toDate) },
+      }
     }
 
     if (searchQuery) {

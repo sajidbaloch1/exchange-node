@@ -133,7 +133,7 @@ async function updateUserRequest(req) {
     transactionCode: Yup.string().nullable(true),
   };
   if (req.body.transactionCode) {
-    schemaObj.isTransactionCode = Yup.string().required("Transaction code is required.");
+    schemaObj.isTransactionCode = Yup.string().required("isTransactioncode flag is required.");
   }
 
   if (req.body.password) {

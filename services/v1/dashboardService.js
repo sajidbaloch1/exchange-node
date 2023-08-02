@@ -1,50 +1,47 @@
+import mongoose, { mongo } from "mongoose";
 import User from "../../models/v1/User.js";
 // Fetch all Dashboard from the database
 const fetchDashboardId = async (_id) => {
   try {
-    const dashboard = await User.findById(_id).select("balance creditPoints");
-
-    if (!dashboard) {
-      throw new Error("User not found");
-    }
-
-    const db = User.db;
-    console.log(db);
-    const aggregationQuery = [
-      // {
-      //   $match: { $expr: { $eq: ["$_id", _id] } },
-      // },
-
+    const result = await User.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId(_id) },
+      },
       {
         $graphLookup: {
           from: "users",
           startWith: "$_id",
-          connectFromField: "parentId",
-          connectToField: "_id",
+          connectFromField: "_id",
+          connectToField: "parentId",
           as: "descendants",
           maxDepth: 10,
         },
       },
       {
+        $unwind: "$descendants",
+      },
+      {
         $group: {
           _id: null,
-          totalExposer: { $sum: "$descendants.exposer" },
+          creditPoints: { $first: "$creditPoints" },
+          totalPoint: { $sum: "$descendants.balance" },
+          totalExposure: { $sum: "$descendants.exposure" },
+          balance: { $first: "$balance" },
         },
       },
       {
         $project: {
           _id: 0,
           balance: 1,
-          totalExposer: 1,
+          creditPoints: 1,
+          totalPoint: 1,
+          totalExposure: 1,
+          settlementPoint: { $subtract: ["$totalPoint", "$creditPoints"] },
         },
       },
-    ];
-    console.log(aggregationQuery);
-    const exposure = await db.collection("users").aggregate(aggregationQuery).toArray();
+    ]);
     return {
-      balance: dashboard.balance,
-      creditPoints: dashboard.creditPoints,
-      exposure,
+      result,
     };
   } catch (e) {
     throw new Error(e);

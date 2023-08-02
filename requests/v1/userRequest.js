@@ -129,7 +129,7 @@ async function updateUserRequest(req) {
     password: Yup.string().nullable(true),
 
     mobileNumber: Yup.string().length(10).nullable(true),
-    isTransactionCode: Yup.boolean().required(),
+    isTransactionCode: Yup.boolean().nullable(true),
     transactionCode: Yup.string().nullable(true),
   };
 

@@ -8,6 +8,19 @@ const getSportsList = async (req, res) => {
     res.status(200).json({ success: true, data: sprtsList });
 };
 
+// Sport wise match list
+
+const getSportWiseTodayEvent = async (req, res) => {
+    const { sportId = null } = req.body;
+    if (!sportId) {
+        throw new Error("sportId is required");
+    }
+    const matchList = await exchangeHomeService.sportWiseTodayEvent(sportId);
+
+    res.status(200).json({ success: true, data: matchList });
+};
+
 export default {
-    getSportsList
+    getSportsList,
+    getSportWiseTodayEvent
 };

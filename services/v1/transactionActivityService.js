@@ -112,11 +112,11 @@ const addTransaction = async ({ points, type, remark, userId, fromId, user, tran
                 fromId,
                 fromtoName: userIdFind.username + " / " + fromIdFind.username,
             });
-            // const loggedInUser = await User.findById(user._id).select("transactionCode");
-            // const isValidCode = validateTransactionCode(transactionCode, loggedInUser.transactionCode);
-            // if (!isValidCode) {
-            //     throw new Error("Invalid transactionCode!");
-            // }
+            const loggedInUser = await User.findById(user._id).select("transactionCode");
+            const isValidCode = validateTransactionCode(transactionCode, loggedInUser.transactionCode);
+            if (!isValidCode) {
+                throw new Error("Invalid transactionCode!");
+            }
             await userTransaction.save();
 
             fromTransaction = new Transaction({
@@ -146,11 +146,11 @@ const addTransaction = async ({ points, type, remark, userId, fromId, user, tran
                 fromId,
                 fromtoName: userIdFind.username + " / " + fromIdFind.username,
             });
-            // const loggedInUser = await User.findById(user._id).select("transactionCode");
-            // const isValidCode = validateTransactionCode(transactionCode, loggedInUser.transactionCode);
-            // if (!isValidCode) {
-            //     throw new Error("Invalid transactionCode!");
-            // }
+            const loggedInUser = await User.findById(user._id).select("transactionCode");
+            const isValidCode = validateTransactionCode(transactionCode, loggedInUser.transactionCode);
+            if (!isValidCode) {
+                throw new Error("Invalid transactionCode!");
+            }
             await userTransaction.save();
 
             fromTransaction = new Transaction({

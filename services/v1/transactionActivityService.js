@@ -1,3 +1,4 @@
+
 import Transaction from "../../models/v1/Transaction.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import mongoose from "mongoose";
@@ -104,23 +105,23 @@ const addTransaction = async ({ points, type, remark, userId, fromId, user, tran
         if (type == "credit") {
             userTransaction = new Transaction({
                 points,
-                balancePoints: userIdFind.balance + points,
+                balancePoints: Number(userIdFind.balance) + Number(points),
                 type: "credit",
                 remark,
                 userId,
                 fromId,
                 fromtoName: userIdFind.username + " / " + fromIdFind.username,
             });
-            const loggedInUser = await User.findById(user._id).select("transactionCode");
-            const isValidCode = validateTransactionCode(transactionCode, loggedInUser.transactionCode);
-            if (!isValidCode) {
-                throw new Error("Invalid transactionCode!");
-            }
+            // const loggedInUser = await User.findById(user._id).select("transactionCode");
+            // const isValidCode = validateTransactionCode(transactionCode, loggedInUser.transactionCode);
+            // if (!isValidCode) {
+            //     throw new Error("Invalid transactionCode!");
+            // }
             await userTransaction.save();
 
             fromTransaction = new Transaction({
                 points,
-                balancePoints: fromIdFind.balance - points,
+                balancePoints: Number(fromIdFind.balance) - Number(points),
                 type: "debit",
                 remark,
                 userId: fromId,
@@ -130,31 +131,31 @@ const addTransaction = async ({ points, type, remark, userId, fromId, user, tran
 
             await fromTransaction.save();
             await User.findOneAndUpdate(userIdFind._id, {
-                balance: userIdFind.balance + points,
+                balance: Number(userIdFind.balance) + Number(points),
             });
             await User.findOneAndUpdate(fromIdFind._id, {
-                balance: fromIdFind.balance - points,
+                balance: Number(fromIdFind.balance) - Number(points),
             });
         } else {
             userTransaction = new Transaction({
                 points,
-                balancePoints: userIdFind.balance - points,
+                balancePoints: Number(userIdFind.balance) - Number(points),
                 type: "debit",
                 remark,
                 userId,
                 fromId,
                 fromtoName: userIdFind.username + " / " + fromIdFind.username,
             });
-            const loggedInUser = await User.findById(user._id).select("transactionCode");
-            const isValidCode = validateTransactionCode(transactionCode, loggedInUser.transactionCode);
-            if (!isValidCode) {
-                throw new Error("Invalid transactionCode!");
-            }
+            // const loggedInUser = await User.findById(user._id).select("transactionCode");
+            // const isValidCode = validateTransactionCode(transactionCode, loggedInUser.transactionCode);
+            // if (!isValidCode) {
+            //     throw new Error("Invalid transactionCode!");
+            // }
             await userTransaction.save();
 
             fromTransaction = new Transaction({
                 points,
-                balancePoints: fromIdFind.balance + points,
+                balancePoints: Number(fromIdFind.balance) + Number(points),
                 type: "credit",
                 remark,
                 userId: fromId,
@@ -163,10 +164,10 @@ const addTransaction = async ({ points, type, remark, userId, fromId, user, tran
             });
             await fromTransaction.save();
             await User.findOneAndUpdate(userIdFind._id, {
-                balance: userIdFind.balance - points,
+                balance: Number(userIdFind.balance) - Number(points),
             });
             await User.findOneAndUpdate(fromIdFind._id, {
-                balance: fromIdFind.balance + points,
+                balance: Number(fromIdFind.balance) + Number(points),
             });
         }
 

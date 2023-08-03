@@ -10,6 +10,6 @@ route(router, "post", "/getThemeUserById", themeUserController.getThemeUserById)
 route(router, "post", "/updateThemeUser", themeUserController.updateThemeUser);
 route(router, "post", "/deleteThemeUser", themeUserController.deleteThemeUser);
 route(router, "post", "/login", themeUserController.loginThemeUser, false);
-route(router, "post", "/resetPassword", themeUserController.resetPassword, false);
+route(router, "post", "/resetPassword", themeUserController.resetPassword);
 
 export default router;

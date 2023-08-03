@@ -59,7 +59,7 @@ const loginThemeUser = async (req, res) => {
     const { user, body } = await themeUserRequest.themeUserLoginRequest(req);
 
     const themeUser = await themeUserService.loginThemeUser({ user, ...body });
-    res.status(200).json({ success: true, data: { details: themeUser } });
+    res.status(200).json({ success: true, data: themeUser });
 };
 
 /**

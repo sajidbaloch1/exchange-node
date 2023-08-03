@@ -6,5 +6,6 @@ const router = express.Router();
 
 route(router, "post", "/syncData", cronController.syncDetail, false);
 route(router, "post", "/marketSync", cronController.marketSync, false);
+route(router, "post", "/getMatchOdds", cronController.getMatchOdds, false);
 
 export default router;

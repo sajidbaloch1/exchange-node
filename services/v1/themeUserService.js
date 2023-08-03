@@ -180,14 +180,16 @@ const loginThemeUser = async ({ username, password }) => {
             throw new Error(errorMessage);
         }
 
-        let data = {
+        let user = {
             _id: existingUser._id,
             name: existingUser.name,
             username: existingUser.username,
             superUserId: existingUser.userId
         }
 
-        return data;
+        const token = generateJwtToken({ _id: existingUser._id });
+
+        return { user, token };
     } catch (e) {
         throw new ErrorResponse(e.message).status(200);
     }

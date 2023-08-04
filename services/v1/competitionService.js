@@ -18,6 +18,8 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
       showRecord,
       sportId,
       status,
+      fromDate,
+      toDate,
       competitionId,
       fields,
     } = reqBody;
@@ -31,12 +33,6 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
     const paginationQueries = generatePaginationQueries(page, perPage);
-
-    let fromDate, toDate;
-    if (reqBody.fromDate && reqBody.toDate) {
-      fromDate = new Date(new Date(reqBody.fromDate).setUTCHours(0, 0, 0)).toISOString();
-      toDate = new Date(new Date(reqBody.toDate).setUTCHours(23, 59, 59)).toISOString();
-    }
 
     // Filters
     let filters = {};
@@ -65,9 +61,18 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
 
     if (fromDate && toDate) {
       filters = {
-        startDate: { $lte: new Date(toDate) },
-        endDate: { $gte: new Date(fromDate) },
+        matchDate: { $gte: new Date(fromDate), $lte: new Date(toDate) },
       };
+    } else {
+      if (fromDate) {
+        filters = {
+          matchDate: { $gte: new Date(fromDate) },
+        };
+      } else if (toDate) {
+        filters = {
+          matchDate: { $gte: new Date(), $lte: new Date(toDate) },
+        };
+      }
     }
 
     if (searchQuery) {

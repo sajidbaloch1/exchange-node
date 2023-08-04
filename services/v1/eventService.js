@@ -6,19 +6,31 @@ import Event from "../../models/v1/Event.js";
 // Fetch all event from the database
 const fetchAllEvent = async ({ ...reqBody }) => {
   try {
-    const { page, perPage, sortBy, direction, searchQuery, showDeleted, showRecord, status, sportId, competitionId } =
-      reqBody;
+    const {
+      page,
+      perPage,
+      sortBy,
+      direction,
+      searchQuery,
+      showDeleted,
+      showRecord,
+      status,
+      fromDate,
+      toDate,
+      sportId,
+      competitionId,
+      fields,
+    } = reqBody;
+
+    // Projection
+    const projection = [];
+    if (fields) {
+      projection.push({ $project: fields });
+    }
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
-
     const paginationQueries = generatePaginationQueries(page, perPage);
-
-    let fromDate, toDate;
-    if (reqBody.fromDate && reqBody.toDate) {
-      fromDate = new Date(new Date(reqBody.fromDate).setUTCHours(0, 0, 0)).toISOString();
-      toDate = new Date(new Date(reqBody.toDate).setUTCHours(23, 59, 59)).toISOString();
-    }
 
     // Filters
     let filters = {};
@@ -53,6 +65,16 @@ const fetchAllEvent = async ({ ...reqBody }) => {
       filters = {
         matchDate: { $gte: new Date(fromDate), $lte: new Date(toDate) },
       };
+    } else {
+      if (fromDate) {
+        filters = {
+          matchDate: { $gte: new Date(fromDate) },
+        };
+      } else if (toDate) {
+        filters = {
+          matchDate: { $gte: new Date(), $lte: new Date(toDate) },
+        };
+      }
     }
 
     if (searchQuery) {
@@ -115,6 +137,7 @@ const fetchAllEvent = async ({ ...reqBody }) => {
         $facet: {
           totalRecords: [{ $count: "count" }],
           paginatedResults: [
+            ...projection,
             {
               $sort: { [sortBy]: sortDirection },
             },

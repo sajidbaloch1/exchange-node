@@ -55,6 +55,12 @@ const competitionSchema = new mongoose.Schema({
 competitionSchema.plugin(timestampPlugin);
 competitionSchema.plugin(softDeletePlugin);
 
+competitionSchema.index({ name: 1 });
+competitionSchema.index({ sportId: 1 });
+competitionSchema.index({ startDate: 1 });
+competitionSchema.index({ endDate: 1 });
+competitionSchema.index({ isActive: 1 });
+
 const Competition = mongoose.model("competition", competitionSchema);
 
 export default Competition;

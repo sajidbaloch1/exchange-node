@@ -110,7 +110,8 @@ async function createUserRequest(req) {
 
     currencyId: Yup.string().nullable(true),
 
-    forcePasswordChange: Yup.boolean(),
+    isCasinoAvailable: Yup.boolean().nullable(true),
+    isAutoSettlement: Yup.boolean().nullable(true),
   });
 
   await validationSchema.validate(req.body);
@@ -131,6 +132,8 @@ async function updateUserRequest(req) {
     mobileNumber: Yup.string().length(10).nullable(true),
     isTransactionCode: Yup.boolean().nullable(true),
     transactionCode: Yup.string().nullable(true),
+    isCasinoAvailable: Yup.boolean().nullable(true),
+    isAutoSettlement: Yup.boolean().nullable(true),
   };
   if (req.body.transactionCode) {
     schemaObj.isTransactionCode = Yup.string().required("isTransactioncode flag is required.");

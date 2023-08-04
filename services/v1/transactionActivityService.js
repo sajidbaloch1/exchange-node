@@ -101,10 +101,10 @@ const addTransaction = async ({ points, type, remark, userId, fromId, user, tran
     const userIdFind = await User.findOne({ _id: userId });
     const fromIdFind = await User.findOne({ _id: fromId });
     let userTransaction, fromTransaction;
-    if (type == "credit") {
+    if (type == "debit") {
       userTransaction = new Transaction({
         points,
-        balancePoints: userIdFind.balance + points,
+        balancePoints: Number(userIdFind.balance) + Number(points),
         type: "credit",
         remark,
         userId,

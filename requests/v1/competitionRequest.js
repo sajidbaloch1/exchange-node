@@ -10,7 +10,7 @@ async function competitionListingRequest(req) {
   req.body.searchQuery = req.body?.searchQuery ? req.body.searchQuery?.trim() : null;
   req.body.showDeleted = req.body?.showDeleted ? [true, "true"].includes(req.body.showDeleted) : false;
   req.body.showRecord = req.body?.showRecord ? req.body.showRecord?.trim() : "All";
-  req.body.status = req.body?.status ? [true, "true"].includes(req.body.status) : true;
+  req.body.status = req.body?.status ? req.body.status : null;
   req.body.fromDate = req.body.fromDate || null;
   req.body.toDate = req.body.toDate || null;
   req.body.sportId = req.body.sportId || null;
@@ -81,8 +81,48 @@ async function updateCompetitionRequest(req) {
   return req;
 }
 
+async function competitionListingOptionsRequest(req) {
+  req.body.sortBy = req.body?.sortBy ? req.body.sortBy : "isActive";
+  req.body.direction = req.body?.direction ? req.body.direction : "desc";
+  req.body.showDeleted = req.body?.showDeleted ? [true, "true"].includes(req.body.showDeleted) : false;
+  req.body.showRecord = req.body?.showRecord ? req.body.showRecord?.trim() : "All";
+  req.body.status = req.body?.status ? req.body.status : null;
+  req.body.sportId = req.body.sportId || null;
+  req.body.competitionId = req.body.competitionId || null;
+  req.body.fields = req.body.fields
+    ? typeof req.body.fields === "string"
+      ? JSON.parse(req.body.fields)
+      : req.body.fields
+    : null;
+
+  const validationSchema = Yup.object().shape({
+    sortBy: Yup.string().oneOf(Object.keys(Competition.schema.paths), "Invalid sortBy key."),
+
+    showDeleted: Yup.boolean(),
+
+    showRecord: Yup.string(),
+
+    direction: Yup.string().oneOf(["asc", "desc", null], "Invalid direction use 'asc' or 'desc'.").nullable(true),
+
+    status: Yup.boolean().nullable(true),
+
+    sportId: Yup.string()
+      .nullable(true)
+      .test("sportId", "Invalid sportId!", (v) => !v || isValidObjectId),
+
+    competitionId: Yup.string()
+      .nullable(true)
+      .test("competitionId", "Invalid competitionId!", (v) => !v || isValidObjectId),
+  });
+
+  await validationSchema.validate(req.body);
+
+  return req;
+}
+
 export default {
   competitionListingRequest,
   createCompetitionRequest,
   updateCompetitionRequest,
+  competitionListingOptionsRequest,
 };

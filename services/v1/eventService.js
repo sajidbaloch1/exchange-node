@@ -53,12 +53,8 @@ const fetchAllEvent = async ({ ...reqBody }) => {
       filters.competitionId = new mongoose.Types.ObjectId(competitionId);
     }
 
-    if (status) {
-      if (status == "true") {
-        filters.isActive = true;
-      } else {
-        filters.isActive = false;
-      }
+    if (status !== null) {
+      filters.isActive = [true, "true"].includes(status);
     }
 
     if (fromDate && toDate) {

@@ -104,6 +104,17 @@ const activeAllCompetition = async (req, res) => {
   res.status(200).json({ success: true, data: { details: {} } });
 };
 
+// Get all competition list for Options
+const getAllCompetitionList = async (req, res) => {
+  const { body } = await competitionRequest.competitionListingOptionsRequest(req);
+
+  const competitions = await competitionService.fetchAllCompetitionList({
+    ...body,
+  });
+
+  return res.status(200).json({ success: true, data: { records: competitions } });
+};
+
 export default {
   getAllCompetition,
   getAllCompetitionEvents,
@@ -113,4 +124,5 @@ export default {
   deleteCompetition,
   updateCompetitionStatus,
   activeAllCompetition,
+  getAllCompetitionList,
 };

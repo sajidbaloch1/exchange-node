@@ -11,7 +11,7 @@ async function eventListingRequest(req) {
   req.body.searchQuery = req.body?.searchQuery ? req.body.searchQuery?.trim() : null;
   req.body.showDeleted = req.body?.showDeleted ? [true, "true"].includes(req.body.showDeleted) : false;
   req.body.showRecord = req.body?.showRecord ? req.body.showRecord?.trim() : "All";
-  req.body.status = req.body?.status ? [true, "true"].includes(req.body.status) : true;
+  req.body.status = req.body?.status ? req.body.status : null;
   req.body.fromDate = req.body?.fromDate || null;
   req.body.toDate = req.body?.toDate || null;
   req.body.sportId = req.body?.sportId || null;

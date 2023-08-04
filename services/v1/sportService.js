@@ -1,23 +1,10 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import {
-  generatePaginationQueries,
-  generateSearchFilters,
-  generateSelectFields
-} from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters, generateSelectFields } from "../../lib/helpers/filters.js";
 import Sport from "../../models/v1/Sport.js";
 import SportsBetCategory from "../../models/v1/SportsBetCategory.js";
 
 // Fetch all sport from the database
-const fetchAllSport = async ({
-  page,
-  perPage,
-  sortBy,
-  direction,
-  showDeleted,
-  searchQuery,
-  status,
-  selectFields
-}) => {
+const fetchAllSport = async ({ page, perPage, sortBy, direction, showDeleted, searchQuery, status, selectFields }) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
 
@@ -27,7 +14,7 @@ const fetchAllSport = async ({
       isDeleted: showDeleted,
     };
 
-    let selected = {}
+    let selected = {};
     if (searchQuery) {
       const fields = ["name"];
       filters.$or = generateSearchFilters(searchQuery, fields);
@@ -36,21 +23,20 @@ const fetchAllSport = async ({
     if (selectFields) {
       const fields = selectFields;
       selected = generateSelectFields(fields);
-    }
-    else {
-      selected = { name: 1, apiSportId: 1, isActive: 1, createdAt: 1, updatedAt: 1 }
+    } else {
+      selected = { name: 1, apiSportId: 1, isActive: 1, createdAt: 1, updatedAt: 1 };
     }
 
     if (status) {
       filters.isActive = String(true) == status;
     }
-    console.log(filters);
+
     const sport = await Sport.aggregate([
       {
         $match: filters,
       },
       {
-        $project: selected
+        $project: selected,
       },
       {
         $facet: {
@@ -66,8 +52,12 @@ const fetchAllSport = async ({
     ]);
 
     for (var i = 0; i < sport[0].paginatedResults.length; i++) {
-      const betCategoryCount = await SportsBetCategory.count({ sportsId: sport[0].paginatedResults[i]._id, isActive: true, isDeleted: false });
-      sport[0].paginatedResults[i].betCategoryCount = betCategoryCount
+      const betCategoryCount = await SportsBetCategory.count({
+        sportsId: sport[0].paginatedResults[i]._id,
+        isActive: true,
+        isDeleted: false,
+      });
+      sport[0].paginatedResults[i].betCategoryCount = betCategoryCount;
     }
 
     const data = {
@@ -77,9 +67,7 @@ const fetchAllSport = async ({
 
     if (sport?.length) {
       data.records = sport[0]?.paginatedResults || [];
-      data.totalRecords = sport[0]?.totalRecords?.length
-        ? sport[0]?.totalRecords[0].count
-        : 0;
+      data.totalRecords = sport[0]?.totalRecords?.length ? sport[0]?.totalRecords[0].count : 0;
     }
 
     return data;
@@ -96,8 +84,8 @@ const fetchSportId = async (_id) => {
     const sport = await Sport.findById(_id);
     const sportBetCategory = await SportsBetCategory.find({ sportsId: _id, isActive: true, isDeleted: false });
     const betCatId = [];
-    sportBetCategory.forEach(element => {
-      betCatId.push(element.betCatId)
+    sportBetCategory.forEach((element) => {
+      betCatId.push(element.betCatId);
     });
     const data = {
       _id: sport._id,
@@ -106,8 +94,8 @@ const fetchSportId = async (_id) => {
       apiSportId: sport.apiSportId,
       updatedAt: sport.updatedAt,
       createdAt: sport.createdAt,
-      betCategory: betCatId
-    }
+      betCategory: betCatId,
+    };
     return data;
   } catch (e) {
     throw new Error(e);
@@ -119,7 +107,7 @@ const fetchSportId = async (_id) => {
  */
 const addSport = async ({ name, betCategory, apiSportId }) => {
   try {
-    const existingSport = await Sport.findOne({ name: { "$regex": name, "$options": "i" } });
+    const existingSport = await Sport.findOne({ name: { $regex: name, $options: "i" } });
     if (existingSport) {
       throw new Error("name already exists!");
     }
@@ -128,7 +116,7 @@ const addSport = async ({ name, betCategory, apiSportId }) => {
       name: name.toLowerCase().replace(/(?:^|\s)\S/g, function (char) {
         return char.toUpperCase();
       }),
-      apiSportId: apiSportId
+      apiSportId: apiSportId,
     };
     const newsport = await Sport.create(newSportObj);
 
@@ -136,7 +124,7 @@ const addSport = async ({ name, betCategory, apiSportId }) => {
     for (var i = 0; i < betCategory.length; i++) {
       body.push({
         sportsId: newsport._id,
-        betCatId: betCategory[i]
+        betCatId: betCategory[i],
       });
     }
 
@@ -155,11 +143,14 @@ const modifySport = async ({ _id, name, betCategory, apiSportId }) => {
   try {
     const sport = await Sport.findById(_id);
 
-    const existingSport = await Sport.findOne({ name: { "$regex": name, "$options": "i" }, _id: { $ne: _id } });
+    const existingSport = await Sport.findOne({ name: { $regex: name, $options: "i" }, _id: { $ne: _id } });
     if (existingSport) {
       throw new Error("name already exists!");
     }
-    const sportBetCategory = await SportsBetCategory.find({ sportsId: _id, isActive: true, isDeleted: false }, { betCatId: 1, _id: 0 });
+    const sportBetCategory = await SportsBetCategory.find(
+      { sportsId: _id, isActive: true, isDeleted: false },
+      { betCatId: 1, _id: 0 }
+    );
 
     sport.name = name.toLowerCase().replace(/(?:^|\s)\S/g, function (char) {
       return char.toUpperCase();
@@ -180,24 +171,29 @@ const modifySport = async ({ _id, name, betCategory, apiSportId }) => {
     });
 
     for (var i = 0; i < newCategoryAdd.length; i++) {
-      const findSportBetCategory = await SportsBetCategory.findOne({ sportsId: _id, betCatId: newCategoryAdd[i], isDeleted: false });
+      const findSportBetCategory = await SportsBetCategory.findOne({
+        sportsId: _id,
+        betCatId: newCategoryAdd[i],
+        isDeleted: false,
+      });
 
       if (findSportBetCategory) {
         findSportBetCategory.isActive = true;
         findSportBetCategory.save();
-      }
-      else {
-
+      } else {
         const newEntryCategory = {
           sportsId: _id,
-          betCatId: newCategoryAdd[i]
+          betCatId: newCategoryAdd[i],
         };
         const newSportBetCategory = await SportsBetCategory.create(newEntryCategory);
       }
     }
 
     for (var j = 0; j < oldCategoryRemove.length; j++) {
-      const sportBetCategory = await SportsBetCategory.findOne({ sportsId: _id, betCatId: oldCategoryRemove[j].betCatId.toString() });
+      const sportBetCategory = await SportsBetCategory.findOne({
+        sportsId: _id,
+        betCatId: oldCategoryRemove[j].betCatId.toString(),
+      });
       sportBetCategory.isActive = false;
       await sportBetCategory.save();
     }
@@ -223,7 +219,6 @@ const removeSport = async (_id) => {
   }
 };
 
-
 /**
  * Change Sport status in the database
  */
@@ -233,8 +228,7 @@ const changeSportStatus = async (_id, status) => {
     if (sport) {
       sport.isActive = status;
       sport.save();
-    }
-    else {
+    } else {
       throw new Error("Sport not found!");
     }
 
@@ -244,12 +238,11 @@ const changeSportStatus = async (_id, status) => {
   }
 };
 
-
 export default {
   fetchAllSport,
   fetchSportId,
   addSport,
   modifySport,
   removeSport,
-  changeSportStatus
+  changeSportStatus,
 };

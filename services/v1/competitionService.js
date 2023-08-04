@@ -48,7 +48,9 @@ const fetchAllCompetition = async ({ ...reqBody }) => {
       };
     }
 
-    filters.isActive = status;
+    if (status !== null) {
+      filters.isActive = [true, "true"].includes(status);
+    }
 
     if (sportId) {
       filters.sportId = new mongoose.Types.ObjectId(sportId);
@@ -327,6 +329,65 @@ const activeCompetition = async ({ competitionIds, sportId }) => {
   }
 };
 
+// Fetch all competition for dropdown options
+const fetchAllCompetitionList = async ({ ...reqBody }) => {
+  try {
+    const { sortBy, direction, showDeleted, showRecord, sportId, status, competitionId, fields } = reqBody;
+
+    // Projection
+    const projection = [];
+    if (fields) {
+      projection.push({ $project: fields });
+    }
+
+    // Sorting
+    const sortDirection = direction === "asc" ? 1 : -1;
+
+    // Filters
+    let filters = {};
+
+    if (showRecord == "All") {
+      filters = {
+        isDeleted: showDeleted,
+      };
+    } else {
+      filters = {
+        isDeleted: showDeleted,
+        isManual: true,
+      };
+    }
+
+    if (status !== null) {
+      filters.isActive = [true, "true"].includes(status);
+    }
+
+    if (sportId) {
+      filters.sportId = new mongoose.Types.ObjectId(sportId);
+    }
+
+    if (competitionId) {
+      delete filters.isActive;
+      filters.$or = [{ _id: new mongoose.Types.ObjectId(competitionId) }, { isActive: true }];
+    }
+
+    const competitions = await Competition.aggregate([
+      {
+        $match: filters,
+      },
+      ...projection,
+      {
+        $sort: {
+          [sortBy]: sortDirection,
+        },
+      },
+    ]);
+
+    return competitions;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   fetchAllCompetition,
   fetchAllCompetitionEvents,
@@ -336,4 +397,5 @@ export default {
   removeCompetition,
   competitionStatusModify,
   activeCompetition,
+  fetchAllCompetitionList,
 };

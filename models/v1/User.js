@@ -167,7 +167,11 @@ const userSchema = new mongoose.Schema({
 
   // Settlement Time
   settlementTime: { type: String, default: null },
+
+  // Casino Available for the super admin
   isCasinoAvailable: { type: Boolean, default: false },
+
+  // Auto Settlement
   isAutoSettlement: { type: Boolean, default: false },
 });
 

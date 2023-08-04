@@ -2,6 +2,7 @@ import ErrorResponse from "../../lib/error-handling/error-response.js";
 import {
   generatePaginationQueries,
   generateSearchFilters,
+  generateSelectFields
 } from "../../lib/helpers/filters.js";
 import Sport from "../../models/v1/Sport.js";
 import SportsBetCategory from "../../models/v1/SportsBetCategory.js";
@@ -14,6 +15,8 @@ const fetchAllSport = async ({
   direction,
   showDeleted,
   searchQuery,
+  status,
+  selectFields
 }) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -24,14 +27,30 @@ const fetchAllSport = async ({
       isDeleted: showDeleted,
     };
 
+    let selected = {}
     if (searchQuery) {
       const fields = ["name"];
       filters.$or = generateSearchFilters(searchQuery, fields);
     }
 
+    if (selectFields) {
+      const fields = selectFields;
+      selected = generateSelectFields(fields);
+    }
+    else {
+      selected = { name: 1, apiSportId: 1, isActive: 1, createdAt: 1, updatedAt: 1 }
+    }
+
+    if (status) {
+      filters.isActive = String(true) == status;
+    }
+    console.log(filters);
     const sport = await Sport.aggregate([
       {
         $match: filters,
+      },
+      {
+        $project: selected
       },
       {
         $facet: {
@@ -100,7 +119,7 @@ const fetchSportId = async (_id) => {
  */
 const addSport = async ({ name, betCategory, apiSportId }) => {
   try {
-    const existingSport = await Sport.findOne({ name: name });
+    const existingSport = await Sport.findOne({ name: { "$regex": name, "$options": "i" } });
     if (existingSport) {
       throw new Error("name already exists!");
     }
@@ -135,6 +154,11 @@ const addSport = async ({ name, betCategory, apiSportId }) => {
 const modifySport = async ({ _id, name, betCategory, apiSportId }) => {
   try {
     const sport = await Sport.findById(_id);
+
+    const existingSport = await Sport.findOne({ name: { "$regex": name, "$options": "i" }, _id: { $ne: _id } });
+    if (existingSport) {
+      throw new Error("name already exists!");
+    }
     const sportBetCategory = await SportsBetCategory.find({ sportsId: _id, isActive: true, isDeleted: false }, { betCatId: 1, _id: 0 });
 
     sport.name = name.toLowerCase().replace(/(?:^|\s)\S/g, function (char) {

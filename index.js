@@ -30,21 +30,29 @@ app.get("/", (req, res) => {
 
 dbConnection();
 
-app.listen(appConfig.PORT, () => {
-  console.log(`Server running on port: ${appConfig.PORT}`);
-});
 
 const server = createServer(app);
-const io = new Server(server)
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:4200",
+    methods: ["GET", "POST"]
+  }
+})
 
 io.on('connection', (socket) => {
   console.log('New connection')
   // Call the function with the received parameters
   socket.on('sendParams', (params) => {
-    setInterval(() => {
-      const data = cronController.getMatchOdds(params);
+    console.log(params);
+    setInterval(async () => {
+      const data = await cronController.getMatchOdds(params);
+      console.log(data);
       socket.emit('getMatchOdds', data);
     }, 1000);
   });
   socket.on("disconnect", () => console.log("Client disconnected"));
 })
+
+server.listen(appConfig.PORT, () => {
+  console.log(`Server running on port: ${appConfig.PORT}`);
+});

@@ -224,8 +224,7 @@ const getMatchOdds = async (markeId) => {
 
   }
   catch (e) {
-    // Handle any errors that occurred during the sync process
-    res.status(500).json({ error: "An error occurred" });
+    return e;
   }
 }
 

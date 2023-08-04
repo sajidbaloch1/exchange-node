@@ -37,7 +37,6 @@ const fetchDashboardId = async (_id) => {
           totalPoint: 1,
           totalExposure: 1,
           AllPts: { $sum: ["$balance", "$totalPoint"] },
-          // settlementPoint: { $subtract: ["$AllPts", "$creditPoints"] },
         },
       },
       {
@@ -48,6 +47,8 @@ const fetchDashboardId = async (_id) => {
           totalExposure: 1,
           AllPts: 1,
           settlementPoint: { $subtract: ["$AllPts", "$creditPoints"] },
+          upperPoint: 0,
+          downPoint: 0,
         },
       },
     ]);

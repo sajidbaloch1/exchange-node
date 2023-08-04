@@ -24,9 +24,9 @@ const fetchDashboardId = async (_id) => {
         $group: {
           _id: null,
           creditPoints: { $first: "$creditPoints" },
+          balance: { $first: "$balance" },
           totalPoint: { $sum: "$descendants.balance" },
           totalExposure: { $sum: "$descendants.exposure" },
-          balance: { $first: "$balance" },
         },
       },
       {
@@ -36,7 +36,19 @@ const fetchDashboardId = async (_id) => {
           creditPoints: 1,
           totalPoint: 1,
           totalExposure: 1,
-          settlementPoint: { $subtract: ["$totalPoint", "$creditPoints"] },
+          AllPts: { $sum: ["$balance", "$totalPoint"] },
+        },
+      },
+      {
+        $project: {
+          balance: 1,
+          creditPoints: 1,
+          totalPoint: 1,
+          totalExposure: 1,
+          AllPts: 1,
+          settlementPoint: { $subtract: ["$AllPts", "$creditPoints"] },
+          upperPoint: 0,
+          downPoint: 0,
         },
       },
     ]);

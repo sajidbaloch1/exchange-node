@@ -1,12 +1,13 @@
+import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import Event from "../../models/v1/Event.js";
-import mongoose from "mongoose";
 
 // Fetch all event from the database
 const fetchAllEvent = async ({ ...reqBody }) => {
   try {
-    const { page, perPage, sortBy, direction, searchQuery, showDeleted, showRecord, status, sportId, competitionId } = reqBody;
+    const { page, perPage, sortBy, direction, searchQuery, showDeleted, showRecord, status, sportId, competitionId } =
+      reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -33,26 +34,25 @@ const fetchAllEvent = async ({ ...reqBody }) => {
     }
 
     if (sportId) {
-      filters.sportId = new mongoose.Types.ObjectId(sportId)
+      filters.sportId = new mongoose.Types.ObjectId(sportId);
     }
 
     if (competitionId) {
-      filters.competitionId = new mongoose.Types.ObjectId(competitionId)
+      filters.competitionId = new mongoose.Types.ObjectId(competitionId);
     }
 
     if (status) {
-      if (status == 'true') {
-        filters.isActive = true
-      }
-      else {
-        filters.isActive = false
+      if (status == "true") {
+        filters.isActive = true;
+      } else {
+        filters.isActive = false;
       }
     }
 
     if (fromDate && toDate) {
       filters = {
         matchDate: { $gte: new Date(fromDate), $lte: new Date(toDate) },
-      }
+      };
     }
 
     if (searchQuery) {
@@ -163,8 +163,8 @@ const addEvent = async ({ ...reqBody }) => {
     oddsLimit,
     volumeLimit,
     minStake,
-    minStakeSession,
     maxStake,
+    minStakeSession,
     maxStakeSession,
   } = reqBody;
 
@@ -207,20 +207,22 @@ const modifyEvent = async ({ ...reqBody }) => {
     if (!event) {
       throw new Error("Event not found.");
     }
+
     event.name = reqBody.name;
     event.sportId = reqBody.sportId;
     event.competitionId = reqBody.competitionId;
+    event.matchDate = reqBody.matchDate;
+    event.matchTime = reqBody.matchTime;
     event.oddsLimit = reqBody.oddsLimit;
     event.volumeLimit = reqBody.volumeLimit;
-    event.matchDate = reqBody.matchDate;
     event.minStake = reqBody.minStake;
-    event.minStakeSession = reqBody.minStakeSession;
     event.maxStake = reqBody.maxStake;
+    event.minStakeSession = reqBody.minStakeSession;
     event.maxStakeSession = reqBody.maxStakeSession;
-    event.betDeleted = reqBody.betDeleted;
-    event.hardBetDeleted = reqBody.hardBetDeleted;
-    event.completed = reqBody.completed;
     event.isActive = reqBody.isActive;
+    event.completed = reqBody.completed;
+    event.betDeleted = reqBody.betDeleted;
+
     await event.save();
 
     return event;

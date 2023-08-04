@@ -28,6 +28,9 @@ const eventSchema = new mongoose.Schema({
   // Date of the match
   matchDate: { type: Date, default: null },
 
+  // Time of the match
+  matchTime: { type: String, default: null },
+
   // Number of markets available for this event (default is 0)
   marketCount: { type: Number, default: 0 },
 
@@ -57,9 +60,6 @@ const eventSchema = new mongoose.Schema({
 
   // Indicates if a bet associated with this event is deleted
   betDeleted: { type: Boolean, default: false },
-
-  // Indicates if a hard bet (a specific type of bet) associated with this event is deleted
-  hardBetDeleted: { type: Boolean, default: false },
 
   // Indicates if the event is completed
   completed: { type: Boolean, default: false },

@@ -162,10 +162,13 @@ const addUser = async ({ user, ...reqBody }) => {
     settlementDay,
     settlementTime,
     city,
+
     // Super Admin Params
     domainUrl,
     contactEmail,
     availableSports,
+    isCasinoAvailable,
+    isAutoSettlement,
   } = reqBody;
 
   try {
@@ -207,7 +210,10 @@ const addUser = async ({ user, ...reqBody }) => {
       newUserObj.domainUrl = domainUrl;
       newUserObj.contactEmail = contactEmail;
       newUserObj.availableSports = availableSports;
+      newUserObj.isCasinoAvailable = isCasinoAvailable;
+      newUserObj.isAutoSettlement = isAutoSettlement;
     }
+
     if (settlementDurationType === SETTLEMENT_DURATION.DAILY) {
       newUserObj.settlementDate = null;
       newUserObj.settlementDay = null;
@@ -390,6 +396,9 @@ const modifyUser = async ({ user, ...reqBody }) => {
     delete reqBody.username;
     delete reqBody.role;
     delete reqBody.currencyId;
+
+    reqBody.isCasinoAvailable = reqBody.isCasinoAvailable || currentUser.isCasinoAvailable;
+    reqBody.isAutoSettlement = reqBody.isAutoSettlement || currentUser.isAutoSettlement;
 
     const updatedUser = await User.findByIdAndUpdate(currentUser._id, reqBody, {
       new: true,

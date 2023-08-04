@@ -190,9 +190,9 @@ async function syncEvents() {
 
 // Function to get matchodds
 
-const getMatchOdds = async (req, res) => {
+const getMatchOdds = async (markeId) => {
   try {
-    let allMarketId = req.body.markeId.toString().replace(/["']/g, "");
+    let allMarketId = markeId.toString().replace(/["']/g, "");
     var marketUrl = `${appConfig.BASE_URL}?action=matchodds&mid=${allMarketId}`;
     const { statusCode, data } = await commonService.fetchData(
       marketUrl
@@ -220,7 +220,7 @@ const getMatchOdds = async (req, res) => {
         }
       }
     }
-    res.status(200).json({ message: "Match odds get successfully!", data: allData });
+    return allData;
 
   }
   catch (e) {

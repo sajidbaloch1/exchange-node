@@ -167,6 +167,8 @@ const userSchema = new mongoose.Schema({
 
   // Settlement Time
   settlementTime: { type: String, default: null },
+  isCasinoAvailable: { type: Boolean, default: false },
+  isAutoSettlement: { type: Boolean, default: false },
 });
 
 userSchema.plugin(timestampPlugin);

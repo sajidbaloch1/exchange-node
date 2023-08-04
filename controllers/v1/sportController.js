@@ -10,6 +10,8 @@ const getAllSport = async (req, res) => {
     ? req.body.showDeleted === true || req.body.showDeleted === "true"
     : false;
   const searchQuery = req.body?.searchQuery || null;
+  const status = req.body?.status || null;
+  const selectFields = req.body?.selectFields || null;
 
   const sport = await sportService.fetchAllSport({
     page,
@@ -18,6 +20,8 @@ const getAllSport = async (req, res) => {
     direction,
     showDeleted,
     searchQuery,
+    status,
+    selectFields
   });
 
   return res.status(200).json({ success: true, data: sport });

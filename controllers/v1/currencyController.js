@@ -6,9 +6,7 @@ const getAllCurrency = async (req, res) => {
   const perPage = req.body?.perPage ? Number(req.body.perPage) : null;
   const sortBy = req.body?.sortBy ? req.body.sortBy : "createdAt";
   const direction = req.body?.direction ? req.body.direction : "desc";
-  const showDeleted = req.body?.showDeleted
-    ? req.body.showDeleted === true || req.body.showDeleted === "true"
-    : false;
+  const showDeleted = req.body?.showDeleted ? req.body.showDeleted === true || req.body.showDeleted === "true" : false;
   const searchQuery = req.body?.searchQuery || null;
 
   const currency = await currencyService.fetchAllCurrency({
@@ -40,9 +38,14 @@ const getCurrencyById = async (req, res) => {
 const createCurrency = async (req, res) => {
   const name = req.body?.name ? req.body.name.trim() : null;
   const multiplier = req.body?.multiplier ? Number(req.body.multiplier) : null;
+
   if (!name) {
     throw new Error("name is required!");
   }
+  if (multiplier < 0) {
+    throw new Error("multiplier must be greater than 0!");
+  }
+
   const newcurrency = await currencyService.addCurrency({
     name: name,
     multiplier: multiplier,
@@ -63,6 +66,9 @@ const updateCurrency = async (req, res) => {
 
   if (!_id) {
     throw new Error("_id is required!");
+  }
+  if (multiplier < 0) {
+    throw new Error("multiplier must be greater than 0!");
   }
 
   const updatedCurrency = await currencyService.modifyCurrency({

@@ -281,7 +281,9 @@ const eventStatusModify = async ({ _id, fieldName, status }) => {
 const activeEvent = async ({ eventIds, competitionId }) => {
   try {
     await Event.updateMany({ competitionId }, { isActive: false });
-    await Event.updateMany({ _id: { $in: eventIds } }, { isActive: true });
+    if (eventIds.length > 0) {
+      await Event.updateMany({ _id: { $in: eventIds } }, { isActive: true });
+    }
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

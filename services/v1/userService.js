@@ -52,7 +52,7 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
     }
 
     if (searchQuery) {
-      const fields = ["username"];
+      const fields = ["username", "fullName", "mobileNumber"];
       filters.$or = generateSearchFilters(searchQuery, fields);
     }
 
@@ -396,9 +396,6 @@ const modifyUser = async ({ user, ...reqBody }) => {
     delete reqBody.username;
     delete reqBody.role;
     delete reqBody.currencyId;
-
-    reqBody.isCasinoAvailable = reqBody.isCasinoAvailable || currentUser.isCasinoAvailable;
-    reqBody.isAutoSettlement = reqBody.isAutoSettlement || currentUser.isAutoSettlement;
 
     const updatedUser = await User.findByIdAndUpdate(currentUser._id, reqBody, {
       new: true,

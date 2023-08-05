@@ -188,11 +188,6 @@ const addEvent = async ({ ...reqBody }) => {
   } = reqBody;
 
   try {
-    const existingEvent = await Event.findOne({ name: name });
-
-    if (existingEvent) {
-      throw new Error("Event already exists!");
-    }
     const newEventObj = {
       name,
       sportId,

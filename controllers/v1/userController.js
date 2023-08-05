@@ -78,16 +78,17 @@ const deleteUser = async (req, res) => {
 // Bet Lock
 const updateUserStatus = async (req, res) => {
   const _id = req.body?._id || null;
-  const isActive = req.body?.isActive || null;
-  const isBetLock = req.body?.isBetLock || null;
-  if (!_id) {
-    throw new Error("_id is required!");
+  const fieldName = req.body.fieldName || null;
+  const status = req.body.status || null;
+
+  if (!(_id && fieldName && status)) {
+    throw new Error("Missing payload!");
   }
 
   const updatedUserStatus = await userService.statusModify({
     _id,
-    isActive,
-    isBetLock,
+    fieldName,
+    status,
   });
 
   res.status(200).json({ success: true, data: { details: updatedUserStatus } });

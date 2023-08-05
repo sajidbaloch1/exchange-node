@@ -445,21 +445,13 @@ const removeUser = async (_id) => {
   }
 };
 
-const statusModify = async ({ _id, isBetLock, isActive }) => {
+const statusModify = async ({ _id, fieldName, status }) => {
   try {
-    const user = await User.findById(_id);
+    const user = await User.findByIdAndUpdate(_id, { [fieldName]: status }, { new: true });
 
-    if (isBetLock) {
-      user.isBetLock = isBetLock;
-    }
+    const userObj = await getTrimmedUser(user);
 
-    if (isActive) {
-      user.isActive = isActive;
-    }
-
-    await user.save();
-
-    return user;
+    return userObj;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

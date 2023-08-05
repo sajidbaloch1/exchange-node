@@ -19,7 +19,7 @@ const getAllUser = async (req, res) => {
 
 // Get user by ID
 const getUserById = async (req, res) => {
-  const { _id = null, fields = {} } = req.body;
+  const { _id = null, fields } = req.body;
 
   if (!_id) {
     throw new Error("_id is required");
@@ -78,16 +78,17 @@ const deleteUser = async (req, res) => {
 // Bet Lock
 const updateUserStatus = async (req, res) => {
   const _id = req.body?._id || null;
-  const isActive = req.body?.isActive || null;
-  const isBetLock = req.body?.isBetLock || null;
-  if (!_id) {
-    throw new Error("_id is required!");
+  const fieldName = req.body.fieldName || null;
+  const status = req.body.status || null;
+
+  if (!(_id && fieldName && status)) {
+    throw new Error("Missing payload!");
   }
 
   const updatedUserStatus = await userService.statusModify({
     _id,
-    isActive,
-    isBetLock,
+    fieldName,
+    status,
   });
 
   res.status(200).json({ success: true, data: { details: updatedUserStatus } });
@@ -143,6 +144,18 @@ const getAppModulesList = async (req, res) => {
   res.status(200).json({ success: true, data: { details: appModules } });
 };
 
+const getHydratedUser = async (req, res) => {
+  const { _id = null } = req.body;
+
+  if (!_id) {
+    throw new ErrorResponse("_id is required!").status(401);
+  }
+
+  const user = await userService.fetchHydratedUser(_id);
+
+  res.status(200).json({ success: true, data: { details: user } });
+};
+
 export default {
   getAllUser,
   getUserById,
@@ -155,4 +168,5 @@ export default {
   getUserTransactionCode,
   getUserPermissions,
   getAppModulesList,
+  getHydratedUser,
 };

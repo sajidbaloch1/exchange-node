@@ -1,6 +1,6 @@
 import mongoose, { isValidObjectId } from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { encryptPassword, transferCloneParentFields } from "../../lib/helpers/auth.js";
+import { encryptPassword, getTrimmedUser, transferCloneParentFields } from "../../lib/helpers/auth.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import { generateTransactionCode, validateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import AppModule from "../../models/v1/AppModule.js";
@@ -133,12 +133,12 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
 /**
  * Fetch user by Id from the database
  */
-const fetchUserId = async (_id, fields) => {
+const fetchUserId = async (_id, fields = {}) => {
   try {
-    let projection = { password: 0, transactionCode: 0 };
+    let projection = {};
 
     if (fields && Object.keys(fields).length) {
-      projection = { ...projection, ...fields, cloneParentId: 1 };
+      projection = { ...fields, cloneParentId: 1 };
     }
 
     let user = await User.findById(_id, projection);
@@ -146,6 +146,9 @@ const fetchUserId = async (_id, fields) => {
     if (user.cloneParentId) {
       user = await transferCloneParentFields(user, fields);
     }
+
+    delete user.password;
+    delete user.transactionCode;
 
     return user;
   } catch (e) {
@@ -445,21 +448,13 @@ const removeUser = async (_id) => {
   }
 };
 
-const statusModify = async ({ _id, isBetLock, isActive }) => {
+const statusModify = async ({ _id, fieldName, status }) => {
   try {
-    const user = await User.findById(_id);
+    const user = await User.findByIdAndUpdate(_id, { [fieldName]: status }, { new: true });
 
-    if (isBetLock) {
-      user.isBetLock = isBetLock;
-    }
+    const userObj = await getTrimmedUser(user);
 
-    if (isActive) {
-      user.isActive = isActive;
-    }
-
-    await user.save();
-
-    return user;
+    return userObj;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -546,6 +541,22 @@ const cloneUser = async ({ user, ...reqBody }) => {
   }
 };
 
+const fetchHydratedUser = async (_id) => {
+  try {
+    let user = await User.findById(_id);
+
+    if (user.cloneParentId) {
+      user = await transferCloneParentFields(user);
+    }
+
+    user = await getTrimmedUser(user);
+
+    return user;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   fetchAllUsers,
   fetchUserId,
@@ -555,4 +566,5 @@ export default {
   statusModify,
   fetchBalance,
   cloneUser,
+  fetchHydratedUser,
 };

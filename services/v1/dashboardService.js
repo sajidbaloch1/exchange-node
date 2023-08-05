@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, { mongo } from "mongoose";
 import User from "../../models/v1/User.js";
-
+// Fetch all Dashboard from the database
 const fetchDashboardId = async (_id) => {
   try {
     const result = await User.aggregate([
@@ -8,26 +8,25 @@ const fetchDashboardId = async (_id) => {
         $match: { _id: new mongoose.Types.ObjectId(_id) },
       },
       {
-        $lookup: {
+        $graphLookup: {
           from: "users",
-          localField: "_id",
-          foreignField: "parentId",
+          startWith: "$_id",
+          connectFromField: "_id",
+          connectToField: "parentId",
           as: "descendants",
+          maxDepth: 10,
         },
       },
       {
-        $unwind: {
-          path: "$descendants",
-          preserveNullAndEmptyArrays: true,
-        },
+        $unwind: { path: "$descendants", preserveNullAndEmptyArrays: true },
       },
       {
         $group: {
           _id: null,
           creditPoints: { $first: "$creditPoints" },
           balance: { $first: "$balance" },
-          totalPoint: { $sum: { $ifNull: ["$descendants.balance", 0] } },
-          totalExposure: { $sum: { $ifNull: ["$descendants.exposure", 0] } },
+          totalPoint: { $sum: "$descendants.balance" },
+          totalExposure: { $sum: "$descendants.exposure" },
         },
       },
       {
@@ -62,7 +61,6 @@ const fetchDashboardId = async (_id) => {
     throw new Error(e);
   }
 };
-
 export default {
   fetchDashboardId,
 };

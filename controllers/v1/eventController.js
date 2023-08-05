@@ -76,7 +76,7 @@ const updateEventStatus = async (req, res) => {
 const activeAllEvent = async (req, res) => {
   const { eventIds, competitionId } = req.body;
 
-  if (!(eventIds.length && competitionId)) {
+  if (!(eventIds && competitionId)) {
     throw new Error("_id && competitionId is required!");
   }
 

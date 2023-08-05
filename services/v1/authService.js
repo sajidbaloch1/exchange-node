@@ -1,5 +1,11 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { encryptPassword, generateJwtToken, getTrimmedUser, validatePassword } from "../../lib/helpers/auth.js";
+import {
+  encryptPassword,
+  generateJwtToken,
+  getTrimmedUser,
+  transferCloneParentFields,
+  validatePassword,
+} from "../../lib/helpers/auth.js";
 import { generateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import Currency from "../../models/v1/Currency.js";
 import User, { USER_ROLE } from "../../models/v1/User.js";
@@ -37,7 +43,10 @@ const loginUser = async ({ username, password }) => {
 
     const token = generateJwtToken({ _id: existingUser._id });
 
-    const loggedInUser = existingUser.toJSON();
+    let loggedInUser = existingUser.toJSON();
+    if (existingUser.cloneParentId) {
+      loggedInUser = await transferCloneParentFields(existingUser.toJSON());
+    }
 
     const user = getTrimmedUser(loggedInUser);
     const userPermissions = await permissionService.fetchUserPermissions({

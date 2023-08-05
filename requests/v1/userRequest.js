@@ -111,6 +111,7 @@ async function createUserRequest(req) {
     currencyId: Yup.string().nullable(true),
 
     isCasinoAvailable: Yup.boolean().nullable(true),
+
     isAutoSettlement: Yup.boolean().nullable(true),
   });
 
@@ -130,9 +131,13 @@ async function updateUserRequest(req) {
     password: Yup.string().nullable(true),
 
     mobileNumber: Yup.string().length(10).nullable(true),
+
     isTransactionCode: Yup.boolean().nullable(true),
+
     transactionCode: Yup.string().nullable(true),
+
     isCasinoAvailable: Yup.boolean().nullable(true),
+
     isAutoSettlement: Yup.boolean().nullable(true),
   };
   if (req.body.transactionCode) {

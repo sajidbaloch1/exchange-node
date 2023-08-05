@@ -44,6 +44,31 @@ export const USER_ACCESSIBLE_ROLES = {
   [USER_ROLE.USER]: [],
 };
 
+// Update this array with realated fields
+// in case of any changes in the user schema.
+export const CLONE_SHARED_FIELDS = [
+  "rate",
+  "creditPoints",
+  "balance",
+  "userPl",
+  "exposure",
+  "exposureLimit",
+  "exposurePercentage",
+  "stakeLimit",
+  "maxProfit",
+  "maxLoss",
+  "bonus",
+  "maxStake",
+  "domainUrl",
+  "contactEmail",
+  "availableSports",
+  "settlementDurationType",
+  "settlementDate",
+  "settlementTime",
+  "isCasinoAvailable",
+  "isAutoSettlement",
+];
+
 const userSchema = new mongoose.Schema({
   // Parent user ID. If null, user doesn't have a parent. This refers to the parent user in a hierarchical system.
   parentId: { type: mongoose.Schema.Types.ObjectId, default: null, ref: "user" },

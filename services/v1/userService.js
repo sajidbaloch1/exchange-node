@@ -135,13 +135,13 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
  */
 const fetchUserId = async (_id, fields) => {
   try {
-    let project = { password: 0 };
+    let projection = { password: 0, transactionCode: 0 };
 
-    if (fields) {
-      project = fields;
+    if (fields && Object.keys(fields).length) {
+      projection = { ...projection, ...fields, cloneParentId: 1 };
     }
 
-    let user = await User.findById(_id, { ...project, cloneParentId: 1 });
+    let user = await User.findById(_id, projection);
 
     if (user.cloneParentId) {
       user = await transferCloneParentFields(user, fields);

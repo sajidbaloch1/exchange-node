@@ -1,18 +1,8 @@
-import {
-  generatePaginationQueries,
-  generateSearchFilters,
-} from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import Currency from "../../models/v1/Currency.js";
 
 // Fetch all Currency from the database
-const fetchAllCurrency = async ({
-  page,
-  perPage,
-  sortBy,
-  direction,
-  showDeleted,
-  searchQuery,
-}) => {
+const fetchAllCurrency = async ({ page, perPage, sortBy, direction, showDeleted, searchQuery }) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
 
@@ -51,9 +41,7 @@ const fetchAllCurrency = async ({
 
     if (currency?.length) {
       data.records = currency[0]?.paginatedResults || [];
-      data.totalRecords = currency[0]?.totalRecords?.length
-        ? currency[0]?.totalRecords[0].count
-        : 0;
+      data.totalRecords = currency[0]?.totalRecords?.length ? currency[0]?.totalRecords[0].count : 0;
     }
 
     return data;
@@ -82,7 +70,7 @@ const addCurrency = async ({ name, multiplier }) => {
   try {
     const existingCurrency = await Currency.findOne({ name: name });
     if (existingCurrency) {
-      throw new Error("name already exists!");
+      throw new Error("Name already exists!");
     }
 
     const newCurrencyObj = {
@@ -102,6 +90,11 @@ const addCurrency = async ({ name, multiplier }) => {
  */
 const modifyCurrency = async ({ _id, name, multiplier }) => {
   try {
+    const existing = await Currency.findOne({ name: name.toLowerCase(), _id: { $ne: _id } });
+    if (existing) {
+      throw new Error("Name already exists!");
+    }
+
     const currency = await Currency.findById(_id);
 
     currency.name = name.toLowerCase();

@@ -19,7 +19,7 @@ const getAllUser = async (req, res) => {
 
 // Get user by ID
 const getUserById = async (req, res) => {
-  const { _id = null, fields = {} } = req.body;
+  const { _id = null, fields } = req.body;
 
   if (!_id) {
     throw new Error("_id is required");
@@ -143,6 +143,18 @@ const getAppModulesList = async (req, res) => {
   res.status(200).json({ success: true, data: { details: appModules } });
 };
 
+const getHydratedUser = async (req, res) => {
+  const { _id = null } = req.body;
+
+  if (!_id) {
+    throw new ErrorResponse("_id is required!").status(401);
+  }
+
+  const user = await userService.fetchHydratedUser(_id);
+
+  res.status(200).json({ success: true, data: { details: user } });
+};
+
 export default {
   getAllUser,
   getUserById,
@@ -155,4 +167,5 @@ export default {
   getUserTransactionCode,
   getUserPermissions,
   getAppModulesList,
+  getHydratedUser,
 };

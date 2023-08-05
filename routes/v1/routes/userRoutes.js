@@ -9,6 +9,7 @@ route(router, "post", "/getUserById", userController.getUserById);
 route(router, "post", "/createUser", userController.createUser);
 route(router, "post", "/updateUser", userController.updateUser);
 route(router, "post", "/deleteUser", userController.deleteUser);
+route(router, "post", "/rehydrateUser", userController.getHydratedUser);
 
 route(router, "post", "/updateUserStatus", userController.updateUserStatus);
 route(router, "post", "/fetchUserBalance", userController.fetchUserBalance);

@@ -6,8 +6,8 @@ import Event from "../../models/v1/Event.js";
 async function eventListingRequest(req) {
   req.body.page = req.body?.page ? Number(req.body.page) : null;
   req.body.perPage = req.body?.perPage ? Number(req.body.perPage) : 10;
-  req.body.sortBy = req.body?.sortBy ? req.body.sortBy : "matchDate";
-  req.body.direction = req.body?.direction ? req.body.direction : "desc";
+  req.body.sortBy = req.body?.sortBy ? req.body.sortBy : "isActive";
+  req.body.direction = req.body?.direction ? req.body.direction : "asc";
   req.body.searchQuery = req.body?.searchQuery ? req.body.searchQuery?.trim() : null;
   req.body.showDeleted = req.body?.showDeleted ? [true, "true"].includes(req.body.showDeleted) : false;
   req.body.showRecord = req.body?.showRecord ? req.body.showRecord?.trim() : "All";

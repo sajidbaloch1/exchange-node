@@ -15,12 +15,7 @@ const fetchAllSportsBetCategory = async ({ page, perPage, sortBy, direction, sho
       isActive: true,
     };
 
-    if (searchQuery) {
-      const fields = ["sportsId", "betCatId"];
-      filters.$or = generateSearchFilters(searchQuery, fields);
-    }
-
-    const sportsBetCategory = await SportsBetCategory.aggregate([
+    var aggregateSportBets = [
       {
         $match: filters,
       },
@@ -72,18 +67,28 @@ const fetchAllSportsBetCategory = async ({ page, perPage, sortBy, direction, sho
       {
         $unset: ["betCategory", "sport"],
       },
-      {
-        $facet: {
-          totalRecords: [{ $count: "count" }],
-          paginatedResults: [
-            {
-              $sort: { [sortBy]: sortDirection },
-            },
-            ...paginationQueries,
-          ],
+    ];
+
+    if (searchQuery) {
+      aggregateSportBets.push({
+        $match: {
+          $or: [{ betCatName: new RegExp(searchQuery, "i") }],
         },
+      });
+    }
+
+    aggregateSportBets.push({
+      $facet: {
+        totalRecords: [{ $count: "count" }],
+        paginatedResults: [
+          {
+            $sort: { [sortBy]: sortDirection },
+          },
+          ...paginationQueries,
+        ],
       },
-    ]);
+    });
+    const sportsBetCategory = await SportsBetCategory.aggregate(aggregateSportBets);
 
     const data = {
       records: [],

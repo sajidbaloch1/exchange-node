@@ -1,6 +1,6 @@
 import mongoose, { isValidObjectId } from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { encryptPassword } from "../../lib/helpers/auth.js";
+import { encryptPassword, transferCloneParentFields } from "../../lib/helpers/auth.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import { generateTransactionCode, validateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import AppModule from "../../models/v1/AppModule.js";
@@ -52,7 +52,7 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
     }
 
     if (searchQuery) {
-      const fields = ["username"];
+      const fields = ["username", "fullName", "mobileNumber"];
       filters.$or = generateSearchFilters(searchQuery, fields);
     }
 
@@ -63,6 +63,8 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
       } else {
         filters.parentId = new mongoose.Types.ObjectId(user._id);
       }
+    } else {
+      filters.cloneParentId = { $exists: false };
     }
 
     const users = await User.aggregate([
@@ -133,11 +135,19 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
  */
 const fetchUserId = async (_id, fields) => {
   try {
-    let project = { password: 0 };
-    if (fields) {
-      project = fields;
+    let projection = { password: 0, transactionCode: 0 };
+
+    if (fields && Object.keys(fields).length) {
+      projection = { ...projection, ...fields, cloneParentId: 1 };
     }
-    return await User.findById(_id, project);
+
+    let user = await User.findById(_id, projection);
+
+    if (user.cloneParentId) {
+      user = await transferCloneParentFields(user, fields);
+    }
+
+    return user;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -397,9 +407,6 @@ const modifyUser = async ({ user, ...reqBody }) => {
     delete reqBody.role;
     delete reqBody.currencyId;
 
-    reqBody.isCasinoAvailable = reqBody.isCasinoAvailable || currentUser.isCasinoAvailable;
-    reqBody.isAutoSettlement = reqBody.isAutoSettlement || currentUser.isAutoSettlement;
-
     const updatedUser = await User.findByIdAndUpdate(currentUser._id, reqBody, {
       new: true,
     });
@@ -522,6 +529,8 @@ const cloneUser = async ({ user, ...reqBody }) => {
     delete newUserObj._id;
     delete newUserObj.transactionCode;
     delete newUserObj.mobileNumber;
+    delete newUserObj.balance;
+    delete newUserObj.creditPoints;
 
     const clonedUser = await User.create(newUserObj);
 

@@ -13,6 +13,7 @@ const BET_ORDER_STATUS = {
 };
 
 const BET_RESULT_STATUS = {
+  RUNNING: "running",
   WON: "won",
   LOST: "lost",
   VOID: "void",
@@ -50,6 +51,11 @@ const betSchema = new mongoose.Schema({
 });
 
 betSchema.plugin(timestampPlugin);
+
+betSchema.index({ userId: 1, marketId: 1, eventId: 1 });
+betSchema.index({ userId: 1, betOrderStatus: 1, createdAt: 1 });
+betSchema.index({ userId: 1, betOrderType: 1, createdAt: 1 });
+betSchema.index({ userId: 1, betResultStatus: 1, createdAt: 1 });
 
 const Bet = mongoose.model("bet", betSchema);
 

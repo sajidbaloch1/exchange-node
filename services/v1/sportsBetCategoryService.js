@@ -1,20 +1,9 @@
-import {
-  generatePaginationQueries,
-  generateSearchFilters,
-} from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import SportsBetCategory from "../../models/v1/SportsBetCategory.js";
 import mongoose from "mongoose";
 
 // Fetch all Sports-Bet-Category from the database
-const fetchAllSportsBetCategory = async ({
-  page,
-  perPage,
-  sortBy,
-  direction,
-  showDeleted,
-  searchQuery,
-  sportId
-}) => {
+const fetchAllSportsBetCategory = async ({ page, perPage, sortBy, direction, showDeleted, searchQuery, sportId }) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
 
@@ -23,15 +12,10 @@ const fetchAllSportsBetCategory = async ({
     const filters = {
       isDeleted: showDeleted,
       sportsId: new mongoose.Types.ObjectId(sportId),
-      isActive: true
+      isActive: true,
     };
 
-    if (searchQuery) {
-      const fields = ["sportsId", "betCatId"];
-      filters.$or = generateSearchFilters(searchQuery, fields);
-    }
-
-    const sportsBetCategory = await SportsBetCategory.aggregate([
+    var aggregateSportBets = [
       {
         $match: filters,
       },
@@ -83,18 +67,28 @@ const fetchAllSportsBetCategory = async ({
       {
         $unset: ["betCategory", "sport"],
       },
-      {
-        $facet: {
-          totalRecords: [{ $count: "count" }],
-          paginatedResults: [
-            {
-              $sort: { [sortBy]: sortDirection },
-            },
-            ...paginationQueries,
-          ],
+    ];
+
+    if (searchQuery) {
+      aggregateSportBets.push({
+        $match: {
+          $or: [{ betCatName: new RegExp(searchQuery, "i") }],
         },
+      });
+    }
+
+    aggregateSportBets.push({
+      $facet: {
+        totalRecords: [{ $count: "count" }],
+        paginatedResults: [
+          {
+            $sort: { [sortBy]: sortDirection },
+          },
+          ...paginationQueries,
+        ],
       },
-    ]);
+    });
+    const sportsBetCategory = await SportsBetCategory.aggregate(aggregateSportBets);
 
     const data = {
       records: [],
@@ -103,9 +97,7 @@ const fetchAllSportsBetCategory = async ({
 
     if (sportsBetCategory?.length) {
       data.records = sportsBetCategory[0]?.paginatedResults || [];
-      data.totalRecords = sportsBetCategory[0]?.totalRecords?.length
-        ? sportsBetCategory[0]?.totalRecords[0].count
-        : 0;
+      data.totalRecords = sportsBetCategory[0]?.totalRecords?.length ? sportsBetCategory[0]?.totalRecords[0].count : 0;
     }
 
     return data;
@@ -152,7 +144,7 @@ const addSportsBetCategory = async ({ sportsId, betCatId, maxBet, minBet, notes,
       minBet,
       notes,
       isActive,
-      betDelay
+      betDelay,
     };
     const newSportsBetCategory = await SportsBetCategory.create(newSportsBetCategoryObj);
 

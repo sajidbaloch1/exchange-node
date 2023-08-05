@@ -135,10 +135,10 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
  */
 const fetchUserId = async (_id, fields = {}) => {
   try {
-    let projection = { password: 0, transactionCode: 0 };
+    let projection = {};
 
     if (fields && Object.keys(fields).length) {
-      projection = { ...projection, ...fields, cloneParentId: 1 };
+      projection = { ...fields, cloneParentId: 1 };
     }
 
     let user = await User.findById(_id, projection);
@@ -146,6 +146,9 @@ const fetchUserId = async (_id, fields = {}) => {
     if (user.cloneParentId) {
       user = await transferCloneParentFields(user, fields);
     }
+
+    delete user.password;
+    delete user.transactionCode;
 
     return user;
   } catch (e) {

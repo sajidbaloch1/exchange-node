@@ -511,13 +511,16 @@ const cloneUser = async ({ user, ...reqBody }) => {
       throw new Error("Invalid transactionCode!");
     }
 
+    // Encrypt password
+    const encryptedPassword = await encryptPassword(password);
+
     // Create user
     const newUserObj = {
       ...cloneParent,
       cloneParentId: cloneParent._id,
       fullName,
       username,
-      password,
+      password: encryptedPassword,
     };
 
     // Remove unwanted fields

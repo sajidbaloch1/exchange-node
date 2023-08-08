@@ -170,7 +170,8 @@ async function fetchUserBalanceRequest(req) {
 async function cloneUserRequest(req) {
   req.body.moduleIds = req.body.moduleIds || [];
   req.body.username = req.body.username?.trim();
-  req.body.password = req.body.password?.trim();
+  req.body.password = req.body.password?.toString()?.trim();
+  req.body.transactionCode = req.body?.transactionCode?.toString();
 
   const validationSchema = Yup.object().shape({
     fullName: Yup.string().required(),

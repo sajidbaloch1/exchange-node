@@ -19,4 +19,6 @@ route(router, "post", "/getUserTransactionCode", userController.getUserTransacti
 route(router, "post", "/getUserPermissions", userController.getUserPermissions);
 route(router, "post", "/getAppModulesList", userController.getAppModulesList);
 
+route(router, "post", "/getUsercalculateUserSettlementPoint", userController.getUsercalculateUserSettlementPoint);
+
 export default router;

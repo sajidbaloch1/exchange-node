@@ -4,6 +4,7 @@ import AppModule from "../../models/v1/AppModule.js";
 import User from "../../models/v1/User.js";
 import { USER_ACTIVITY_EVENT } from "../../models/v1/UserActivity.js";
 import userRequest from "../../requests/v1/userRequest.js";
+import calculateUserSettlementService from "../../services/v1/calculateUserSettlementService.js";
 import permissionService from "../../services/v1/permissionService.js";
 import userActivityService from "../../services/v1/userActivityService.js";
 import userService from "../../services/v1/userService.js";
@@ -138,6 +139,18 @@ const getUserPermissions = async (req, res) => {
   res.status(200).json({ success: true, data: { details: userPermissions } });
 };
 
+const getUsercalculateUserSettlementPoint = async (req, res) => {
+  const { _id = null } = req.body;
+
+  if (!_id) {
+    return res.status(400).json({ success: false, message: "_id is required!" });
+  }
+
+  const UserSettlement = await calculateUserSettlementService.calculateUserSettlementPoint(_id);
+
+  res.status(200).json({ success: true, data: { details: UserSettlement } });
+};
+
 const getAppModulesList = async (req, res) => {
   const appModules = await AppModule.find({}, { name: 1, key: 1 });
 
@@ -169,4 +182,5 @@ export default {
   getUserPermissions,
   getAppModulesList,
   getHydratedUser,
+  getUsercalculateUserSettlementPoint,
 };

@@ -10,11 +10,15 @@ const sportSchema = new mongoose.Schema({
   },
   apiSportId: {
     type: Number,
-    default: null
+    default: null,
   },
   isActive: {
     type: Boolean,
     default: true,
+  },
+  marketCount: {
+    type: Number,
+    default: 0,
   },
 });
 

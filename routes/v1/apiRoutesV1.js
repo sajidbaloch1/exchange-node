@@ -14,6 +14,7 @@ import sportsBetCategoryRoutes from "./routes/sportsBetCategoryRoutes.js";
 import themeSettingRoutes from "./routes/themeSettingRoutes.js";
 import themeUserRoutes from "./routes/themeUserRoutes.js";
 import transactionActivityRoutes from "./routes/transactionActivityRoutes.js";
+import transactionUserRoutes from "./routes/transactionUserRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import userstakeRoutes from "./routes/userStakeRoutes.js";
 
@@ -36,5 +37,6 @@ app.use("/transactionActivity", transactionActivityRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/themeUser", themeUserRoutes);
 app.use("/bet", betRoutes);
+app.use("/transactionUser", transactionUserRoutes);
 
 export default app;

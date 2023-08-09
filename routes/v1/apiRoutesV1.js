@@ -1,24 +1,27 @@
 import express from "express";
 import authRoutes from "./routes/authRoutes.js";
 import betCategoryRoutes from "./routes/betCategoryRoutes.js";
+import betRoutes from "./routes/betRoutes.js";
 import competitionRoutes from "./routes/competitionRoutes.js";
 import cronRoutes from "./routes/cronRoutes.js";
 import currencyRoutes from "./routes/currencyRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import exchangeHomeRoutes from "./routes/exchangeHomeRoutes.js";
+import permissionRoutes from "./routes/permissionRoutes.js";
 import sportRoutes from "./routes/sportRoutes.js";
 import sportsBetCategoryRoutes from "./routes/sportsBetCategoryRoutes.js";
 import themeSettingRoutes from "./routes/themeSettingRoutes.js";
+import themeUserRoutes from "./routes/themeUserRoutes.js";
 import transactionActivityRoutes from "./routes/transactionActivityRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js";
+import transactionUserRoutes from "./routes/transactionUserRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import userstakeRoutes from "./routes/userStakeRoutes.js";
-import themeUserRoutes from "./routes/themeUserRoutes.js";
-import betRoutes from "./routes/betRoutes.js";
 
 const app = express();
 
 app.use("/auth", authRoutes);
+app.use("/permission", permissionRoutes);
 app.use("/cron", cronRoutes);
 app.use("/users", userRoutes);
 app.use("/sport", sportRoutes);
@@ -34,5 +37,6 @@ app.use("/transactionActivity", transactionActivityRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/themeUser", themeUserRoutes);
 app.use("/bet", betRoutes);
+app.use("/transactionUser", transactionUserRoutes);
 
 export default app;

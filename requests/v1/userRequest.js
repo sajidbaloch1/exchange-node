@@ -89,7 +89,7 @@ const userCreateUpdateCommonSchema = {
 
 async function createUserRequest(req) {
   req.body.username = req.body.username?.trim();
-  req.body.password = req.body.password?.trim();
+  req.body.password = req.body.password?.toString()?.trim();
 
   const user = await User.findById(req.user._id, { role: 1 });
 

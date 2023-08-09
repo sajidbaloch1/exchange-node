@@ -1,11 +1,9 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
-import AppModule from "../../models/v1/AppModule.js";
 import User from "../../models/v1/User.js";
 import { USER_ACTIVITY_EVENT } from "../../models/v1/UserActivity.js";
 import userRequest from "../../requests/v1/userRequest.js";
 import calculateUserSettlementService from "../../services/v1/calculateUserSettlementService.js";
-import permissionService from "../../services/v1/permissionService.js";
 import userActivityService from "../../services/v1/userActivityService.js";
 import userService from "../../services/v1/userService.js";
 
@@ -188,8 +186,6 @@ export default {
   fetchUserBalance,
   createUserClone,
   getUserTransactionCode,
-  getUserPermissions,
-  getAppModulesList,
   getHydratedUser,
   getUsercalculateUserSettlementPoint,
   calculateAllUsersSettlementPoints,

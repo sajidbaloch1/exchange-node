@@ -129,18 +129,12 @@ const calculateAllUsersSettlementPoints = async (userId) => {
           },
         },
       ]);
-
-      if (result.length > 0) {
-        const settlementPoint = result[0].settlementPoint;
-        const totalBalanceWithSettlement = user.balance + settlementPoint;
-        settlementPoints.push({ userId: user._id, settlementPoint, totalBalanceWithSettlement });
-      }
+      const settlementPoint = result[0].AllPts - result[0].creditPoints;
+      const totalBalanceWithSettlement = loggedInUser.balance + settlementPoint;
+      return totalBalanceWithSettlement;
     }
-
-    return settlementPoints;
   } catch (error) {
     console.error("Error:", error.message);
-    throw error;
   }
 };
 export default {

@@ -25,7 +25,7 @@ const competitionSchema = new mongoose.Schema({
   endDate: { type: Date, default: null },
 
   // Indicates if the competition is currently active or not
-  isActive: { type: Boolean, default: true },
+  isActive: { type: Boolean, default: false },
 
   // Indicates if the competition is manually created (as opposed to being imported from an external API)
   isManual: { type: Boolean, default: false },

@@ -131,7 +131,6 @@ const calculateAllUsersSettlementPoints = async (userId) => {
       ]);
 
       if (result.length > 0) {
-        // Check if result exists before accessing it
         const settlementPoint = result[0].settlementPoint;
         const totalBalanceWithSettlement = user.balance + settlementPoint;
         settlementPoints.push({ userId: user._id, settlementPoint, totalBalanceWithSettlement });
@@ -141,7 +140,7 @@ const calculateAllUsersSettlementPoints = async (userId) => {
     return settlementPoints;
   } catch (error) {
     console.error("Error:", error.message);
-    throw error; // Re-throw the error to propagate it
+    throw error;
   }
 };
 export default {

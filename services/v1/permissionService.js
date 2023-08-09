@@ -5,6 +5,7 @@ import ArrayProto from "../../lib/helpers/array-proto.js";
 import { defaultPermissions } from "../../lib/helpers/permissions.js";
 import AppModule, { APP_MODULES } from "../../models/v1/AppModule.js";
 import Permission from "../../models/v1/Permission.js";
+import User from "../../models/v1/User.js";
 
 const encryptModules = (modulesObj) => {
   const modules = JSON.stringify(modulesObj);
@@ -224,12 +225,29 @@ const fetchUserPermissions = async ({ userId }) => {
 
 const fetchUserActivePermissions = async ({ userId }) => {
   try {
-    const existingPermissions = await existingUserPermissions({ userId });
+    const user = await User.findById(userId, { cloneParentId: 1 });
+    if (!user) {
+      throw new Error("User not found!");
+    }
 
-    const activePermissions = existingPermissions.flatMap((permission) => {
-      const activeSubModules = permission.subModules?.filter((subModule) => subModule.isActive) ?? [];
-      return [permission, ...activeSubModules].filter((module) => module.isActive).map((module) => module.key);
-    });
+    let activePermissions = [];
+
+    if (user.cloneParentId) {
+      const existingPermissions = await existingUserPermissions({ userId });
+
+      activePermissions = existingPermissions.flatMap((permission) => {
+        if (!permission.isActive) {
+          return [];
+        }
+        const activeSubModules = permission.subModules?.filter((subModule) => subModule.isActive) ?? [];
+        return [permission, ...activeSubModules].map((module) => module.key);
+      });
+    } else {
+      activePermissions = defaultPermissions.flatMap((permission) => {
+        const subModules = permission.subModules ?? [];
+        return [permission, ...subModules].map((module) => module.key);
+      });
+    }
 
     const encryptedPermissions = encryptModules(activePermissions);
 

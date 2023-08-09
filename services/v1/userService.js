@@ -553,6 +553,7 @@ const fetchHydratedUser = async (_id) => {
     }
 
     user = await getTrimmedUser(user);
+    user.scKey = await permissionService.fetchUserActivePermissions({ userId: user._id });
 
     return user;
   } catch (e) {

@@ -150,8 +150,13 @@ const getUsercalculateUserSettlementPoint = async (req, res) => {
 };
 
 const calculateAllUsersSettlementPoints = async (req, res) => {
+  const { _id = null } = req.body;
+
+  if (!_id) {
+    return res.status(400).json({ success: false, message: "_id is required!" });
+  }
   try {
-    const allUsersettlement = await calculateUserSettlementService.calculateAllUsersSettlementPoints(req);
+    const allUsersettlement = await calculateUserSettlementService.calculateAllUsersSettlementPoints(_id);
     res.status(200).json({ success: true, data: allUsersettlement });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

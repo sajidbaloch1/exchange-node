@@ -71,15 +71,13 @@ const calculateUserSettlementPoint = async (userId) => {
     console.error("Error:", error.message);
   }
 };
-const calculateAllUsersSettlementPoints = async () => {
+const calculateAllUsersSettlementPoints = async (userId) => {
   try {
-    const loggedInUser = await User.findById(req.body);
-    console.log(loggedInUser);
+    const loggedInUser = await User.findById(userId);
     if (!loggedInUser) {
       throw new Error("User not found.");
     }
-    const users = await User.find(loggedInUser);
-
+    const users = await User.find({ parentId: loggedInUser._id });
     const settlementPoints = [];
 
     for (const user of users) {

@@ -71,6 +71,7 @@ const calculateUserSettlementPoint = async (userId) => {
     console.error("Error:", error.message);
   }
 };
+
 const calculateAllUsersSettlementPoints = async (userId) => {
   try {
     const loggedInUser = await User.findById(userId);
@@ -78,12 +79,12 @@ const calculateAllUsersSettlementPoints = async (userId) => {
       throw new Error("User not found.");
     }
     const users = await User.find({ parentId: loggedInUser._id });
-    const settlementPoints = [];
+    let settlementPoints = 0;
 
     for (const user of users) {
       const result = await User.aggregate([
         {
-          $match: { _id: new mongoose.Types.ObjectId(loggedInUser) },
+          $match: { _id: new mongoose.Types.ObjectId(user._id) }, // Updated this line
         },
         {
           $graphLookup: {
@@ -94,9 +95,6 @@ const calculateAllUsersSettlementPoints = async (userId) => {
             as: "descendants",
             maxDepth: 10,
           },
-        },
-        {
-          $unwind: { path: "$descendants", preserveNullAndEmptyArrays: true },
         },
         {
           $group: {
@@ -116,27 +114,21 @@ const calculateAllUsersSettlementPoints = async (userId) => {
             totalPoint: 1,
             totalExposure: 1,
             AllPts: { $sum: ["$balance", "$totalPoint"] },
-          },
-        },
-        {
-          $project: {
-            balance: 1,
-            creditPoints: 1,
-            totalPoint: 1,
-            totalExposure: 1,
-            AllPts: 1,
-            settlementPoint: { $subtract: ["$AllPts", "$creditPoints"] },
+            settlementPoint: { $subtract: [{ $sum: ["$balance", "$totalPoint"] }, "$creditPoints"] }, // Calculating settlementPoint here
           },
         },
       ]);
-      const settlementPoint = result[0].AllPts - result[0].creditPoints;
-      const totalBalanceWithSettlement = loggedInUser.balance + settlementPoint;
-      return totalBalanceWithSettlement;
+
+      const settlementPoint = result[0].settlementPoint; // Using the calculated settlementPoint
+      console.log(settlementPoint);
+      settlementPoints += settlementPoint;
     }
+    return settlementPoints;
   } catch (error) {
     console.error("Error:", error.message);
   }
 };
+
 export default {
   calculateUserSettlementPoint,
   calculateAllUsersSettlementPoints,

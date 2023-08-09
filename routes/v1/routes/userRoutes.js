@@ -5,8 +5,8 @@ import { route } from "../../../lib/error-handling/routes-error-boundary.js";
 const router = express.Router();
 
 route(router, "post", "/getAllUsers", userController.getAllUser);
-route(router, "post", "/getUserById", userController.getUseryId);
-route(router, "post", "/createUser", userController.createUsBer);
+route(router, "post", "/getUserById", userController.getUserById);
+route(router, "post", "/createUser", userController.createUser);
 route(router, "post", "/updateUser", userController.updateUser);
 route(router, "post", "/deleteUser", userController.deleteUser);
 route(router, "post", "/rehydrateUser", userController.getHydratedUser);

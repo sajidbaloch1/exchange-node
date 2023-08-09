@@ -153,7 +153,7 @@ const getUsercalculateUserSettlementPoint = async (req, res) => {
 
 const calculateAllUsersSettlementPoints = async (req, res) => {
   try {
-    const allUsersettlement = await calculateUserSettlementService.calculateAllUsersSettlementPoints();
+    const allUsersettlement = await calculateUserSettlementService.calculateAllUsersSettlementPoints(req);
     res.status(200).json({ success: true, data: allUsersettlement });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

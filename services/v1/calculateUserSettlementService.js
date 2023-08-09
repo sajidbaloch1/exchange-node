@@ -73,28 +73,20 @@ const calculateUserSettlementPoint = async (userId) => {
 };
 const calculateAllUsersSettlementPoints = async () => {
   try {
-    // const userIdObject = new mongoose.Types.ObjectId(userId);
-
-    // const currentUser = await User.findById(userIdObject);
-    // console.log(currentUser);
-
-    // if (!currentUser) {
-    //   throw new Error("User not found.");
-    // }
-    // const parentUser = await User.findById(currentUser.parentId);
-
-    // if (!parentUser) {
-    //   throw new Error("User not found.");
-    // }
-    const users = await User.find(); // Get all users
+    const loggedInUser = await User.findById(req.body);
+    console.log(loggedInUser);
+    if (!loggedInUser) {
+      throw new Error("User not found.");
+    }
+    const users = await User.find(loggedInUser);
 
     const settlementPoints = [];
 
     for (const user of users) {
       const result = await User.aggregate([
-        // {
-        //   $match: { _id: userIdObject },
-        // },
+        {
+          $match: { _id: new mongoose.Types.ObjectId(loggedInUser) },
+        },
         {
           $graphLookup: {
             from: "users",

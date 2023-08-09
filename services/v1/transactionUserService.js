@@ -1,14 +1,14 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import ThemeUser from "../../models/v1/ThemeUser.js";
+import TransactionUser from "../../models/v1/TransactionUser.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import { generateTransactionCode, validateTransactionCode } from "../../lib/helpers/transaction-code.js";
 import { encryptPassword, generateJwtToken, getTrimmedUser, validatePassword } from "../../lib/helpers/auth.js";
 import mongoose from "mongoose";
 
 /**
- * Create Theme User in the database
+ * Create Transaction User in the database
  */
-const addThemeUser = async ({ user, ...reqBody }) => {
+const addTransactionUser = async ({ user, ...reqBody }) => {
     const {
         name,
         username,
@@ -16,52 +16,52 @@ const addThemeUser = async ({ user, ...reqBody }) => {
     } = reqBody;
 
     try {
-        const existingThemeUser = await ThemeUser.findOne({ username: username, isDeleted: false });
+        const existingTransactionUser = await TransactionUser.findOne({ username: username, isDeleted: false });
 
-        if (existingThemeUser) {
+        if (existingTransactionUser) {
             throw new Error("Username already exists!");
         }
 
-        const newThemeUserObj = {
+        const newTransactionUserObj = {
             userId: user._id,
             name,
             username,
             password: await encryptPassword(password),
         };
 
-        const newThemeUser = await ThemeUser.create(newThemeUserObj);
+        const newTransactionUser = await TransactionUser.create(newTransactionUserObj);
 
-        return newThemeUser;
+        return newTransactionUser;
     } catch (e) {
         throw new ErrorResponse(e.message).status(200);
     }
 };
 
 /**
- * Fetch theme user by Id from the database
+ * Fetch Transaction user by Id from the database
  */
-const fetchThemeUserId = async (_id, fields) => {
+const fetchTransactionUserId = async (_id, fields) => {
     try {
         let project = { password: 0 };
         if (fields) {
             project = fields;
         }
-        return await ThemeUser.findById(_id, project);
+        return await TransactionUser.findById(_id, project);
     } catch (e) {
         throw new ErrorResponse(e.message).status(200);
     }
 };
 
 /**
- * update theme user in the database
+ * update Transaction user in the database
  */
-const modifyThemeUser = async ({ user, ...reqBody }) => {
+const modifyTransactionUser = async ({ user, ...reqBody }) => {
     try {
-        const exisitngThemeUsername = await ThemeUser.findOne({
+        const exisitngTransactionUsername = await TransactionUser.findOne({
             username: reqBody.username,
             _id: { $ne: reqBody._id },
         });
-        if (exisitngThemeUsername) {
+        if (exisitngTransactionUsername) {
             throw new Error("Username already exists!");
         }
 
@@ -73,18 +73,18 @@ const modifyThemeUser = async ({ user, ...reqBody }) => {
         }
 
 
-        const updatedThemeUser = await ThemeUser.findByIdAndUpdate(reqBody._id, reqBody, {
+        const updatedTransactionUser = await TransactionUser.findByIdAndUpdate(reqBody._id, reqBody, {
             new: true,
         });
 
-        return updatedThemeUser;
+        return updatedTransactionUser;
     } catch (e) {
         throw new ErrorResponse(e.message).status(200);
     }
 };
 
-// Fetch all theme users from the database
-const fetchAllThemeUsers = async ({ user, ...reqBody }) => {
+// Fetch all Transaction users from the database
+const fetchAllTransactionUsers = async ({ user, ...reqBody }) => {
     try {
         const {
             page,
@@ -112,7 +112,7 @@ const fetchAllThemeUsers = async ({ user, ...reqBody }) => {
             filters.$or = generateSearchFilters(searchQuery, fields);
         }
 
-        const users = await ThemeUser.aggregate([
+        const users = await TransactionUser.aggregate([
             {
                 $match: filters,
             },
@@ -149,30 +149,30 @@ const fetchAllThemeUsers = async ({ user, ...reqBody }) => {
 };
 
 /**
- * delete theme user in the database
+ * delete Transaction user in the database
  */
-const removeThemeUser = async (_id) => {
+const removeTransactionUser = async (_id) => {
     try {
-        const themeUser = await ThemeUser.findById(_id);
+        const transactionUser = await TransactionUser.findById(_id);
 
-        await themeUser.softDelete();
+        await transactionUser.softDelete();
 
-        return themeUser;
+        return transactionUser;
     } catch (e) {
         throw new ErrorResponse(e.message).status(200);
     }
 };
 
 /**
- * Login theme user
+ * Login Transaction user
  */
 
-const loginThemeUser = async ({ username, password }) => {
+const loginTransactionUser = async ({ username, password }) => {
     try {
         const errorMessage = "The provided credentials are incorrect. Please try again.";
 
         // Check if username exists
-        const existingUser = await ThemeUser.findOne({ username: username, isDeleted: false });
+        const existingUser = await TransactionUser.findOne({ username: username, isDeleted: false });
         if (!existingUser) {
             throw new Error(errorMessage);
         }
@@ -205,7 +205,7 @@ const loginThemeUser = async ({ username, password }) => {
 const resetPassword = async ({ userId, oldPassword, newPassword }) => {
     try {
         // Check if username exists
-        const existingUser = await ThemeUser.findOne({ _id: userId });
+        const existingUser = await TransactionUser.findOne({ _id: userId });
         if (!existingUser) {
             throw new Error("The provided credentials are incorrect. Please try again.");
         }
@@ -228,4 +228,4 @@ const resetPassword = async ({ userId, oldPassword, newPassword }) => {
     }
 };
 
-export default { addThemeUser, fetchThemeUserId, modifyThemeUser, fetchAllThemeUsers, removeThemeUser, loginThemeUser, resetPassword };
+export default { addTransactionUser, fetchTransactionUserId, modifyTransactionUser, fetchAllTransactionUsers, removeTransactionUser, loginTransactionUser, resetPassword };

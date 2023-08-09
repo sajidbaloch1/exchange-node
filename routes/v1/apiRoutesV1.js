@@ -15,6 +15,7 @@ import userRoutes from "./routes/userRoutes.js";
 import userstakeRoutes from "./routes/userStakeRoutes.js";
 import themeUserRoutes from "./routes/themeUserRoutes.js";
 import betRoutes from "./routes/betRoutes.js";
+import transactionUserRoutes from "./routes/transactionUserRoutes.js";
 
 const app = express();
 
@@ -34,5 +35,6 @@ app.use("/transactionActivity", transactionActivityRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/themeUser", themeUserRoutes);
 app.use("/bet", betRoutes);
+app.use("/transactionUser", transactionUserRoutes);
 
 export default app;

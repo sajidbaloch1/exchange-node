@@ -69,6 +69,8 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
       filters.cloneParentId = { $exists: false };
     }
 
+    console.log(filters);
+
     const users = await User.aggregate([
       {
         $match: filters,
@@ -203,7 +205,7 @@ const addUser = async ({ user, ...reqBody }) => {
       settlementTime,
       mobileNumber,
       currencyId: loggedInUser.currencyId,
-      parentId: loggedInUser._id,
+      parentId: loggedInUser.cloneParentId ? loggedInUser.cloneParentId : loggedInUser._id,
       countryCode,
     };
 

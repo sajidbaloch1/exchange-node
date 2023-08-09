@@ -151,6 +151,15 @@ const getUsercalculateUserSettlementPoint = async (req, res) => {
   res.status(200).json({ success: true, data: { details: UserSettlement } });
 };
 
+const calculateAllUsersSettlementPoints = async (req, res) => {
+  try {
+    const allUsersettlement = await calculateUserSettlementService.calculateAllUsersSettlementPoints();
+    res.status(200).json({ success: true, data: allUsersettlement });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const getAppModulesList = async (req, res) => {
   const appModules = await AppModule.find({}, { name: 1, key: 1 });
 
@@ -183,4 +192,5 @@ export default {
   getAppModulesList,
   getHydratedUser,
   getUsercalculateUserSettlementPoint,
+  calculateAllUsersSettlementPoints,
 };

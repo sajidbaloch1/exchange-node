@@ -1,6 +1,7 @@
 import CryptoJS from "crypto-js";
 import mongoose from "mongoose";
 import { appConfig } from "../../config/app.js";
+import ArrayProto from "../../lib/helpers/array-proto.js";
 import { defaultPermissions } from "../../lib/helpers/permissions.js";
 import AppModule, { APP_MODULES } from "../../models/v1/AppModule.js";
 import Permission from "../../models/v1/Permission.js";
@@ -141,11 +142,74 @@ const generateUserDefaultPermissions = async ({ userId }) => {
   }
 };
 
+const fetchDefaultUserPermissions = async (encrypt = true) => {
+  const allDefaultPermissions = [];
+  const modulePromises = [];
+
+  for (const permission of defaultPermissions) {
+    modulePromises.push(AppModule.findOne({ key: permission.key }));
+  }
+
+  const modules = await Promise.all(modulePromises);
+
+  for (let i = 0; i < modules.length; i++) {
+    const module = modules[i];
+    if (!module) {
+      continue;
+    }
+
+    const currentModule = {
+      _id: module._id,
+      key: module.key,
+      name: module.name,
+      isActive: defaultPermissions[i].active,
+      subModules: [],
+    };
+
+    if (defaultPermissions[i].subModules?.length) {
+      const subModulePromises = [];
+      for (const subModule of defaultPermissions[i].subModules) {
+        subModulePromises.push(AppModule.findOne({ key: subModule.key }));
+      }
+
+      const subModules = await Promise.all(subModulePromises);
+
+      for (let j = 0; j < subModules.length; j++) {
+        const subModuleModule = subModules[j];
+        if (!subModuleModule) {
+          continue;
+        }
+
+        currentModule.subModules.push({
+          _id: subModuleModule._id,
+          key: subModuleModule.key,
+          name: subModuleModule.name,
+          isActive: defaultPermissions[i].subModules[j].active,
+        });
+      }
+    }
+
+    allDefaultPermissions.push(currentModule);
+  }
+
+  const sortedPermissions = new ArrayProto(allDefaultPermissions).sortByKeyAsc({
+    key: "name",
+    stringVal: true,
+  });
+
+  if (encrypt) {
+    const encryptedPermissions = encryptModules(sortedPermissions);
+    return encryptedPermissions;
+  }
+
+  return sortedPermissions;
+};
+
 const fetchUserPermissions = async ({ userId }) => {
   try {
     let permissions = await existingUserPermissions({ userId });
 
-    if (!permissions.length) {
+    if (permissions.length === 0) {
       await generateUserDefaultPermissions({ userId });
       permissions = await existingUserPermissions({ userId });
     }
@@ -160,25 +224,12 @@ const fetchUserPermissions = async ({ userId }) => {
 
 const fetchUserActivePermissions = async ({ userId }) => {
   try {
-    let activePermissions = [];
-
     const existingPermissions = await existingUserPermissions({ userId });
 
-    if (existingPermissions.length) {
-      for (const permission of existingPermissions) {
-        if (permission.isActive) {
-          activePermissions.push(permission.key);
-        }
-
-        if (permission.subModules?.length) {
-          for (const subModule of permission.subModules) {
-            if (subModule.isActive) {
-              activePermissions.push(subModule.key);
-            }
-          }
-        }
-      }
-    }
+    const activePermissions = existingPermissions.flatMap((permission) => {
+      const activeSubModules = permission.subModules?.filter((subModule) => subModule.isActive) ?? [];
+      return [permission, ...activeSubModules].filter((module) => module.isActive).map((module) => module.key);
+    });
 
     const encryptedPermissions = encryptModules(activePermissions);
 
@@ -190,10 +241,37 @@ const fetchUserActivePermissions = async ({ userId }) => {
 
 const setUserPermissions = async ({ userId, moduleIds }) => {
   try {
-    for (const moduleId of moduleIds) {
-      const module = await AppModule.findById(moduleId);
-      if (!module) {
-        continue;
+    const newPermissions = [];
+    const [defaultPermissions, existingPermissions] = await Promise.all([
+      fetchDefaultUserPermissions(false),
+      Permission.findOne({ userId }),
+    ]);
+
+    for (const permission of defaultPermissions) {
+      const currentModule = {
+        moduleId: permission._id,
+        isActive: moduleIds.includes(permission._id.toString()),
+        subModules: [],
+      };
+
+      if (permission.subModules?.length) {
+        for (const subModule of permission.subModules) {
+          currentModule.subModules.push({
+            moduleId: subModule._id,
+            isActive: moduleIds.includes(subModule._id.toString()),
+          });
+        }
+      }
+
+      newPermissions.push(currentModule);
+    }
+
+    if (newPermissions.length) {
+      if (existingPermissions) {
+        existingPermissions.modules = newPermissions;
+        await existingPermissions.save();
+      } else {
+        await Permission.create({ userId, modules: newPermissions });
       }
     }
 
@@ -205,6 +283,7 @@ const setUserPermissions = async ({ userId, moduleIds }) => {
 
 export default {
   fetchAppModules,
+  fetchDefaultUserPermissions,
   fetchUserPermissions,
   fetchUserActivePermissions,
   setUserPermissions,

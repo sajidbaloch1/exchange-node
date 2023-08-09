@@ -7,6 +7,12 @@ const getAppModulesList = async (req, res) => {
   return res.status(200).json({ success: true, data: appModules });
 };
 
+const getDefaultUserPermissions = async (req, res) => {
+  const defaultPermissions = await permissionService.fetchDefaultUserPermissions();
+
+  return res.status(200).json({ success: true, data: defaultPermissions });
+};
+
 const getUserPermissions = async (req, res) => {
   const { userId } = req.body;
   if (!userId) {
@@ -31,6 +37,7 @@ const getUserActivePermissions = async (req, res) => {
 
 export default {
   getAppModulesList,
+  getDefaultUserPermissions,
   getUserPermissions,
   getUserActivePermissions,
 };

@@ -56,16 +56,20 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
       filters.$or = generateSearchFilters(searchQuery, fields);
     }
 
-    const loggedInUser = await User.findById(user._id, { role: 1 });
+    const loggedInUser = await User.findById(user._id, { role: 1, cloneParentId: 1 });
     if (loggedInUser.role !== USER_ROLE.SYSTEM_OWNER) {
       if (cloneParentId) {
         filters.cloneParentId = new mongoose.Types.ObjectId(cloneParentId);
+      } else if (loggedInUser?.cloneParentId) {
+        filters.parentId = new mongoose.Types.ObjectId(parentId);
       } else {
         filters.parentId = new mongoose.Types.ObjectId(user._id);
       }
     } else {
       filters.cloneParentId = { $exists: false };
     }
+
+    console.log(filters);
 
     const users = await User.aggregate([
       {
@@ -201,7 +205,7 @@ const addUser = async ({ user, ...reqBody }) => {
       settlementTime,
       mobileNumber,
       currencyId: loggedInUser.currencyId,
-      parentId: loggedInUser._id,
+      parentId: loggedInUser.cloneParentId ? loggedInUser.cloneParentId : loggedInUser._id,
       countryCode,
     };
 

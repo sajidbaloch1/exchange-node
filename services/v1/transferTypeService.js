@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
-import TransferType from "../../models/v1/transferType.js";
+import TransferType from "../../models/v1/TransferType.js";
 
 // Fetch all TransferType from the database
 const fetchAllTransferType = async ({ ...reqBody }) => {

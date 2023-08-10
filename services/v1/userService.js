@@ -69,8 +69,6 @@ const fetchAllUsers = async ({ user, ...reqBody }) => {
       filters.cloneParentId = { $exists: false };
     }
 
-    console.log(filters);
-
     const users = await User.aggregate([
       {
         $match: filters,

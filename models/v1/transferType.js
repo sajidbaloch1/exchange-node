@@ -18,7 +18,7 @@ export const PLATFORM_NAME = {
     UPI: "upi",
 };
 
-const depositTypeSchema = new mongoose.Schema({
+const transferTypeSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "user", // References the 'User' model for the user who initiated the transaction.
@@ -84,9 +84,9 @@ const depositTypeSchema = new mongoose.Schema({
     },
 });
 
-depositTypeSchema.plugin(timestampPlugin);
-depositTypeSchema.plugin(softDeletePlugin);
+transferTypeSchema.plugin(timestampPlugin);
+transferTypeSchema.plugin(softDeletePlugin);
 
-const DepositType = mongoose.model("deposit_type", depositTypeSchema);
+const TransferType = mongoose.model("deposit_type", transferTypeSchema);
 
-export default DepositType;
+export default TransferType;

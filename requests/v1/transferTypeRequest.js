@@ -1,9 +1,9 @@
 import { isValidObjectId } from "mongoose";
 import Yup from "yup";
 import { isValidTime } from "../../lib/helpers/validation.js";
-import DepositType from "../../models/v1/DepositType.js";
+import TransferType from "../../models/v1/transferType.js";
 
-async function depositTypeListingRequest(req) {
+async function transferTypeListingRequest(req) {
   req.body.page = req.body?.page ? Number(req.body.page) : null;
   req.body.perPage = req.body?.perPage ? Number(req.body.perPage) : 10;
   req.body.sortBy = req.body?.sortBy ? req.body.sortBy : "isActive";
@@ -11,13 +11,14 @@ async function depositTypeListingRequest(req) {
   req.body.searchQuery = req.body?.searchQuery ? req.body.searchQuery?.trim() : null;
   req.body.showDeleted = req.body?.showDeleted ? [true, "true"].includes(req.body.showDeleted) : false;
   req.body.showRecord = req.body?.showRecord ? req.body.showRecord?.trim() : "All";
+  req.body.userId = req.body?.userId ? req.body.userId?.trim() : null;
 
   const validationSchema = Yup.object().shape({
     page: Yup.number().nullable(true),
 
     perPage: Yup.number(),
 
-    sortBy: Yup.string().oneOf(Object.keys(DepositType.schema.paths), "Invalid sortBy key."),
+    sortBy: Yup.string().oneOf(Object.keys(TransferType.schema.paths), "Invalid sortBy key."),
 
     showDeleted: Yup.boolean(),
 
@@ -27,6 +28,8 @@ async function depositTypeListingRequest(req) {
 
     searchQuery: Yup.string().nullable(true),
 
+    userId: Yup.string().nullable(true),
+
   });
 
   await validationSchema.validate(req.body);
@@ -34,7 +37,7 @@ async function depositTypeListingRequest(req) {
   return req;
 }
 
-async function createDepositTypeRequest(req) {
+async function createTransferTypeRequest(req) {
   const validationSchema = Yup.object().shape({
     userId: Yup.string().required().test("userId", "Invalid userId!", isValidObjectId),
     type: Yup.string().required(),
@@ -59,7 +62,7 @@ async function createDepositTypeRequest(req) {
   return req;
 }
 
-async function updateDepositTypeRequest(req) {
+async function updateTransferTypeRequest(req) {
   const validationSchema = Yup.object().shape({
     _id: Yup.string().required().test("_id", "Given _id is not valid!", isValidObjectId),
     userId: Yup.string().required().test("userId", "Invalid userId!", isValidObjectId),
@@ -87,7 +90,7 @@ async function updateDepositTypeRequest(req) {
 }
 
 export default {
-  depositTypeListingRequest,
-  createDepositTypeRequest,
-  updateDepositTypeRequest,
+  transferTypeListingRequest,
+  createTransferTypeRequest,
+  updateTransferTypeRequest,
 };

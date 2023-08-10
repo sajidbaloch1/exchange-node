@@ -84,7 +84,7 @@ const calculateAllUsersSettlementPoints = async (userId) => {
     for (const user of users) {
       const result = await User.aggregate([
         {
-          $match: { _id: new mongoose.Types.ObjectId(user._id) }, // Updated this line
+          $match: { _id: new mongoose.Types.ObjectId(user._id) },
         },
         {
           $graphLookup: {
@@ -114,12 +114,12 @@ const calculateAllUsersSettlementPoints = async (userId) => {
             totalPoint: 1,
             totalExposure: 1,
             AllPts: { $sum: ["$balance", "$totalPoint"] },
-            settlementPoint: { $subtract: [{ $sum: ["$balance", "$totalPoint"] }, "$creditPoints"] }, // Calculating settlementPoint here
+            settlementPoint: { $subtract: [{ $sum: ["$balance", "$totalPoint"] }, "$creditPoints"] },
           },
         },
       ]);
 
-      const settlementPoint = result[0].settlementPoint; // Using the calculated settlementPoint
+      const settlementPoint = result[0].settlementPoint;
       console.log(settlementPoint);
       settlementPoints += settlementPoint;
     }

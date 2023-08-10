@@ -10,6 +10,5 @@ route(router, "post", "/createWithdrawGroup", withdrawGroupController.createWith
 route(router, "post", "/updateWithdrawGroup", withdrawGroupController.updateWithdrawGroup);
 route(router, "post", "/deleteWithdrawGroup", withdrawGroupController.deleteWithdrawGroup);
 route(router, "post", "/updateWithdrawGroupStatus", withdrawGroupController.updateWithdrawGroupStatus);
-route(router, "post", "/activeAllWithdrawGroup", withdrawGroupController.activeAllWithdrawGroup);
 
 export default router;

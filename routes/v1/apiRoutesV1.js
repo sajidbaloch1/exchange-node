@@ -18,6 +18,7 @@ import transactionUserRoutes from "./routes/transactionUserRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import userstakeRoutes from "./routes/userStakeRoutes.js";
 import withdrawGroupRoutes from "./routes/withdrawGroupRoutes.js";
+import transferTypeRoutes from "./routes/transferTypeRoutes.js";
 
 const app = express();
 
@@ -40,5 +41,6 @@ app.use("/themeUser", themeUserRoutes);
 app.use("/bet", betRoutes);
 app.use("/transactionUser", transactionUserRoutes);
 app.use("/withdrawGroup", withdrawGroupRoutes);
+app.use("/transferType", transferTypeRoutes);
 
 export default app;

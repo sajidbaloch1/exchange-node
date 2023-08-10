@@ -1,6 +1,5 @@
 import { isValidObjectId } from "mongoose";
 import Yup from "yup";
-import { isValidTime } from "../../lib/helpers/validation.js";
 import WithdrawGroup from "../../models/v1/WithdrawGroup.js";
 
 async function withdrawGroupListingRequest(req) {
@@ -26,7 +25,6 @@ async function withdrawGroupListingRequest(req) {
     direction: Yup.string().oneOf(["asc", "desc", null], "Invalid direction use 'asc' or 'desc'.").nullable(true),
 
     searchQuery: Yup.string().nullable(true),
-
   });
 
   await validationSchema.validate(req.body);
@@ -39,7 +37,7 @@ async function createWithdrawGroupRequest(req) {
     userId: Yup.string().required().test("userId", "Invalid userId!", isValidObjectId),
     type: Yup.string().required(),
     remark: Yup.string().nullable(true),
-    commision: Yup.number().nullable(true),
+    commission: Yup.number().nullable(true),
     minAmount: Yup.number().required(),
     maxAmount: Yup.number().required(),
   });
@@ -55,10 +53,10 @@ async function updateWithdrawGroupRequest(req) {
     userId: Yup.string().required().test("userId", "Invalid userId!", isValidObjectId),
     type: Yup.string().required(),
     remark: Yup.string().nullable(true),
-    commision: Yup.number().nullable(true),
+    commission: Yup.number().nullable(true),
     minAmount: Yup.number().required(),
     maxAmount: Yup.number().required(),
-    isActive: Yup.boolean().nullable(true)
+    isActive: Yup.boolean().nullable(true),
   });
 
   await validationSchema.validate(req.body);

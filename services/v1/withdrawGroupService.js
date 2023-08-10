@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
 import WithdrawGroup from "../../models/v1/WithdrawGroup.js";
@@ -6,14 +5,7 @@ import WithdrawGroup from "../../models/v1/WithdrawGroup.js";
 // Fetch all WithdrawGroup from the database
 const fetchAllWithdrawGroup = async ({ ...reqBody }) => {
   try {
-    const {
-      page,
-      perPage,
-      sortBy,
-      direction,
-      searchQuery,
-      showDeleted,
-    } = reqBody;
+    const { page, perPage, sortBy, direction, searchQuery, showDeleted } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -24,7 +16,6 @@ const fetchAllWithdrawGroup = async ({ ...reqBody }) => {
     let filters = {
       isDeleted: showDeleted,
     };
-
 
     if (searchQuery) {
       const fields = ["userId", "type"];
@@ -39,7 +30,6 @@ const fetchAllWithdrawGroup = async ({ ...reqBody }) => {
         $facet: {
           totalRecords: [{ $count: "count" }],
           paginatedResults: [
-            ...paginationQueries,
             {
               $sort: { [sortBy]: sortDirection },
             },
@@ -80,23 +70,16 @@ const fetchWithdrawGroupId = async (_id) => {
  * Create WithdrawGroup in the database
  */
 const addWithdrawGroup = async ({ ...reqBody }) => {
-  const {
-    userId,
-    type,
-    remark,
-    commision,
-    minAmount,
-    maxAmount
-  } = reqBody;
+  const { userId, type, remark, commission, minAmount, maxAmount } = reqBody;
 
   try {
     const newWithdrawGroupObj = {
       userId,
       type,
       remark,
-      commision,
+      commission,
       minAmount,
-      maxAmount
+      maxAmount,
     };
 
     const newWithdrawGroup = await WithdrawGroup.create(newWithdrawGroupObj);
@@ -112,23 +95,23 @@ const addWithdrawGroup = async ({ ...reqBody }) => {
  */
 const modifyWithdrawGroup = async ({ ...reqBody }) => {
   try {
-    const WithdrawGroups = await WithdrawGroup.findById(reqBody._id);
+    const withdrawGroup = await WithdrawGroup.findById(reqBody._id);
 
-    if (!WithdrawGroups) {
-      throw new Error("WithdrawGroup not found.");
+    if (!withdrawGroup) {
+      throw new Error("Withdraw Group not found.");
     }
 
-    WithdrawGroups.userId = reqBody.userId;
-    WithdrawGroups.type = reqBody.type;
-    WithdrawGroups.remark = reqBody.remark;
-    WithdrawGroups.commision = reqBody.commission;
-    WithdrawGroups.minAmount = reqBody.minAmount;
-    WithdrawGroups.maxAmount = reqBody.maxAmount;
-    WithdrawGroups.isActive = reqBody.isActive;
+    withdrawGroup.userId = reqBody.userId;
+    withdrawGroup.type = reqBody.type;
+    withdrawGroup.remark = reqBody.remark;
+    withdrawGroup.commission = reqBody.commission;
+    withdrawGroup.minAmount = reqBody.minAmount;
+    withdrawGroup.maxAmount = reqBody.maxAmount;
+    withdrawGroup.isActive = reqBody.isActive;
 
-    await WithdrawGroups.save();
+    await withdrawGroup.save();
 
-    return WithdrawGroups;
+    return withdrawGroup;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -139,11 +122,11 @@ const modifyWithdrawGroup = async ({ ...reqBody }) => {
  */
 const removeWithdrawGroup = async (_id) => {
   try {
-    const WithdrawGroups = await WithdrawGroup.findById(_id);
+    const withdrawGroups = await WithdrawGroup.findById(_id);
 
-    await WithdrawGroups.softDelete();
+    await withdrawGroups.softDelete();
 
-    return WithdrawGroups;
+    return withdrawGroups;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

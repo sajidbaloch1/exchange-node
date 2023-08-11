@@ -24,6 +24,18 @@ async function updateThemeSettingRequest(req) {
     return req;
 }
 
+async function getThemeSettingByCurrencyAndDomainRequest(req) {
+    const validationSchema = Yup.object().shape({
+        currencyId: Yup.string(),
+        domainUrl: Yup.string()
+    });
+
+    await validationSchema.validate(req.body);
+
+    return req;
+}
+
 export default {
     updateThemeSettingRequest,
+    getThemeSettingByCurrencyAndDomainRequest
 };

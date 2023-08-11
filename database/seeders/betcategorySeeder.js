@@ -1,4 +1,4 @@
-import BetCategory, { DEFAULT_CATEGORIES } from "../../../models/v1/BetCategory.js";
+import BetCategory, { DEFAULT_CATEGORIES } from "../../models/v1/BetCategory.js";
 
 export default async function betCategorySeeder() {
   const seeder = {

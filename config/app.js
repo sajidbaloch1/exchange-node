@@ -25,5 +25,14 @@ export const appConfig = {
   PERMISSIONS_AES_SECRET: env.PERMISSIONS_AES_SECRET,
 
   MONGO_URL: env.MONGO_URL,
-  BASE_URL: env.BASE_URL
+  BASE_URL: env.BASE_URL,
+
+  AWS_S3_BUCKET: env.AWS_S3_BUCKET,
+  AWS_S3_CONFIG: {
+    region: env.AWS_REGION,
+    credentials: {
+      accessKeyId: env.AWS_S3_ACCESS_KEY,
+      secretAccessKey: env.AWS_S3_SECRET,
+    },
+  },
 };

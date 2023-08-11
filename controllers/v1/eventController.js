@@ -84,6 +84,14 @@ const activeAllEvent = async (req, res) => {
 
   res.status(200).json({ success: true, data: { details: {} } });
 };
+
+const upcomingEvent = async (req, res) => {
+
+  const UpcomingEvent = await eventService.upcomingEvents();
+
+  res.status(200).json({ success: true, data: { details: UpcomingEvent } });
+};
+
 export default {
   getAllEvent,
   getEventById,
@@ -92,4 +100,5 @@ export default {
   deleteEvent,
   updateEventStatus,
   activeAllEvent,
+  upcomingEvent
 };

@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
-import TransferRequest from "../../models/v1/TransferRequest.js";
+import TransferRequest, { STATUS } from "../../models/v1/TransferRequest.js";
+import User from "../../models/v1/User.js";
 
 // Fetch all TransferRequest from the database
 const fetchAllTransferRequest = async ({ ...reqBody }) => {
@@ -13,7 +14,8 @@ const fetchAllTransferRequest = async ({ ...reqBody }) => {
       direction,
       searchQuery,
       showDeleted,
-      userId
+      userId,
+      requestedUserId, status
     } = reqBody;
 
     // Pagination and Sorting
@@ -29,10 +31,20 @@ const fetchAllTransferRequest = async ({ ...reqBody }) => {
     if (userId) {
       filters.userId = new mongoose.Types.ObjectId(userId);
     }
+    if (requestedUserId) {
+      filters.requestedUserId = new mongoose.Types.ObjectId(requestedUserId);
+    }
+
+    if (status) {
+      filters.status = status;
+    }
+
     if (searchQuery) {
       const fields = ["userId", "type"];
       filters.$or = generateSearchFilters(searchQuery, fields);
     }
+
+
 
     const TransferRequests = await TransferRequest.aggregate([
       {
@@ -88,14 +100,21 @@ const addTransferRequest = async ({ ...reqBody }) => {
     transferTypeId,
     withdrawGroupId,
     amount,
+    requestedUserId
   } = reqBody;
 
   try {
+    var findUser = await User.findById(userId);
+
+    if (findUser.balance < amount) {
+      throw new Error("Given amount exceed the available balance!");
+    }
     const newTransferRequestObj = {
       userId,
       transferTypeId,
       withdrawGroupId,
       amount,
+      requestedUserId
     };
 
     const newTransferRequest = await TransferRequest.create(newTransferRequestObj);
@@ -118,6 +137,7 @@ const modifyTransferRequest = async ({ ...reqBody }) => {
     }
 
     TransferRequests.userId = reqBody.userId;
+    TransferRequests.requestedUserId = reqBody.requestedUserId;
     TransferRequests.transferTypeId = reqBody.transferTypeId;
     TransferRequests.withdrawGroupId = reqBody.withdrawGroupId;
     TransferRequests.amount = reqBody.amount;
@@ -148,15 +168,33 @@ const removeTransferRequest = async (_id) => {
 };
 
 /**
- * Withdraw Group status modify
+ *Transfer Request status modify
  */
 const transferRequestStatusModify = async ({ _id, fieldName, status }) => {
   try {
     const TransferRequests = await TransferRequest.findById(_id);
+    if (TransferRequests.status == STATUS.APPROVE) {
+      throw new Error("TransferRequest already approved.");
+    }
+    else if (TransferRequests.status == STATUS.REJECT) {
+      throw new Error("TransferRequest already rejected.");
+    }
+    else {
+      if (status == STATUS.APPROVE) {
+        var findUser = await User.findById(TransferRequests.userId);
 
-    TransferRequests[fieldName] = status;
-    await TransferRequests.save();
+        if (findUser.balance < TransferRequests.amount) {
+          throw new Error("Given amount exceed the available balance!");
+        }
+        else {
+          findUser.balance = findUser.balance - TransferRequests.amount;
+          findUser.save();
+        }
+      }
 
+      TransferRequests[fieldName] = status;
+      await TransferRequests.save();
+    }
     return TransferRequests;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);

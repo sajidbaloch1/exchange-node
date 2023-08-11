@@ -12,6 +12,8 @@ async function transferRequestListingRequest(req) {
   req.body.showDeleted = req.body?.showDeleted ? [true, "true"].includes(req.body.showDeleted) : false;
   req.body.showRecord = req.body?.showRecord ? req.body.showRecord?.trim() : "All";
   req.body.userId = req.body?.userId ? req.body.userId?.trim() : null;
+  req.body.requestedUserId = req.body?.requestedUserId ? req.body.requestedUserId?.trim() : null;
+  req.body.status = req.body?.status ? req.body.status : null;
 
   const validationSchema = Yup.object().shape({
     page: Yup.number().nullable(true),
@@ -28,7 +30,8 @@ async function transferRequestListingRequest(req) {
 
     searchQuery: Yup.string().nullable(true),
     userId: Yup.string().nullable(true),
-
+    requestedUserId: Yup.string().nullable(true),
+    status: Yup.string().nullable(true),
   });
 
   await validationSchema.validate(req.body);
@@ -39,6 +42,7 @@ async function transferRequestListingRequest(req) {
 async function createTransferRequestRequest(req) {
   const validationSchema = Yup.object().shape({
     userId: Yup.string().required().test("userId", "Invalid userId!", isValidObjectId),
+    requestedUserId: Yup.string().required().test("requestedUserId", "Invalid requestedUserId!", isValidObjectId),
     transferTypeId: Yup.string().required().test("transferTypeId", "Invalid transferTypeId!", isValidObjectId),
     withdrawGroupId: Yup.string().nullable(true),
     amount: Yup.number().required(),
@@ -55,6 +59,7 @@ async function updateTransferRequestRequest(req) {
   const validationSchema = Yup.object().shape({
     _id: Yup.string().required().test("_id", "Given _id is not valid!", isValidObjectId),
     userId: Yup.string().required().test("userId", "Invalid userId!", isValidObjectId),
+    requestedUserId: Yup.string().required().test("requestedUserId", "Invalid requestedUserId!", isValidObjectId),
     transferTypeId: Yup.string().required().test("transferTypeId", "Invalid transferTypeId!", isValidObjectId),
     withdrawGroupId: Yup.string().nullable(true),
     amount: Yup.number().required(),

@@ -15,6 +15,11 @@ const transferRequestSchema = new mongoose.Schema({
         ref: "user", // References the 'User' model for the user who initiated the transaction.
         required: true,
     },
+    requestedUserId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+        required: true,
+    },
     transferTypeId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "transfer_type",

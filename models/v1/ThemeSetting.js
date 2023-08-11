@@ -1,67 +1,99 @@
 import mongoose from "mongoose";
+import { appConfig } from "../../config/app.js";
+import { IMAGE_SIZES, getImageUrlFromS3 } from "../../lib/files/image-upload.js";
 import timestampPlugin from "../plugins/timestamp.js";
 
+export const THEME_IMAGE_TYPES = {
+  BANNER: "BANNER",
+  WELCOME_MOBILE: "WELCOME_MOBILE",
+  WELCOME_DESKTOP: "WELCOME_DESKTOP",
+};
+
+export const THEME_IMAGE_SIZES = {
+  [THEME_IMAGE_TYPES.BANNER]: { ...IMAGE_SIZES, DEFAULT: "400_220", THUMBNAIL: "200_50" },
+  [THEME_IMAGE_TYPES.WELCOME_MOBILE]: { ...IMAGE_SIZES, DEFAULT: "400_220", THUMBNAIL: "200_50" },
+  [THEME_IMAGE_TYPES.WELCOME_DESKTOP]: { ...IMAGE_SIZES, DEFAULT: "400_220", THUMBNAIL: "200_50" },
+};
+
 const themeSettingSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "user", // References the 'User' model for the user.
-        required: true,
-    },
-    facebookLink: {
-        type: String,
-        default: null,
-    },
-    twitterLink: {
-        type: String,
-        default: null,
-    },
-    instagramLink: {
-        type: String,
-        default: null,
-    },
-    telegramLink: {
-        type: String,
-        default: null,
-    },
-    youtubeLink: {
-        type: String,
-        default: null,
-    },
-    whatsappLink: {
-        type: String,
-        default: null,
-    },
-    blogLink: {
-        type: String,
-        default: null,
-    },
-    footerMessage: {
-        type: String,
-        default: null,
-    },
-    news: {
-        type: String,
-        default: null,
-    },
-    supportNumber: {
-        type: String,
-        default: null,
-    },
-    forgotPasswordLink: {
-        type: String,
-        default: null,
-    },
-    depositePopupNumber: {
-        type: String,
-        default: null,
-    },
-    welcomeMessage: {
-        type: String,
-        default: null,
-    },
-})
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
+
+  facebookLink: { type: String, default: null },
+
+  twitterLink: { type: String, default: null },
+
+  instagramLink: { type: String, default: null },
+
+  telegramLink: { type: String, default: null },
+
+  youtubeLink: { type: String, default: null },
+
+  whatsappLink: { type: String, default: null },
+
+  blogLink: { type: String, default: null },
+
+  footerMessage: { type: String, default: null },
+
+  news: { type: String, default: null },
+
+  supportNumber: { type: String, default: null },
+
+  forgotPasswordLink: { type: String, default: null },
+
+  depositePopupNumber: { type: String, default: null },
+
+  welcomeMessage: { type: String, default: null },
+});
 
 themeSettingSchema.plugin(timestampPlugin);
+
+themeSettingSchema.methods.generateImagePath = function (type, name = "", size = IMAGE_SIZES.ORIGINAL) {
+  let path = `theme_setting/${this._id.toString()}`;
+
+  if (appConfig.NODE_ENV === "development") {
+    path = `dev/${appConfig.DEV_USER}/${path}`;
+  }
+
+  switch (type) {
+    case THEME_IMAGE_TYPES.BANNER:
+      return `${path}/banner/${this._id.toString()}_${name}_${size}`;
+
+    case THEME_IMAGE_TYPES.WELCOME_DESKTOP:
+      return `${path}/welcome_desktop/${this._id.toString()}_${size}`;
+
+    case THEME_IMAGE_TYPES.WELCOME_MOBILE:
+      return `${path}/welcome_mobile/${this._id.toString()}_${size}`;
+
+    default:
+      throw new Error("Unknown url path.");
+  }
+};
+
+themeSettingSchema.methods.getImageUrl = async function (type, name = "", size = IMAGE_SIZES.ORIGINAL) {
+  console.log(this.generateImagePath(type, name, size));
+  switch (type) {
+    case THEME_IMAGE_TYPES.BANNER:
+      return await getImageUrlFromS3({
+        path: this.generateImagePath(type, name, size),
+        minutesToExpire: 0,
+      });
+
+    case THEME_IMAGE_TYPES.WELCOME_DESKTOP:
+      return await getImageUrlFromS3({
+        path: this.generateImagePath(type, name, size),
+        minutesToExpire: 0,
+      });
+
+    case THEME_IMAGE_TYPES.WELCOME_MOBILE:
+      return await getImageUrlFromS3({
+        path: this.generateImagePath(type, name, size),
+        minutesToExpire: 0,
+      });
+
+    default:
+      throw new Error("Unknown image type.");
+  }
+};
 
 const ThemeSetting = mongoose.model("theme_setting", themeSettingSchema);
 

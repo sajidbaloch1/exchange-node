@@ -3,28 +3,27 @@ import themeSettingService from "../../services/v1/themeSettingService.js";
 
 // Get themeSetting by ID
 const getThemeSettingById = async (req, res) => {
-    const { userId = null } = req.body;
+  const { userId = null } = req.body;
 
-    if (!userId) {
-        throw new Error("userId is required");
-    }
+  if (!userId) {
+    throw new Error("userId is required");
+  }
 
-    const themeSetting = await themeSettingService.fetchThemeSettingId(userId);
+  const themeSetting = await themeSettingService.fetchThemeSettingId(userId);
 
-    res.status(200).json({ success: true, data: { details: themeSetting } });
+  res.status(200).json({ success: true, data: { details: themeSetting } });
 };
 
 // Update a themeSetting
 const updateThemeSetting = async (req, res) => {
-    const { body } = await themeSettingRequest.updateThemeSettingRequest(req);
+  const { body } = await themeSettingRequest.updateThemeSettingRequest(req);
 
-    const updatedThemeSetting = await themeSettingService.modifyThemeSetting({ ...body });
+  const updatedThemeSetting = await themeSettingService.modifyThemeSetting({ ...body });
 
-    res.status(200).json({ success: true, data: { details: updatedThemeSetting } });
+  res.status(200).json({ success: true, data: { details: updatedThemeSetting } });
 };
 
-
 export default {
-    getThemeSettingById,
-    updateThemeSetting
+  getThemeSettingById,
+  updateThemeSetting,
 };

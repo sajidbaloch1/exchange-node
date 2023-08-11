@@ -17,7 +17,6 @@ const fetchThemeSettingId = async (userId) => {
   }
 };
 
-
 /**
  * update themeSetting in the database
  */
@@ -40,7 +39,7 @@ const modifyThemeSetting = async ({ ...reqBody }) => {
         supportNumber,
         forgotPasswordLink,
         depositePopupNumber,
-        welcomeMessage
+        welcomeMessage,
       } = reqBody;
       const newThemeSettingObj = {
         userId,
@@ -56,12 +55,11 @@ const modifyThemeSetting = async ({ ...reqBody }) => {
         supportNumber,
         forgotPasswordLink,
         depositePopupNumber,
-        welcomeMessage
+        welcomeMessage,
       };
       const newThemeSetting = await ThemeSetting.create(newThemeSettingObj);
       return newThemeSetting;
-    }
-    else {
+    } else {
       themeSetting.facebookLink = reqBody.facebookLink;
       themeSetting.twitterLink = reqBody.twitterLink;
       themeSetting.instagramLink = reqBody.instagramLink;
@@ -79,12 +77,10 @@ const modifyThemeSetting = async ({ ...reqBody }) => {
       await themeSetting.save();
       return themeSetting;
     }
-
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
 };
-
 
 export default {
   fetchThemeSettingId,

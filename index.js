@@ -3,7 +3,7 @@ import express from "express";
 import fileUpload from "express-fileupload";
 import moment from "moment";
 import { appConfig } from "./config/app.js";
-import dbConnection from "./lib/database/connect.js";
+import dbConnection from "./database/connect.js";
 import corsMiddleware from "./middlewares/corsMiddleware.js";
 import apiRoutes from "./routes/apiRoutes.js";
 

@@ -1,8 +1,59 @@
 import { nanoid } from "nanoid";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { uploadImageToS3 } from "../../lib/files/image-upload.js";
+import { deleteImageFromS3, uploadImageToS3 } from "../../lib/files/image-upload.js";
 import ThemeSetting, { THEME_IMAGE_SIZES, THEME_IMAGE_TYPES } from "../../models/v1/ThemeSetting.js";
 import User from "../../models/v1/User.js";
+
+const uploadThemeImages = async (themeSettingId, files) => {
+  const themeSetting = await ThemeSetting.findById(themeSettingId);
+
+  const { bannerImages = [], welcomeMobileImage, welcomeDesktopImage } = files;
+
+  const imagePromises = [];
+
+  const bannerImageNames = [];
+
+  // Generates image size promises for given type
+  const imageSizePromises = (themeSetting, image, type, name = "") => {
+    const imagePromises = [];
+    const sizes = [
+      THEME_IMAGE_SIZES[type].ORIGINAL,
+      THEME_IMAGE_SIZES[type].DEFAULT,
+      THEME_IMAGE_SIZES[type].THUMBNAIL,
+    ];
+    sizes.forEach((size) => {
+      const path = themeSetting.generateImagePath(type, size, name);
+      imagePromises.push(uploadImageToS3({ image, path, size }));
+    });
+    return imagePromises;
+  };
+
+  // Banner Images
+  if (bannerImages.length) {
+    bannerImages.forEach((image) => {
+      const name = nanoid();
+      bannerImageNames.push(name);
+      imagePromises.push(...imageSizePromises(themeSetting, image, THEME_IMAGE_TYPES.BANNER, name));
+    });
+  }
+
+  // Welcome Image Mobile
+  if (welcomeMobileImage) {
+    imagePromises.push(...imageSizePromises(themeSetting, welcomeMobileImage, THEME_IMAGE_TYPES.WELCOME_MOBILE));
+  }
+
+  // Welcome Image Desktop
+  if (welcomeDesktopImage) {
+    imagePromises.push(...imageSizePromises(themeSetting, welcomeDesktopImage, THEME_IMAGE_TYPES.WELCOME_DESKTOP));
+  }
+
+  await Promise.all(imagePromises);
+
+  if (bannerImageNames.length) {
+    themeSetting.bannerImages.push(...bannerImageNames);
+    await themeSetting.save();
+  }
+};
 
 /**
  * Fetch themeSetting by Id from the database
@@ -17,74 +68,6 @@ const fetchThemeSettingId = async (userId) => {
     return existingThemeSetting;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
-  }
-};
-
-/**
- * Upload theme images to S3
- * @param {String} themeSettingId
- * @param {Array} files
- * @returns {Promise<void>}
- */
-const uploadThemeImages = async (themeSettingId, files) => {
-  const themeSetting = await ThemeSetting.findById(themeSettingId);
-
-  const { bannerImages = [], welcomeMobileImage, welcomeDesktopImage } = files;
-
-  const imagePromises = [];
-
-  const bannerImageNames = [];
-
-  // Banner Images
-  if (bannerImages.length) {
-    bannerImages.forEach((image) => {
-      const sizes = [
-        THEME_IMAGE_SIZES.BANNER.ORIGINAL,
-        THEME_IMAGE_SIZES.BANNER.DEFAULT,
-        THEME_IMAGE_SIZES.BANNER.THUMBNAIL,
-      ];
-      sizes.forEach((size) => {
-        const name = nanoid();
-        const path = themeSetting.generateImagePath(THEME_IMAGE_TYPES.BANNER, size, name);
-        imagePromises.push(uploadImageToS3({ image, path, size }));
-        bannerImageNames.push(name);
-      });
-    });
-  }
-
-  // Welcome Image Mobile
-  if (welcomeMobileImage) {
-    const sizes = [
-      THEME_IMAGE_SIZES.WELCOME_MOBILE.ORIGINAL,
-      THEME_IMAGE_SIZES.WELCOME_MOBILE.DEFAULT,
-      THEME_IMAGE_SIZES.WELCOME_MOBILE.THUMBNAIL,
-    ];
-    sizes.forEach((size) => {
-      const path = themeSetting.generateImagePath(THEME_IMAGE_TYPES.WELCOME_MOBILE, size);
-      imagePromises.push(uploadImageToS3({ image: welcomeMobileImage, path, size }));
-    });
-  }
-
-  // Welcome Image Desktop
-  if (welcomeDesktopImage) {
-    const sizes = [
-      THEME_IMAGE_SIZES.WELCOME_DESKTOP.ORIGINAL,
-      THEME_IMAGE_SIZES.WELCOME_DESKTOP.DEFAULT,
-      THEME_IMAGE_SIZES.WELCOME_DESKTOP.THUMBNAIL,
-    ];
-    sizes.forEach((size) => {
-      const path = themeSetting.generateImagePath(THEME_IMAGE_TYPES.WELCOME_DESKTOP, size);
-      imagePromises.push(uploadImageToS3({ image: welcomeDesktopImage, path, size }));
-    });
-  }
-
-  await Promise.all(imagePromises)
-    .then((results) => console.log(results))
-    .catch((e) => console.log(e));
-
-  if (bannerImageNames.length) {
-    themeSetting.bannerImages = bannerImageNames;
-    await themeSetting.save();
   }
 };
 
@@ -161,6 +144,42 @@ const modifyThemeSetting = async ({ files, ...reqBody }) => {
     throw new ErrorResponse(e.message).status(200);
   }
 };
+
+const deleteBannerImage = async ({ _id: themeSettingId, bannerImageName }) => {
+  try {
+    const themeSetting = await ThemeSetting.findById(themeSettingId);
+
+    if (!themeSetting) {
+      throw new Error("Theme Setting not found!");
+    }
+
+    if (!themeSetting.bannerImages.includes(bannerImageName)) {
+      throw new Error("Banner Image not found!");
+    }
+
+    const imagePromises = [];
+
+    const sizes = [
+      THEME_IMAGE_SIZES.BANNER.ORIGINAL,
+      THEME_IMAGE_SIZES.BANNER.DEFAULT,
+      THEME_IMAGE_SIZES.BANNER.THUMBNAIL,
+    ];
+
+    sizes.forEach((size) => {
+      const path = themeSetting.generateImagePath(THEME_IMAGE_TYPES.BANNER, size, bannerImageName);
+      imagePromises.push(deleteImageFromS3({ path }));
+    });
+
+    await Promise.all(imagePromises);
+
+    themeSetting.bannerImages = themeSetting.bannerImages.filter((image) => image !== bannerImageName);
+
+    return await themeSetting.save();
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 /**
  * get themeSetting for superadmin in the database
  */
@@ -182,5 +201,6 @@ const getThemeSettingByCurrencyAndDomain = async ({ ...reqBody }) => {
 export default {
   fetchThemeSettingId,
   modifyThemeSetting,
+  deleteBannerImage,
   getThemeSettingByCurrencyAndDomain,
 };

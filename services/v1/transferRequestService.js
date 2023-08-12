@@ -1,22 +1,13 @@
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import TransferRequest, { STATUS } from "../../models/v1/TransferRequest.js";
 import User from "../../models/v1/User.js";
 
 // Fetch all TransferRequest from the database
 const fetchAllTransferRequest = async ({ ...reqBody }) => {
   try {
-    const {
-      page,
-      perPage,
-      sortBy,
-      direction,
-      searchQuery,
-      showDeleted,
-      userId,
-      requestedUserId, status
-    } = reqBody;
+    const { page, perPage, sortBy, direction, searchQuery, showDeleted, userId, requestedUserId, status } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -43,8 +34,6 @@ const fetchAllTransferRequest = async ({ ...reqBody }) => {
       const fields = ["userId", "type"];
       filters.$or = generateSearchFilters(searchQuery, fields);
     }
-
-
 
     const TransferRequests = await TransferRequest.aggregate([
       {
@@ -95,13 +84,7 @@ const fetchTransferRequestId = async (_id) => {
  * Create TransferRequest in the database
  */
 const addTransferRequest = async ({ ...reqBody }) => {
-  const {
-    userId,
-    transferTypeId,
-    withdrawGroupId,
-    amount,
-    requestedUserId
-  } = reqBody;
+  const { userId, transferTypeId, withdrawGroupId, amount, requestedUserId } = reqBody;
 
   try {
     var findUser = await User.findById(userId);
@@ -114,7 +97,7 @@ const addTransferRequest = async ({ ...reqBody }) => {
       transferTypeId,
       withdrawGroupId,
       amount,
-      requestedUserId
+      requestedUserId,
     };
 
     const newTransferRequest = await TransferRequest.create(newTransferRequestObj);
@@ -175,18 +158,15 @@ const transferRequestStatusModify = async ({ _id, fieldName, status }) => {
     const TransferRequests = await TransferRequest.findById(_id);
     if (TransferRequests.status == STATUS.APPROVE) {
       throw new Error("TransferRequest already approved.");
-    }
-    else if (TransferRequests.status == STATUS.REJECT) {
+    } else if (TransferRequests.status == STATUS.REJECT) {
       throw new Error("TransferRequest already rejected.");
-    }
-    else {
+    } else {
       if (status == STATUS.APPROVE) {
         var findUser = await User.findById(TransferRequests.userId);
 
         if (findUser.balance < TransferRequests.amount) {
           throw new Error("Given amount exceed the available balance!");
-        }
-        else {
+        } else {
           findUser.balance = findUser.balance - TransferRequests.amount;
           findUser.save();
         }

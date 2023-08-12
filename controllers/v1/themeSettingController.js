@@ -23,6 +23,18 @@ const updateThemeSetting = async (req, res) => {
   res.status(200).json({ success: true, data: { details: updatedThemeSetting } });
 };
 
+const deleteBanner = async (req, res) => {
+  const { _id = null, bannerImageName = null } = req.body;
+
+  if (!(_id && bannerImageName)) {
+    throw new Error("_id and bannerImageName is required");
+  }
+
+  const result = await themeSettingService.deleteBannerImage({ _id, bannerImageName });
+
+  res.status(200).json({ success: true, data: { details: result } });
+};
+
 // Get Super admin theme setting
 const getThemeSettingByCurrencyAndDomain = async (req, res) => {
   const { body } = await themeSettingRequest.getThemeSettingByCurrencyAndDomainRequest(req);
@@ -35,5 +47,6 @@ const getThemeSettingByCurrencyAndDomain = async (req, res) => {
 export default {
   getThemeSettingById,
   updateThemeSetting,
+  deleteBanner,
   getThemeSettingByCurrencyAndDomain,
 };

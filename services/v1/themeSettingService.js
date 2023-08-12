@@ -1,5 +1,6 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import ThemeSetting from "../../models/v1/ThemeSetting.js";
+import User from "../../models/v1/User.js";
 
 /**
  * Fetch themeSetting by Id from the database
@@ -85,8 +86,29 @@ const modifyThemeSetting = async ({ ...reqBody }) => {
   }
 };
 
+/**
+ * get themeSetting for superadmin in the database
+ */
+const getThemeSettingByCurrencyAndDomain = async ({ ...reqBody }) => {
+  try {
+    const {
+      currencyId,
+      domainUrl
+    } = reqBody;
+
+    let getThemeSetting = {};
+    const findSuperAdmin = await User.findOne({ currencyId: currencyId, domainUrl: domainUrl });
+    if (findSuperAdmin) {
+      getThemeSetting = await ThemeSetting.findOne({ userId: findSuperAdmin._id });
+    }
+    return getThemeSetting;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
 
 export default {
   fetchThemeSettingId,
   modifyThemeSetting,
+  getThemeSettingByCurrencyAndDomain
 };

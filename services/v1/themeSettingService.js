@@ -2,6 +2,7 @@ import { nanoid } from "nanoid";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { uploadImageToS3 } from "../../lib/files/image-upload.js";
 import ThemeSetting, { THEME_IMAGE_SIZES, THEME_IMAGE_TYPES } from "../../models/v1/ThemeSetting.js";
+import User from "../../models/v1/User.js";
 
 /**
  * Fetch themeSetting by Id from the database
@@ -160,8 +161,26 @@ const modifyThemeSetting = async ({ files, ...reqBody }) => {
     throw new ErrorResponse(e.message).status(200);
   }
 };
+/**
+ * get themeSetting for superadmin in the database
+ */
+const getThemeSettingByCurrencyAndDomain = async ({ ...reqBody }) => {
+  try {
+    const { currencyId, domainUrl } = reqBody;
+
+    let getThemeSetting = {};
+    const findSuperAdmin = await User.findOne({ currencyId: currencyId, domainUrl: domainUrl });
+    if (findSuperAdmin) {
+      getThemeSetting = await ThemeSetting.findOne({ userId: findSuperAdmin._id });
+    }
+    return getThemeSetting;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
 
 export default {
   fetchThemeSettingId,
   modifyThemeSetting,
+  getThemeSettingByCurrencyAndDomain,
 };

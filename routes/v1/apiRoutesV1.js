@@ -15,6 +15,7 @@ import themeSettingRoutes from "./routes/themeSettingRoutes.js";
 import themeUserRoutes from "./routes/themeUserRoutes.js";
 import transactionActivityRoutes from "./routes/transactionActivityRoutes.js";
 import transactionUserRoutes from "./routes/transactionUserRoutes.js";
+import transferRequestRoutes from "./routes/transferRequestRoutes.js";
 import transferTypeRoutes from "./routes/transferTypeRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import userstakeRoutes from "./routes/userStakeRoutes.js";
@@ -42,5 +43,6 @@ app.use("/bet", betRoutes);
 app.use("/transactionUser", transactionUserRoutes);
 app.use("/withdrawGroup", withdrawGroupRoutes);
 app.use("/transferType", transferTypeRoutes);
+app.use("/transferRequest", transferRequestRoutes);
 
 export default app;

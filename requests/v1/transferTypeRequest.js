@@ -1,7 +1,7 @@
 import { isValidObjectId } from "mongoose";
 import Yup from "yup";
 import { isValidTime } from "../../lib/helpers/validation.js";
-import TransferType from "../../models/v1/transferType.js";
+import TransferType from "../../models/v1/TransferType.js";
 
 async function transferTypeListingRequest(req) {
   req.body.page = req.body?.page ? Number(req.body.page) : null;

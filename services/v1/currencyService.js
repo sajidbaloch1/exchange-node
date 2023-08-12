@@ -1,4 +1,4 @@
-import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import Currency from "../../models/v1/Currency.js";
 
 // Fetch all Currency from the database

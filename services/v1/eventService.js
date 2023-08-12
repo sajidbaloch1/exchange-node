@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import Event from "../../models/v1/Event.js";
 
 // Fetch all event from the database
@@ -284,6 +284,20 @@ const activeEvent = async ({ eventIds, competitionId }) => {
   }
 };
 
+const upcomingEvents = async () => {
+  try {
+    const event = await Event.find({
+      matchDate: {
+        $gt: new Date()
+      }
+    }, { name: 1, matchDate: 1 }).sort({ matchDate: 1 }).limit(10);
+
+    return event;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   fetchAllEvent,
   fetchEventId,
@@ -292,4 +306,5 @@ export default {
   removeEvent,
   eventStatusModify,
   activeEvent,
+  upcomingEvents
 };

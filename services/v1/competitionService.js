@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import Competition from "../../models/v1/Competition.js";
 import Event from "../../models/v1/Event.js";
 import Sport from "../../models/v1/Sport.js";

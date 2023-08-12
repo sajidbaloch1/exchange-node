@@ -5,7 +5,8 @@ import { route } from "../../../lib/error-handling/routes-error-boundary.js";
 const router = express.Router();
 
 route(router, "post", "/getThemeSettingById", themeSettingController.getThemeSettingById);
-route(router, "post", "/createThemeSetting", themeSettingController.createThemeSetting);
 route(router, "post", "/updateThemeSetting", themeSettingController.updateThemeSetting);
+route(router, "post", "/deleteBanner", themeSettingController.deleteBanner);
+route(router, "post", "/themeSettingByCurrencyAndDomain", themeSettingController.getThemeSettingByCurrencyAndDomain);
 
 export default router;

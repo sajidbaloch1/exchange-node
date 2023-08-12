@@ -1,5 +1,5 @@
-import AppModule from "../../../models/v1/AppModule.js";
-import { defaultModules } from "../../helpers/permissions.js";
+import { defaultModules } from "../../lib/helpers/permissions.js";
+import AppModule from "../../models/v1/AppModule.js";
 
 export default async function appModulesSeeder() {
   const seeder = {

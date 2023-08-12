@@ -1,18 +1,8 @@
-import {
-  generatePaginationQueries,
-  generateSearchFilters,
-} from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import BetCategory from "../../models/v1/BetCategory.js";
 
 // Fetch all Bet-Category from the database
-const fetchAllBetCategory = async ({
-  page,
-  perPage,
-  sortBy,
-  direction,
-  showDeleted,
-  searchQuery,
-}) => {
+const fetchAllBetCategory = async ({ page, perPage, sortBy, direction, showDeleted, searchQuery }) => {
   try {
     const sortDirection = direction === "asc" ? 1 : -1;
 
@@ -51,9 +41,7 @@ const fetchAllBetCategory = async ({
 
     if (betCategory?.length) {
       data.records = betCategory[0]?.paginatedResults || [];
-      data.totalRecords = betCategory[0]?.totalRecords?.length
-        ? betCategory[0]?.totalRecords[0].count
-        : 0;
+      data.totalRecords = betCategory[0]?.totalRecords?.length ? betCategory[0]?.totalRecords[0].count : 0;
     }
 
     return data;

@@ -1,20 +1,12 @@
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import TransferType from "../../models/v1/TransferType.js";
 
 // Fetch all TransferType from the database
 const fetchAllTransferType = async ({ ...reqBody }) => {
   try {
-    const {
-      page,
-      perPage,
-      sortBy,
-      direction,
-      searchQuery,
-      showDeleted,
-      userId
-    } = reqBody;
+    const { page, perPage, sortBy, direction, searchQuery, showDeleted, userId } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -99,7 +91,7 @@ const addTransferType = async ({ ...reqBody }) => {
     platformName,
     platformDisplayName,
     platformAddress,
-    depositLink
+    depositLink,
   } = reqBody;
 
   try {
@@ -119,7 +111,7 @@ const addTransferType = async ({ ...reqBody }) => {
       platformName,
       platformDisplayName,
       platformAddress,
-      depositLink
+      depositLink,
     };
 
     const newTransferType = await TransferType.create(newTransferTypeObj);

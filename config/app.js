@@ -14,6 +14,8 @@ export const appConfig = {
   NODE_ENV: env.NODE_ENV,
   PORT: env.PORT,
 
+  DEV_USER: env.DEV_USER,
+
   CORS_ALLOWED_ORIGINS: [env.USER_CLIENT_URL, env.ADMIN_CLIENT_URL],
 
   SALT_ROUNDS: parseInt(env.SALT_ROUNDS, 10),
@@ -25,5 +27,14 @@ export const appConfig = {
   PERMISSIONS_AES_SECRET: env.PERMISSIONS_AES_SECRET,
 
   MONGO_URL: env.MONGO_URL,
-  BASE_URL: env.BASE_URL
+  BASE_URL: env.BASE_URL,
+
+  AWS_S3_BUCKET: env.AWS_S3_BUCKET,
+  AWS_S3_CONFIG: {
+    region: env.AWS_REGION,
+    credentials: {
+      accessKeyId: env.AWS_S3_ACCESS_KEY,
+      secretAccessKey: env.AWS_S3_SECRET,
+    },
+  },
 };

@@ -1,5 +1,5 @@
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-import { generatePaginationQueries, generateSearchFilters, generateSelectFields } from "../../lib/helpers/filters.js";
+import { generatePaginationQueries, generateSearchFilters, generateSelectFields } from "../../lib/helpers/pipeline.js";
 import Sport from "../../models/v1/Sport.js";
 import SportsBetCategory from "../../models/v1/SportsBetCategory.js";
 

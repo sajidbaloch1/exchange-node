@@ -1,6 +1,6 @@
-import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/filters.js";
-import SportsBetCategory from "../../models/v1/SportsBetCategory.js";
 import mongoose from "mongoose";
+import { generatePaginationQueries } from "../../lib/helpers/pipeline.js";
+import SportsBetCategory from "../../models/v1/SportsBetCategory.js";
 
 // Fetch all Sports-Bet-Category from the database
 const fetchAllSportsBetCategory = async ({ page, perPage, sortBy, direction, showDeleted, searchQuery, sportId }) => {

@@ -12,7 +12,13 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(fileUpload({ safeFileNames: true, preserveExtension: true, parseNested: true }));
+app.use(
+  fileUpload({
+    safeFileNames: true,
+    preserveExtension: true,
+    parseNested: true,
+  })
+);
 
 app.use(corsMiddleware);
 

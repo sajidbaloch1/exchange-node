@@ -10,9 +10,24 @@ export const THEME_IMAGE_TYPES = {
 };
 
 export const THEME_IMAGE_SIZES = {
-  [THEME_IMAGE_TYPES.BANNER]: { ...IMAGE_SIZES, DEFAULT: "400_220", THUMBNAIL: "200_50" },
-  [THEME_IMAGE_TYPES.WELCOME_MOBILE]: { ...IMAGE_SIZES, DEFAULT: "400_220", THUMBNAIL: "200_50" },
-  [THEME_IMAGE_TYPES.WELCOME_DESKTOP]: { ...IMAGE_SIZES, DEFAULT: "400_220", THUMBNAIL: "200_50" },
+  [THEME_IMAGE_TYPES.BANNER]: {
+    ...IMAGE_SIZES,
+    // avg aspect ratio = 4.27:1
+    DEFAULT: "400_220",
+    THUMBNAIL: "200_50",
+  },
+  [THEME_IMAGE_TYPES.WELCOME_MOBILE]: {
+    ...IMAGE_SIZES,
+    // avg aspect ratio = 3:2
+    DEFAULT: "400_265",
+    THUMBNAIL: "200_132",
+  },
+  [THEME_IMAGE_TYPES.WELCOME_DESKTOP]: {
+    ...IMAGE_SIZES,
+    // avg aspect ratio = 3:2
+    DEFAULT: "400_265",
+    THUMBNAIL: "200_132",
+  },
 };
 
 const themeSettingSchema = new mongoose.Schema({
@@ -43,11 +58,14 @@ const themeSettingSchema = new mongoose.Schema({
   depositePopupNumber: { type: String, default: null },
 
   welcomeMessage: { type: String, default: null },
+
+  bannerImages: [{ type: String, required: true }],
 });
 
 themeSettingSchema.plugin(timestampPlugin);
 
-themeSettingSchema.methods.generateImagePath = function (type, name = "", size = IMAGE_SIZES.ORIGINAL) {
+// Generates Image path of image for storing/getting to/from s3
+themeSettingSchema.methods.generateImagePath = function (type, size = IMAGE_SIZES.ORIGINAL, name = "") {
   let path = `theme_setting/${this._id.toString()}`;
 
   if (appConfig.NODE_ENV === "development") {
@@ -69,24 +87,24 @@ themeSettingSchema.methods.generateImagePath = function (type, name = "", size =
   }
 };
 
-themeSettingSchema.methods.getImageUrl = async function (type, name = "", size = IMAGE_SIZES.ORIGINAL) {
-  console.log(this.generateImagePath(type, name, size));
+// Generates Image url for image stored in s3
+themeSettingSchema.methods.getImageUrl = async function (type, size = IMAGE_SIZES.ORIGINAL, name = "") {
   switch (type) {
     case THEME_IMAGE_TYPES.BANNER:
       return await getImageUrlFromS3({
-        path: this.generateImagePath(type, name, size),
+        path: this.generateImagePath(type, size, name),
         minutesToExpire: 0,
       });
 
     case THEME_IMAGE_TYPES.WELCOME_DESKTOP:
       return await getImageUrlFromS3({
-        path: this.generateImagePath(type, name, size),
+        path: this.generateImagePath(type, size, name),
         minutesToExpire: 0,
       });
 
     case THEME_IMAGE_TYPES.WELCOME_MOBILE:
       return await getImageUrlFromS3({
-        path: this.generateImagePath(type, name, size),
+        path: this.generateImagePath(type, size, name),
         minutesToExpire: 0,
       });
 

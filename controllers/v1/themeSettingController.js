@@ -18,7 +18,7 @@ const getThemeSettingById = async (req, res) => {
 const updateThemeSetting = async (req, res) => {
   const { body } = await themeSettingRequest.updateThemeSettingRequest(req);
 
-  const updatedThemeSetting = await themeSettingService.modifyThemeSetting({ ...body });
+  const updatedThemeSetting = await themeSettingService.modifyThemeSetting({ ...body, files: req.files });
 
   res.status(200).json({ success: true, data: { details: updatedThemeSetting } });
 };

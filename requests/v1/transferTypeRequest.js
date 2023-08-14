@@ -1,6 +1,6 @@
 import { isValidObjectId } from "mongoose";
 import Yup from "yup";
-import TransferType from "../../models/v1/TransferType.js";
+import TransferType, { DEPOSIT_TYPE } from "../../models/v1/TransferType.js";
 
 async function transferTypeListingRequest(req) {
   req.body.page = req.body?.page ? Number(req.body.page) : null;
@@ -35,25 +35,47 @@ async function transferTypeListingRequest(req) {
   return req;
 }
 
-async function createTransferTypeRequest(req) {
-  const validationSchema = Yup.object().shape({
+const generateTransferTypeValidationFields = (req) => {
+  const validationFields = {
     userId: Yup.string().required().test("userId", "Invalid userId!", isValidObjectId),
     type: Yup.string().required(),
     name: Yup.string().required(),
     minAmount: Yup.number().required(),
     maxAmount: Yup.number().required(),
-    mobileNumber: Yup.string().nullable(true),
     description: Yup.string().nullable(true),
-    accountHolderName: Yup.string().nullable(true),
-    bankName: Yup.string().nullable(true),
-    accountNumber: Yup.string().nullable(true),
-    accountType: Yup.string().nullable(true),
-    ifsc: Yup.string().nullable(true),
-    platformName: Yup.string().nullable(true),
-    platformDisplayName: Yup.string().nullable(true),
-    platformAddress: Yup.string().nullable(true),
-    depositLink: Yup.string().nullable(true),
-  });
+  };
+
+  if (req.body.type === DEPOSIT_TYPE.CASH) {
+    validationFields.mobileNumber = Yup.string().length(10, "Invalid mobile number.").required();
+  }
+
+  if (req.body.type === DEPOSIT_TYPE.BANK) {
+    validationFields.accountHolderName = Yup.string().required();
+    validationFields.bankName = Yup.string().required();
+    validationFields.accountNumber = Yup.string().required();
+    validationFields.accountType = Yup.string().required();
+    validationFields.ifsc = Yup.string().required();
+  }
+
+  if (req.body.type === DEPOSIT_TYPE.PLATFORM) {
+    validationFields.platformName = Yup.string().required();
+    validationFields.platformDisplayName = Yup.string().required();
+    validationFields.platformAddress = Yup.string().required();
+  }
+
+  if (req.body.type === DEPOSIT_TYPE.LINK) {
+    validationFields.depositLink = Yup.string().required();
+  }
+
+  return validationFields;
+};
+
+async function createTransferTypeRequest(req) {
+  req.body.accountType = req.body?.accountType || null;
+  req.body.platformName = req.body?.platformName || null;
+
+  const validationFields = generateTransferTypeValidationFields(req);
+  const validationSchema = Yup.object().shape(validationFields);
 
   await validationSchema.validate(req.body);
 
@@ -61,25 +83,13 @@ async function createTransferTypeRequest(req) {
 }
 
 async function updateTransferTypeRequest(req) {
+  req.body.accountType = req.body?.accountType || null;
+  req.body.platformName = req.body?.platformName || null;
+
+  const validationFields = generateTransferTypeValidationFields(req);
   const validationSchema = Yup.object().shape({
     _id: Yup.string().required().test("_id", "Given _id is not valid!", isValidObjectId),
-    userId: Yup.string().required().test("userId", "Invalid userId!", isValidObjectId),
-    type: Yup.string().required(),
-    name: Yup.string().required(),
-    minAmount: Yup.number().required(),
-    maxAmount: Yup.number().required(),
-    mobileNumber: Yup.string().nullable(true),
-    description: Yup.string().nullable(true),
-    accountHolderName: Yup.string().nullable(true),
-    bankName: Yup.string().nullable(true),
-    accountNumber: Yup.string().nullable(true),
-    accountType: Yup.string().nullable(true),
-    ifsc: Yup.string().nullable(true),
-    platformName: Yup.string().nullable(true),
-    platformDisplayName: Yup.string().nullable(true),
-    platformAddress: Yup.string().nullable(true),
-    depositLink: Yup.string().nullable(true),
-    isActive: Yup.boolean().nullable(true),
+    ...validationFields,
   });
 
   await validationSchema.validate(req.body);

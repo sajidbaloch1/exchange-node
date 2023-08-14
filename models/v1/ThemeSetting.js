@@ -93,19 +93,19 @@ themeSettingSchema.methods.getImageUrl = async function (type, size = IMAGE_SIZE
     case THEME_IMAGE_TYPES.BANNER:
       return await getImageUrlFromS3({
         path: this.generateImagePath(type, size, name),
-        minutesToExpire: 0,
+        minutesToExpire: 10,
       });
 
     case THEME_IMAGE_TYPES.WELCOME_DESKTOP:
       return await getImageUrlFromS3({
         path: this.generateImagePath(type, size, name),
-        minutesToExpire: 0,
+        minutesToExpire: 10,
       });
 
     case THEME_IMAGE_TYPES.WELCOME_MOBILE:
       return await getImageUrlFromS3({
         path: this.generateImagePath(type, size, name),
-        minutesToExpire: 0,
+        minutesToExpire: 10,
       });
 
     default:

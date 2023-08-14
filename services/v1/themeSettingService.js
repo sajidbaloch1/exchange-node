@@ -65,7 +65,42 @@ const fetchThemeSettingId = async (userId) => {
       throw new Error("Theme Setting not found!");
     }
 
-    return existingThemeSetting;
+    // Banner Images
+    const bannerImages = [];
+    if (existingThemeSetting.bannerImages?.length) {
+      for (const imageName of existingThemeSetting.bannerImages) {
+        const path = await existingThemeSetting.getImageUrl(
+          THEME_IMAGE_TYPES.BANNER,
+          THEME_IMAGE_SIZES.BANNER.DEFAULT,
+          imageName
+        );
+        bannerImages.push({
+          name: imageName,
+          url: path,
+        });
+      }
+    }
+
+    // Mobile Welcome Image
+    const welcomeMobileImage = await existingThemeSetting.getImageUrl(
+      THEME_IMAGE_TYPES.WELCOME_MOBILE,
+      THEME_IMAGE_SIZES.WELCOME_MOBILE.DEFAULT
+    );
+
+    // Desktop Welcome Image
+    const welcomeDesktopImage = await existingThemeSetting.getImageUrl(
+      THEME_IMAGE_TYPES.WELCOME_DESKTOP,
+      THEME_IMAGE_SIZES.WELCOME_DESKTOP.DEFAULT
+    );
+
+    const data = {
+      ...existingThemeSetting._doc,
+      bannerImages,
+      welcomeMobileImage,
+      welcomeDesktopImage,
+    };
+
+    return data;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

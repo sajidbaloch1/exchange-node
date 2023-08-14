@@ -134,6 +134,14 @@ const getHydratedUser = async (req, res) => {
   res.status(200).json({ success: true, data: { details: user } });
 };
 
+const getUserActivity = async (req, res) => {
+  const { user, body } = await userRequest.userActivityRequest(req);
+
+  const users = await userActivityService.fetchAllUserActivity({ user, ...body });
+
+  return res.status(200).json({ success: true, data: users });
+}
+
 export default {
   getAllUser,
   getUserById,
@@ -145,4 +153,5 @@ export default {
   createUserClone,
   getUserTransactionCode,
   getHydratedUser,
+  getUserActivity
 };

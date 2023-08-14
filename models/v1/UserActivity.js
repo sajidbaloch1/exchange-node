@@ -10,6 +10,11 @@ export const USER_ACTIVITY_EVENT = {
   PASSWORD_RESET: "password_reset",
 };
 
+export const USER_PLATFORM = {
+  WEB: "web",
+  APP: "app",
+};
+
 const GEO_LOCATION_TYPE = {
   POINT: "Point",
 };
@@ -41,7 +46,15 @@ const userActivitySchema = new mongoose.Schema({
     },
     coordinates: { type: [Number], default: [0, 0] },
   },
+  city: { type: String },
+  country: { type: String },
+  platform: {
+    type: String,
+    enum: Object.values(USER_PLATFORM),
+  },
 });
+
+
 
 userActivitySchema.plugin(timestampPlugin);
 

@@ -14,7 +14,6 @@ const fetchAllTransferRequest = async ({ ...reqBody }) => {
     const paginationQueries = generatePaginationQueries(page, perPage);
 
     // Filters
-
     let filters = {
       isDeleted: showDeleted,
     };
@@ -38,6 +37,50 @@ const fetchAllTransferRequest = async ({ ...reqBody }) => {
     const TransferRequests = await TransferRequest.aggregate([
       {
         $match: filters,
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "requestedUserId",
+          foreignField: "_id",
+          as: "user",
+          pipeline: [{ $project: { username: 1 } }],
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $addFields: {
+          requestedUserName: "$user.username",
+        },
+      },
+      {
+        $lookup: {
+          from: "deposit_types",
+          localField: "transferTypeId",
+          foreignField: "_id",
+          as: "transferType",
+        },
+      },
+      { $unwind: "$transferType" },
+      {
+        $addFields: {
+          transferTypeName: "$transferType.type",
+        },
+      },
+      {
+        $lookup: {
+          from: "withdraw_groups",
+          localField: "withdrawGroupId",
+          foreignField: "_id",
+          as: "withdrawGroup",
+          pipeline: [{ $project: { type: 1 } }],
+        },
+      },
+      { $unwind: "$withdrawGroup" },
+      {
+        $addFields: {
+          withdrawGroupName: "$withdrawGroup.type",
+        },
       },
       {
         $facet: {

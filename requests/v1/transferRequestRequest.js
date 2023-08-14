@@ -1,6 +1,5 @@
 import { isValidObjectId } from "mongoose";
 import Yup from "yup";
-import { isValidTime } from "../../lib/helpers/validation.js";
 import TransferRequest from "../../models/v1/TransferRequest.js";
 
 async function transferRequestListingRequest(req) {
@@ -15,12 +14,17 @@ async function transferRequestListingRequest(req) {
   req.body.requestedUserId = req.body?.requestedUserId ? req.body.requestedUserId?.trim() : null;
   req.body.status = req.body?.status ? req.body.status : null;
 
+  const additionalSortKeys = ["requestedUserName", "transferTypeName", "withdrawGroupName"];
+
   const validationSchema = Yup.object().shape({
     page: Yup.number().nullable(true),
 
     perPage: Yup.number(),
 
-    sortBy: Yup.string().oneOf(Object.keys(TransferRequest.schema.paths), "Invalid sortBy key."),
+    sortBy: Yup.string().oneOf(
+      [...Object.keys(TransferRequest.schema.paths), ...additionalSortKeys],
+      "Invalid sortBy key."
+    ),
 
     showDeleted: Yup.boolean(),
 

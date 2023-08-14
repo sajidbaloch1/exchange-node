@@ -49,6 +49,11 @@ const fetchAllTransferRequest = async ({ ...reqBody }) => {
       },
       { $unwind: "$user" },
       {
+        $addFields: {
+          requestedUserName: "$user.username",
+        },
+      },
+      {
         $lookup: {
           from: "deposit_types",
           localField: "transferTypeId",
@@ -57,6 +62,11 @@ const fetchAllTransferRequest = async ({ ...reqBody }) => {
         },
       },
       { $unwind: "$transferType" },
+      {
+        $addFields: {
+          transferTypeName: "$transferType.type",
+        },
+      },
       {
         $lookup: {
           from: "withdraw_groups",
@@ -67,6 +77,11 @@ const fetchAllTransferRequest = async ({ ...reqBody }) => {
         },
       },
       { $unwind: "$withdrawGroup" },
+      {
+        $addFields: {
+          withdrawGroupName: "$withdrawGroup.type",
+        },
+      },
       {
         $facet: {
           totalRecords: [{ $count: "count" }],

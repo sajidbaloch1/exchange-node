@@ -1,6 +1,5 @@
 import { isValidObjectId } from "mongoose";
 import Yup from "yup";
-import { isValidTime } from "../../lib/helpers/validation.js";
 import TransferType from "../../models/v1/TransferType.js";
 
 async function transferTypeListingRequest(req) {
@@ -29,7 +28,6 @@ async function transferTypeListingRequest(req) {
     searchQuery: Yup.string().nullable(true),
 
     userId: Yup.string().nullable(true),
-
   });
 
   await validationSchema.validate(req.body);
@@ -81,7 +79,7 @@ async function updateTransferTypeRequest(req) {
     platformDisplayName: Yup.string().nullable(true),
     platformAddress: Yup.string().nullable(true),
     depositLink: Yup.string().nullable(true),
-    isActive: Yup.boolean().nullable(true)
+    isActive: Yup.boolean().nullable(true),
   });
 
   await validationSchema.validate(req.body);

@@ -39,11 +39,11 @@ const transferTypeSchema = new mongoose.Schema({
 
   accountNumber: { type: String },
 
-  accountType: { type: String, enum: Object.values(ACCOUNT_TYPE) },
+  accountType: { type: String, enum: [...Object.values(ACCOUNT_TYPE), null] },
 
   ifsc: { type: String },
 
-  platformName: { type: String, enum: Object.values(PLATFORM_NAME) },
+  platformName: { type: String, enum: [...Object.values(PLATFORM_NAME), null] },
 
   platformDisplayName: { type: String },
 

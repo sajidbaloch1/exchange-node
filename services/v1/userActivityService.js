@@ -132,12 +132,11 @@ const fetchAllUserActivity = async ({ user, ...reqBody }) => {
 //Get all user activity types
 const fetUserActivityTypes = async () => {
   try {
-    const userActivityTypes = USER_ACTIVITY_EVENT;
-
-    const interchangedUserActivityTypes = Object.entries(userActivityTypes).reduce((acc, [key, value]) => {
-      acc[value] = key;
-      return acc;
-    }, {});
+    //Loop USER_ACTIVITY_EVENT make array of object value and label
+    const interchangedUserActivityTypes = Object.keys(USER_ACTIVITY_EVENT).map((key) => ({
+      value: USER_ACTIVITY_EVENT[key],
+      label: key,
+    }));
 
     return interchangedUserActivityTypes;
   } catch (error) {

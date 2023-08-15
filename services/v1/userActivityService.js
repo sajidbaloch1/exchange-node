@@ -1,17 +1,9 @@
-import UserActivity from "../../models/v1/UserActivity.js";
+import UserActivity, { USER_ACTIVITY_EVENT, GEO_LOCATION_TYPE } from "../../models/v1/UserActivity.js";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import mongoose from "mongoose";
 
-const createUserActivity = async ({
-  userId,
-  event,
-  ipAddress,
-  description,
-  city,
-  country,
-  platform
-}) => {
+const createUserActivity = async ({ userId, event, ipAddress, description, city, country, platform }) => {
   try {
     const userActivity = new UserActivity({
       userId,
@@ -20,7 +12,7 @@ const createUserActivity = async ({
       description,
       city,
       country,
-      platform
+      platform,
     });
     await userActivity.save();
     return userActivity;
@@ -32,15 +24,7 @@ const createUserActivity = async ({
 // Fetch all users activity from the database
 const fetchAllUserActivity = async ({ user, ...reqBody }) => {
   try {
-    const {
-      page,
-      perPage,
-      sortBy,
-      direction,
-      searchQuery,
-      type,
-      userId
-    } = reqBody;
+    const { page, perPage, sortBy, direction, searchQuery, type, userId } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -59,7 +43,7 @@ const fetchAllUserActivity = async ({ user, ...reqBody }) => {
     if (type) {
       filters = {
         event: type,
-      }
+      };
     }
     if (fromDate && toDate) {
       filters = {
@@ -103,6 +87,14 @@ const fetchAllUserActivity = async ({ user, ...reqBody }) => {
       {
         $set: {
           username: "$user.username",
+          userId: { $ifNull: ["$userId", null] },
+          event: { $ifNull: ["$event", null] },
+          ipAddress: { $ifNull: ["$ipAddress", null] },
+          description: { $ifNull: ["$description", null] },
+          geoLocation: { $ifNull: ["$geoLocation", { type: GEO_LOCATION_TYPE.POINT, coordinates: [0, 0] }] },
+          city: { $ifNull: ["$city", null] },
+          country: { $ifNull: ["$country", null] },
+          platform: { $ifNull: ["$platform", null] },
         },
       },
       {
@@ -137,4 +129,20 @@ const fetchAllUserActivity = async ({ user, ...reqBody }) => {
   }
 };
 
-export default { createUserActivity, fetchAllUserActivity };
+//Get all user activity types
+const fetUserActivityTypes = async () => {
+  try {
+    const userActivityTypes = USER_ACTIVITY_EVENT;
+
+    const interchangedUserActivityTypes = Object.entries(userActivityTypes).reduce((acc, [key, value]) => {
+      acc[value] = key;
+      return acc;
+    }, {});
+
+    return interchangedUserActivityTypes;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+export default { createUserActivity, fetchAllUserActivity, fetUserActivityTypes };

@@ -11,11 +11,11 @@ export const USER_ACTIVITY_EVENT = {
 };
 
 export const USER_PLATFORM = {
-  WEB: "web",
-  APP: "app",
+  WEBSITE: "website",
+  MOBILE: "mobile",
 };
 
-const GEO_LOCATION_TYPE = {
+export const GEO_LOCATION_TYPE = {
   POINT: "Point",
 };
 
@@ -53,8 +53,6 @@ const userActivitySchema = new mongoose.Schema({
     enum: Object.values(USER_PLATFORM),
   },
 });
-
-
 
 userActivitySchema.plugin(timestampPlugin);
 

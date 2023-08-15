@@ -1,8 +1,15 @@
+//Helpers
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
+
+//Models
 import User from "../../models/v1/User.js";
 import { USER_ACTIVITY_EVENT } from "../../models/v1/UserActivity.js";
+
+//Request
 import userRequest from "../../requests/v1/userRequest.js";
+
+//Services
 import userActivityService from "../../services/v1/userActivityService.js";
 import userService from "../../services/v1/userService.js";
 
@@ -134,6 +141,19 @@ const getHydratedUser = async (req, res) => {
   res.status(200).json({ success: true, data: { details: user } });
 };
 
+const getUserActivity = async (req, res) => {
+  const { user, body } = await userRequest.userActivityRequest(req);
+
+  const users = await userActivityService.fetchAllUserActivity({ user, ...body });
+
+  return res.status(200).json({ success: true, data: users });
+};
+
+const getUserActivityTypes = async (req, res) => {
+  var userActivityTypes = await userActivityService.fetUserActivityTypes();
+  return res.status(200).json({ success: true, data: userActivityTypes });
+};
+
 export default {
   getAllUser,
   getUserById,
@@ -145,4 +165,6 @@ export default {
   createUserClone,
   getUserTransactionCode,
   getHydratedUser,
+  getUserActivity,
+  getUserActivityTypes,
 };

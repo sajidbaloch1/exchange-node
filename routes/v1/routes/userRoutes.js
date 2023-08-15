@@ -19,4 +19,8 @@ route(router, "post", "/getUserTransactionCode", userController.getUserTransacti
 route(router, "post", "/getUserPermissions", userController.getUserPermissions);
 route(router, "post", "/getAppModulesList", userController.getAppModulesList);
 
+//Activity Route
+route(router, "post", "/getUserActivity", userController.getUserActivity);
+route(router, "post", "/getUserActivityTypes", userController.getUserActivityTypes);
+
 export default router;

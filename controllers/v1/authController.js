@@ -20,6 +20,9 @@ const login = async (req, res) => {
     event: USER_ACTIVITY_EVENT.LOGIN,
     ipAddress: body.ipAddress,
     description: body.description,
+    city: body.city,
+    country: body.country,
+    platform: body.platform,
   });
 
   return res.status(200).json({ success: true, data: userWithToken });
@@ -42,6 +45,9 @@ const userlogin = async (req, res) => {
     event: USER_ACTIVITY_EVENT.LOGIN,
     ipAddress: body.ipAddress,
     description: body.description,
+    city: body.city,
+    country: body.country,
+    platform: body.platform,
   });
 
   return res.status(200).json({ success: true, data: userWithToken });
@@ -79,7 +85,7 @@ const register = async (req, res) => {
  * containing the success status and reset password user data.
  */
 const resetPassword = async (req, res) => {
-  const { body } = await authRequest.userResetPasswordRequest(req);
+  const { user, body } = await authRequest.userResetPasswordRequest(req);
 
   const resetPasswordUser = await authService.resetPassword({ ...body });
 
@@ -87,7 +93,10 @@ const resetPassword = async (req, res) => {
     userId: resetPasswordUser._id,
     event: USER_ACTIVITY_EVENT.PASSWORD_RESET,
     ipAddress: body.ipAddress,
-    description: body.description,
+    description: user._id,
+    city: body.city,
+    country: body.country,
+    platform: body.platform,
   });
 
   return res.status(200).json({ success: true, data: resetPasswordUser });

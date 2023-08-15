@@ -2,6 +2,7 @@ import { isValidObjectId } from "mongoose";
 import Yup from "yup";
 import { isValidCountryCode, isValidObjectIdArray, isValidUrl } from "../../lib/helpers/validation.js";
 import User, { USER_ACCESSIBLE_ROLES } from "../../models/v1/User.js";
+import UserActivity from "../../models/v1/UserActivity.js";
 
 async function userListingRequest(req) {
   req.body.page = req.body?.page ? Number(req.body.page) : null;
@@ -196,10 +197,39 @@ async function cloneUserRequest(req) {
   return req;
 }
 
+async function userActivityRequest(req) {
+  req.body.page = req.body?.page ? Number(req.body.page) : null;
+  req.body.perPage = req.body?.perPage ? Number(req.body.perPage) : 10;
+  req.body.sortBy = req.body?.sortBy ? req.body.sortBy : "createdAt";
+  req.body.direction = req.body?.direction ? req.body.direction : "desc";
+  req.body.searchQuery = req.body?.searchQuery ? req.body.searchQuery?.trim() : null;
+  req.body.fromDate = req.body?.fromDate ? req.body.fromDate : null;
+  req.body.toDate = req.body?.toDate ? req.body.toDate : null;
+  req.body.userId = req.body?.userId ? req.body.userId?.trim() : null;
+
+  const validationSchema = Yup.object().shape({
+
+    page: Yup.number().nullable(true),
+    perPage: Yup.number(),
+    sortBy: Yup.string().oneOf(Object.keys(UserActivity.schema.paths), "Invalid sortBy key."),
+    direction: Yup.string().oneOf(["asc", "desc", null], "Invalid direction use 'asc' or 'desc'.").nullable(true),
+    searchQuery: Yup.string().nullable(true),
+    type: Yup.string(),
+    fromDate: Yup.date().nullable(true),
+    toDate: Yup.date().nullable(true),
+    userId: Yup.string().nullable(true),
+  });
+
+  await validationSchema.validate(req.body);
+
+  return req;
+}
+
 export default {
   userListingRequest,
   createUserRequest,
   updateUserRequest,
   fetchUserBalanceRequest,
   cloneUserRequest,
+  userActivityRequest
 };

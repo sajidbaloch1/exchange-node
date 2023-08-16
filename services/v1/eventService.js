@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import Event from "../../models/v1/Event.js";
+import Market from "../../models/v1/Market.js";
 
 // Fetch all event from the database
 const fetchAllEvent = async ({ ...reqBody }) => {
@@ -298,6 +299,91 @@ const upcomingEvents = async () => {
   }
 };
 
+const getEventMatchData = async ({ eventId }) => {
+  try {
+    const event = await Market.aggregate([
+      {
+        $match: {
+          eventId: new mongoose.Types.ObjectId(eventId)
+        },
+      },
+      {
+        $lookup: {
+          from: "sports",
+          localField: "sportId",
+          foreignField: "_id",
+          as: "sport",
+          pipeline: [
+            {
+              $project: { name: 1 },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: "$sport",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "events",
+          localField: "eventId",
+          foreignField: "_id",
+          as: "event",
+          pipeline: [
+            {
+              $project: { name: 1 },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: "$event",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "competitions",
+          localField: "competitionId",
+          foreignField: "_id",
+          as: "competition",
+          pipeline: [
+            {
+              $project: { name: 1 },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: "$competition",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $set: {
+          sportsName: "$sport.name",
+          competitionName: "$competition.name",
+          eventName: "$event.name",
+        },
+      },
+      {
+        $unset: ["sport", "competition", "event"],
+      },
+
+    ]);
+
+
+    return event[0];
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   fetchAllEvent,
   fetchEventId,
@@ -306,5 +392,6 @@ export default {
   removeEvent,
   eventStatusModify,
   activeEvent,
-  upcomingEvents
+  upcomingEvents,
+  getEventMatchData,
 };

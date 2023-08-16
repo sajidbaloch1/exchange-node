@@ -12,5 +12,6 @@ route(router, "post", "/deleteEvent", eventController.deleteEvent);
 route(router, "post", "/updateEventStatus", eventController.updateEventStatus);
 route(router, "post", "/activeAllEvent", eventController.activeAllEvent);
 route(router, "get", "/upcomingEvent", eventController.upcomingEvent, false);
+route(router, "post", "/getEventMatchData", eventController.getEventMatchData);
 
 export default router;

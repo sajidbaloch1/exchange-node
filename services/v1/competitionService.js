@@ -209,6 +209,53 @@ const fetchAllCompetitionEvents = async () => {
   }
 };
 
+// Fetch all active competition events from the database
+const fetchAllActiveCompetitionEvents = async () => {
+  try {
+    const competitionEvents = await Sport.aggregate(
+      [
+        {
+          $match: { isDeleted: false, isActive: true },
+        },
+        {
+          $lookup: {
+            from: "competitions",
+            localField: "_id",
+            foreignField: "sportId",
+            as: "competitions",
+            pipeline: [
+              {
+                $lookup: {
+                  from: "events",
+                  localField: "_id",
+                  foreignField: "competitionId",
+                  as: "events",
+                  pipeline: [
+                    {
+                      $match: { isDeleted: false, isActive: true },
+                    },
+                    {
+                      $sort: { name: 1 },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+        {
+          $sort: { name: 1 },
+        },
+      ],
+      { collation: { locale: "en", strength: 2 } }
+    );
+
+    return competitionEvents;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 /**
  * Fetch compettition by Id from the database
  */
@@ -391,6 +438,7 @@ const fetchAllCompetitionList = async ({ ...reqBody }) => {
 export default {
   fetchAllCompetition,
   fetchAllCompetitionEvents,
+  fetchAllActiveCompetitionEvents,
   fetchCompetitionId,
   addCometition,
   modifyCompetition,

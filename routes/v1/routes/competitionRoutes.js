@@ -13,5 +13,6 @@ route(router, "post", "/deleteCompetition", competitionController.deleteCompetit
 route(router, "post", "/updateCompetitionStatus", competitionController.updateCompetitionStatus);
 route(router, "post", "/activeAllCompetition", competitionController.activeAllCompetition);
 route(router, "post", "/getAllCompetitionList", competitionController.getAllCompetitionList);
+route(router, "post", "/getAllActiveCompetitionEvents", competitionController.getAllActiveCompetitionEvents);
 
 export default router;

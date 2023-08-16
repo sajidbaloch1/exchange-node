@@ -92,6 +92,15 @@ const upcomingEvent = async (req, res) => {
   res.status(200).json({ success: true, data: { details: UpcomingEvent } });
 };
 
+const getEventMatchData = async (req, res) => {
+  const { eventId } = req.body;
+  const GetEventMatchData = await eventService.getEventMatchData({
+    eventId
+  });
+
+  res.status(200).json({ success: true, data: { details: GetEventMatchData } });
+};
+
 export default {
   getAllEvent,
   getEventById,
@@ -100,5 +109,6 @@ export default {
   deleteEvent,
   updateEventStatus,
   activeAllEvent,
-  upcomingEvent
+  upcomingEvent,
+  getEventMatchData
 };

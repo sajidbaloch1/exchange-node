@@ -115,9 +115,18 @@ const getAllCompetitionList = async (req, res) => {
   return res.status(200).json({ success: true, data: { records: competitions } });
 };
 
+const getAllActiveCompetitionEvents = async (req, res) => {
+  const { user } = req;
+
+  const competitionEvents = await competitionService.fetchAllActiveCompetitionEvents();
+
+  return res.status(200).json({ success: true, data: competitionEvents });
+};
+
 export default {
   getAllCompetition,
   getAllCompetitionEvents,
+  getAllActiveCompetitionEvents,
   getCompetitionById,
   createCompetition,
   updateCompetition,

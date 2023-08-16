@@ -269,25 +269,23 @@ async function syncMarket(eventApiIds) {
 const getMatchOdds = async (req, res) => {
   try {
     let allMarketId = req.body.markeId.toString().replace(/["']/g, "");
-    var marketUrl = `${appConfig.BASE_URL}?action=matchodds&mid=${allMarketId}`;
+    var marketUrl = `${appConfig.BASE_URL}?action=matchodds&market_id=${allMarketId}`;
     const { statusCode, data } = await commonService.fetchData(marketUrl);
     let allData = [];
     if (statusCode === 200) {
       for (const market of data) {
-        if (market["selectionDepth"] && market["selectionDepth"][0]["Back"]) {
+        if (market["runners"]) {
           allData.push({
-            marketId: market["stMarketID"],
-            matchOdds: {
-              back: market["selectionDepth"][0]["Back"],
-              lay: market["selectionDepth"][0]["Lay"],
-            },
+            marketId: market["marketId"],
+            matchOdds: market["runners"].map(function (item) {
+              delete item.ex;
+              return item;
+            })
           });
         } else {
           allData.push({
-            marketId: market["stMarketID"],
+            marketId: market["marketId"],
             matchOdds: {
-              back: [],
-              lay: [],
             },
           });
         }

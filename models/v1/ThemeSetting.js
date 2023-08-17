@@ -7,6 +7,7 @@ export const THEME_IMAGE_TYPES = {
   BANNER: "BANNER",
   WELCOME_MOBILE: "WELCOME_MOBILE",
   WELCOME_DESKTOP: "WELCOME_DESKTOP",
+  LOGO: "LOGO",
 };
 
 export const THEME_IMAGE_SIZES = {
@@ -23,6 +24,12 @@ export const THEME_IMAGE_SIZES = {
     THUMBNAIL: "200_132",
   },
   [THEME_IMAGE_TYPES.WELCOME_DESKTOP]: {
+    ...IMAGE_SIZES,
+    // avg aspect ratio = 3:2
+    DEFAULT: "400_265",
+    THUMBNAIL: "200_132",
+  },
+  [THEME_IMAGE_TYPES.LOGO]: {
     ...IMAGE_SIZES,
     // avg aspect ratio = 3:2
     DEFAULT: "400_265",
@@ -60,6 +67,8 @@ const themeSettingSchema = new mongoose.Schema({
   welcomeMessage: { type: String, default: null },
 
   bannerImages: [{ type: String, required: true }],
+
+
 });
 
 themeSettingSchema.plugin(timestampPlugin);
@@ -82,6 +91,9 @@ themeSettingSchema.methods.generateImagePath = function (type, size = IMAGE_SIZE
     case THEME_IMAGE_TYPES.WELCOME_MOBILE:
       return `${path}/welcome_mobile/${this._id.toString()}_${size}`;
 
+    case THEME_IMAGE_TYPES.LOGO:
+      return `${path}/logo/${this._id.toString()}_${size}`;
+
     default:
       throw new Error("Unknown url path.");
   }
@@ -103,6 +115,12 @@ themeSettingSchema.methods.getImageUrl = async function (type, size = IMAGE_SIZE
       });
 
     case THEME_IMAGE_TYPES.WELCOME_MOBILE:
+      return await getImageUrlFromS3({
+        path: this.generateImagePath(type, size, name),
+        minutesToExpire: 10,
+      });
+
+    case THEME_IMAGE_TYPES.LOGO:
       return await getImageUrlFromS3({
         path: this.generateImagePath(type, size, name),
         minutesToExpire: 10,

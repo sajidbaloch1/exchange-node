@@ -2,6 +2,7 @@ import UserActivity, { USER_ACTIVITY_EVENT, GEO_LOCATION_TYPE } from "../../mode
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import mongoose from "mongoose";
+import User from "../../models/v1/User.js";
 
 const createUserActivity = async ({ userId, event, ipAddress, description, city, country, platform }) => {
   try {
@@ -24,7 +25,7 @@ const createUserActivity = async ({ userId, event, ipAddress, description, city,
 // Fetch all users activity from the database
 const fetchAllUserActivity = async ({ user, ...reqBody }) => {
   try {
-    const { page, perPage, sortBy, direction, searchQuery, type, userId } = reqBody;
+    const { page, perPage, sortBy, direction, searchQuery, type, userId, filterUserId } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -48,12 +49,16 @@ const fetchAllUserActivity = async ({ user, ...reqBody }) => {
     if (fromDate && toDate) {
       filters = {
         createdAt: { $gte: new Date(fromDate), $lte: new Date(toDate) },
-        userId: new mongoose.Types.ObjectId(user._id),
       };
     }
 
     if (userId) {
-      filters.userId = new mongoose.Types.ObjectId(userId);
+      let childUser = await User.find({ parentId: userId }, { _id: 1 });
+      let childId = childUser.map(a => a._id);
+      filters.userId = { $in: childId };
+    }
+    if (filterUserId) {
+      filters.userId = new mongoose.Types.ObjectId(filterUserId);
     }
 
     if (searchQuery) {

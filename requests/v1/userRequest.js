@@ -206,6 +206,7 @@ async function userActivityRequest(req) {
   req.body.fromDate = req.body?.fromDate ? req.body.fromDate : null;
   req.body.toDate = req.body?.toDate ? req.body.toDate : null;
   req.body.userId = req.body?.userId ? req.body.userId?.trim() : null;
+  req.body.filterUserId = req.body?.filterUserId ? req.body.filterUserId?.trim() : null;
 
   const validationSchema = Yup.object().shape({
 
@@ -218,6 +219,7 @@ async function userActivityRequest(req) {
     fromDate: Yup.date().nullable(true),
     toDate: Yup.date().nullable(true),
     userId: Yup.string().nullable(true),
+    filterUserId: Yup.string().nullable(true),
   });
 
   await validationSchema.validate(req.body);

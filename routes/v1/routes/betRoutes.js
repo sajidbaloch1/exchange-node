@@ -5,5 +5,6 @@ import { route } from "../../../lib/error-handling/routes-error-boundary.js";
 const router = express.Router();
 
 route(router, "post", "/createBet", betController.createBet);
+route(router, "post", "/getAllBet", betController.getAllBet);
 
 export default router;

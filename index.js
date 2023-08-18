@@ -6,6 +6,8 @@ import { appConfig } from "./config/app.js";
 import dbConnection from "./database/connect.js";
 import corsMiddleware from "./middlewares/corsMiddleware.js";
 import apiRoutes from "./routes/apiRoutes.js";
+import { connect } from './socket.js';
+import { createServer } from 'http';
 
 const app = express();
 
@@ -35,7 +37,9 @@ app.get("/", (req, res) => {
 });
 
 dbConnection();
+const server = createServer(app);
+connect(server)
 
-app.listen(appConfig.PORT, () => {
+server.listen(appConfig.PORT, () => {
   console.log(`Server running on port: ${appConfig.PORT}`);
 });

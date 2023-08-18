@@ -266,9 +266,10 @@ async function syncMarket(eventApiIds) {
 }
 
 // Function to get matchodds
-const getMatchOdds = async (req, res) => {
+
+const getMatchOdds = async (markeId) => {
   try {
-    let allMarketId = req.body.markeId.toString().replace(/["']/g, "");
+    let allMarketId = markeId.toString().replace(/["']/g, "");
     var marketUrl = `${appConfig.BASE_URL}?action=matchodds&market_id=${allMarketId}`;
     const { statusCode, data } = await commonService.fetchData(marketUrl);
     let allData = [];
@@ -291,12 +292,13 @@ const getMatchOdds = async (req, res) => {
         }
       }
     }
-    res.status(200).json({ message: "Match odds get successfully!", data: allData });
-  } catch (e) {
-    // Handle any errors that occurred during the sync process
-    res.status(500).json({ error: "An error occurred" });
+    return allData;
+
   }
-};
+  catch (e) {
+    return e;
+  }
+}
 
 export default {
   syncDetail,

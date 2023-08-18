@@ -20,6 +20,7 @@ import transferTypeRoutes from "./routes/transferTypeRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import userstakeRoutes from "./routes/userStakeRoutes.js";
 import withdrawGroupRoutes from "./routes/withdrawGroupRoutes.js";
+import scriptRoutes from "./routes/scriptRoutes.js";
 
 const app = express();
 
@@ -44,5 +45,6 @@ app.use("/transactionUser", transactionUserRoutes);
 app.use("/withdrawGroup", withdrawGroupRoutes);
 app.use("/transferType", transferTypeRoutes);
 app.use("/transferRequest", transferRequestRoutes);
+app.use("/script", scriptRoutes);
 
 export default app;

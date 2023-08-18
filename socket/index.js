@@ -1,15 +1,15 @@
 import { Server } from "socket.io";
-import { connect as connectPrivate } from "./namespaces/privateNamespace.js";
-import { connect as connectPublic } from "./namespaces/publicNamespace.js";
+import { connect as connectPrivateNamespace } from "./namespaces/privateNamespace.js";
+import { connect as connectPublicNamespace } from "./namespaces/publicNamespace.js";
 
 const connections = [
   {
     namespace: "/io/private",
-    connect: connectPrivate,
+    connect: connectPrivateNamespace,
   },
   {
     namespace: "/io/public",
-    connect: connectPublic,
+    connect: connectPublicNamespace,
   },
 ];
 

@@ -93,11 +93,18 @@ const fetchThemeSettingId = async (userId) => {
       THEME_IMAGE_SIZES.WELCOME_DESKTOP.DEFAULT
     );
 
+    // Desktop Logo
+    const logoImage = await existingThemeSetting.getImageUrl(
+      THEME_IMAGE_TYPES.LOGO,
+      THEME_IMAGE_SIZES.LOGO.DEFAULT
+    );
+
     const data = {
       ...existingThemeSetting._doc,
       bannerImages,
       welcomeMobileImage,
       welcomeDesktopImage,
+      logoImage
     };
 
     return data;
@@ -226,6 +233,48 @@ const getThemeSettingByCurrencyAndDomain = async ({ ...reqBody }) => {
     const findSuperAdmin = await User.findOne({ currencyId: currencyId, domainUrl: domainUrl });
     if (findSuperAdmin) {
       getThemeSetting = await ThemeSetting.findOne({ userId: findSuperAdmin._id });
+
+      // Banner Images
+      const bannerImages = [];
+      if (getThemeSetting.bannerImages?.length) {
+        for (const imageName of getThemeSetting.bannerImages) {
+          const path = await getThemeSetting.getImageUrl(
+            THEME_IMAGE_TYPES.BANNER,
+            THEME_IMAGE_SIZES.BANNER.DEFAULT,
+            imageName
+          );
+          bannerImages.push({
+            name: imageName,
+            url: path,
+          });
+        }
+      }
+
+      // Mobile Welcome Image
+      const welcomeMobileImage = await getThemeSetting.getImageUrl(
+        THEME_IMAGE_TYPES.WELCOME_MOBILE,
+        THEME_IMAGE_SIZES.WELCOME_MOBILE.DEFAULT
+      );
+
+      // Desktop Welcome Image
+      const welcomeDesktopImage = await getThemeSetting.getImageUrl(
+        THEME_IMAGE_TYPES.WELCOME_DESKTOP,
+        THEME_IMAGE_SIZES.WELCOME_DESKTOP.DEFAULT
+      );
+
+      // Desktop Logo
+      const logoImage = await getThemeSetting.getImageUrl(
+        THEME_IMAGE_TYPES.LOGO,
+        THEME_IMAGE_SIZES.LOGO.DEFAULT
+      );
+
+      getThemeSetting = {
+        ...getThemeSetting._doc,
+        bannerImages,
+        welcomeMobileImage,
+        welcomeDesktopImage,
+        logoImage
+      };
     }
     return getThemeSetting;
   } catch (e) {

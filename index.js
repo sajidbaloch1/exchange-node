@@ -1,15 +1,16 @@
 import bodyParser from "body-parser";
 import express from "express";
 import fileUpload from "express-fileupload";
+import { createServer } from "http";
 import moment from "moment";
 import { appConfig } from "./config/app.js";
 import dbConnection from "./database/connect.js";
 import corsMiddleware from "./middlewares/corsMiddleware.js";
 import apiRoutes from "./routes/apiRoutes.js";
-import { connect } from './socket.js';
-import { createServer } from 'http';
+import { initSocket } from "./socket/index.js";
 
 const app = express();
+const server = createServer(app);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -37,8 +38,8 @@ app.get("/", (req, res) => {
 });
 
 dbConnection();
-const server = createServer(app);
-connect(server)
+
+initSocket(server);
 
 server.listen(appConfig.PORT, () => {
   console.log(`Server running on port: ${appConfig.PORT}`);

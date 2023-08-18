@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import cronController from "./controllers/v1/cronController.js";
+import socketController from "./controllers/v1/socketController.js";
 
 let io;
 
@@ -9,9 +9,9 @@ const connect = (server) => {
   });
   io.on("connection", (socket) => {
     console.log("A user connected");
-    socket.on('sendMarketId', (params) => {
+    socket.on('requestMarketId', (params) => {
       setInterval(async () => {
-        const matchOddMethod = await cronController.getMatchOdds(params);
+        const matchOddMethod = await socketController.getMatchOdds(params);
         socket.emit('getMatchOdds', matchOddMethod);
       }, 1000);
     });

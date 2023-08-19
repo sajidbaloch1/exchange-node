@@ -14,6 +14,8 @@ function removeInterval(marketId) {
 export async function startBroadcast(socket, market) {
   if (!market.id) return;
 
+  // TODO: Add a check to see if the market is open and set the interval accordingly
+
   if (!intervals[market.id]) {
     intervals[market.id] = setInterval(async () => {
       const room = market.id.toString();

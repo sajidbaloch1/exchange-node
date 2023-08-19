@@ -1,30 +1,22 @@
 import { Server } from "socket.io";
-import { connect as connectPrivateNamespace } from "./namespaces/privateNamespace.js";
-import { connect as connectPublicNamespace } from "./namespaces/publicNamespace.js";
+import marketNamespace from "./namespaces/market/marketNamespace.js";
+import userNamespace from "./namespaces/user/userNamespace.js";
 
-const connections = [
-  {
-    namespace: "/io/private",
-    connect: connectPrivateNamespace,
-  },
-  {
-    namespace: "/io/public",
-    connect: connectPublicNamespace,
-  },
-];
-
-let io = null;
+let io = {
+  user: null,
+  market: null,
+};
 
 const initSocket = (server) => {
   io = new Server(server, {
     cors: { origin: "*" },
   });
 
-  connections.forEach((connection) => {
-    const { namespace, connect } = connection;
-    const namespaceIO = io.of(namespace);
-    connect(namespaceIO);
-  });
+  io.user = io.of("/io/user");
+  userNamespace.connect(io.user);
+
+  io.market = io.of("/io/market");
+  marketNamespace.connect(io.market);
 };
 
 export { initSocket, io };

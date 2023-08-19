@@ -1,5 +1,6 @@
 //Helpers
 import ErrorResponse from "../../lib/error-handling/error-response.js";
+import { getTrimmedUser } from "../../lib/helpers/auth.js";
 import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
 
 //Models
@@ -12,6 +13,7 @@ import userRequest from "../../requests/v1/userRequest.js";
 //Services
 import userActivityService from "../../services/v1/userActivityService.js";
 import userService from "../../services/v1/userService.js";
+import { io } from "../../socket/index.js";
 
 // Get all users
 const getAllUser = async (req, res) => {
@@ -63,6 +65,9 @@ const updateUser = async (req, res) => {
     ipAddress: body.ipAddress,
     description: body.description,
   });
+
+  const userDetails = getTrimmedUser(updateUser);
+  io.user.emit(`user:${userDetails._id}`, userDetails);
 
   res.status(200).json({ success: true, data: { details: updatedUser } });
 };

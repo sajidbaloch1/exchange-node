@@ -1,7 +1,6 @@
-import { getTrimmedUser } from "../../lib/helpers/auth.js";
-import userService from "../../services/v1/userService.js";
-import { validateSocketAuth } from "../middlewares/authSocketMiddleware.js";
-import { validateUser } from "../middlewares/userSocketMiddleware.js";
+import { getTrimmedUser } from "../../../lib/helpers/auth.js";
+import userService from "../../../services/v1/userService.js";
+import { validateAuth, validateUser } from "./middlewares.js";
 
 async function handleConnection(socket) {
   console.log("A user connected", socket.id);
@@ -20,9 +19,13 @@ async function handleConnection(socket) {
   });
 }
 
-export const connect = (socket) => {
-  socket.use(validateSocketAuth);
+const connect = (socket) => {
+  socket.use(validateAuth);
   socket.use(validateUser);
 
   socket.on("connection", handleConnection);
+};
+
+export default {
+  connect,
 };

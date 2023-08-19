@@ -1,9 +1,10 @@
-import ErrorResponse from "../../lib/error-handling/error-response.js";
-import Sport from "../../models/v1/Sport.js";
+import { appConfig } from "../../config/app.js";
+import BetCategory, { DEFAULT_CATEGORIES } from "../../models/v1/BetCategory.js";
 import Competition from "../../models/v1/Competition.js";
 import Event from "../../models/v1/Event.js";
 import Market from "../../models/v1/Market.js";
-import BetCategory, { DEFAULT_CATEGORIES } from "../../models/v1/BetCategory.js";
+import Sport from "../../models/v1/Sport.js";
+import commonService from "./commonService.js";
 
 const syncMarkets = async (data) => {
   //Get Bet Categories
@@ -92,4 +93,37 @@ const syncMarkets = async (data) => {
   return result;
 };
 
-export default { syncMarkets };
+const getMatchOdds = async (markeId) => {
+  try {
+    let allMarketId = markeId.toString().replace(/["']/g, "");
+    var marketUrl = `${appConfig.BASE_URL}?action=matchodds&market_id=${allMarketId}`;
+    const { statusCode, data } = await commonService.fetchData(marketUrl);
+    let allData = [];
+    if (statusCode === 200) {
+      for (const market of data) {
+        if (market["runners"]) {
+          allData.push({
+            marketId: market["marketId"],
+            matchOdds: market["runners"].map(function (item) {
+              delete item.ex;
+              return item;
+            }),
+          });
+        } else {
+          allData.push({
+            marketId: market["marketId"],
+            matchOdds: {},
+          });
+        }
+      }
+    }
+    return allData;
+  } catch (e) {
+    return e;
+  }
+};
+
+export default {
+  syncMarkets,
+  getMatchOdds,
+};

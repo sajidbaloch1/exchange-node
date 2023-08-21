@@ -16,13 +16,16 @@ const fetchAllEvent = async ({ ...reqBody }) => {
       showDeleted,
       showRecord,
       status,
-      fromDate,
-      toDate,
       sportId,
       competitionId,
       fields,
     } = reqBody;
 
+    let fromDate, toDate;
+    if (reqBody.fromDate && reqBody.toDate) {
+      fromDate = new Date(new Date(reqBody.fromDate).setUTCHours(0, 0, 0)).toISOString();
+      toDate = new Date(new Date(reqBody.toDate).setUTCHours(23, 59, 59)).toISOString();
+    }
     // Projection
     const projection = [];
     if (fields) {
@@ -45,7 +48,7 @@ const fetchAllEvent = async ({ ...reqBody }) => {
         isManual: true,
       };
     }
-
+    console.log(sportId);
     if (sportId) {
       filters.sportId = new mongoose.Types.ObjectId(sportId);
     }
@@ -59,19 +62,8 @@ const fetchAllEvent = async ({ ...reqBody }) => {
     }
 
     if (fromDate && toDate) {
-      filters = {
-        matchDate: { $gte: new Date(fromDate), $lte: new Date(toDate) },
-      };
-    } else {
-      if (fromDate) {
-        filters = {
-          matchDate: { $gte: new Date(fromDate) },
-        };
-      } else if (toDate) {
-        filters = {
-          matchDate: { $gte: new Date(), $lte: new Date(toDate) },
-        };
-      }
+      filters.matchDate = { $gte: new Date(fromDate), $lte: new Date(toDate) }
+
     }
 
     if (searchQuery) {

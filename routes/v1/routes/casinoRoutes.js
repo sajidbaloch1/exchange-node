@@ -10,5 +10,6 @@ route(router, "post", "/createCasino", casinoController.createCasino);
 route(router, "post", "/updateCasino", casinoController.updateCasino);
 route(router, "post", "/deleteCasino", casinoController.deleteCasino);
 route(router, "post", "/updateCasinoStatus", casinoController.updateCasinoStatus);
+route(router, "get", "/allCasino", casinoController.allCasino, false);
 
 export default router;

@@ -2,10 +2,12 @@ import CryptoJS from "crypto-js";
 import mongoose from "mongoose";
 import { appConfig } from "../../config/app.js";
 import ArrayProto from "../../lib/helpers/array-proto.js";
-import { defaultPermissions } from "../../lib/helpers/permissions.js";
+import defaultPermissions from "../../lib/permissions/defaultPermissions.js";
+import defaultStaticModules from "../../lib/permissions/defaultStaticModules.js";
+import defaultStaticPermissions from "../../lib/permissions/defaultStaticPermissions.js";
 import AppModule, { APP_MODULES } from "../../models/v1/AppModule.js";
 import Permission from "../../models/v1/Permission.js";
-import User from "../../models/v1/User.js";
+import User, { USER_ROLE } from "../../models/v1/User.js";
 
 const encryptModules = (modulesObj) => {
   const modules = JSON.stringify(modulesObj);
@@ -15,7 +17,7 @@ const encryptModules = (modulesObj) => {
 
 const fetchAppModules = () => {
   try {
-    const encryptedModules = encryptModules(APP_MODULES);
+    const encryptedModules = encryptModules({ ...APP_MODULES, ...defaultStaticModules });
     return encryptedModules;
   } catch (e) {
     throw new Error(e.message);
@@ -225,7 +227,7 @@ const fetchUserPermissions = async ({ userId }) => {
 
 const fetchUserActivePermissions = async ({ userId }) => {
   try {
-    const user = await User.findById(userId, { cloneParentId: 1 });
+    const user = await User.findById(userId, { cloneParentId: 1, role: 1 });
     if (!user) {
       throw new Error("User not found!");
     }
@@ -249,7 +251,36 @@ const fetchUserActivePermissions = async ({ userId }) => {
       });
     }
 
-    const encryptedPermissions = encryptModules(activePermissions);
+    const staticPermissions = defaultStaticPermissions
+      .filter((permission) => permission.userRoles.includes(user.role))
+      .filter((permission) => !activePermissions.includes(permission.key))
+      .map((permission) => permission.key);
+
+    const masterModules = [
+      APP_MODULES.TRANSACTION_PANEL_USER_MODULE,
+      APP_MODULES.TRANSACTION_PANEL_USER_CREATE,
+      APP_MODULES.TRANSACTION_PANEL_USER_UPDATE,
+      APP_MODULES.TRANSACTION_PANEL_USER_DELETE,
+    ];
+
+    const superAdminModules = [
+      APP_MODULES.THEME_USER_MODULE,
+      APP_MODULES.THEME_USER_CREATE,
+      APP_MODULES.THEME_USER_UPDATE,
+      APP_MODULES.THEME_USER_DELETE,
+    ];
+
+    let availableModules = [...activePermissions, ...staticPermissions];
+
+    if (![USER_ROLE.MASTER].includes(user.role)) {
+      availableModules = availableModules.filter((module) => !masterModules.includes(module));
+    }
+
+    if (![USER_ROLE.SUPER_ADMIN].includes(user.role)) {
+      availableModules = availableModules.filter((module) => !superAdminModules.includes(module));
+    }
+
+    const encryptedPermissions = encryptModules(availableModules);
 
     return encryptedPermissions;
   } catch (e) {

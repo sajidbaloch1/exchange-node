@@ -24,6 +24,12 @@ export const APP_MODULES = {
   THEME_USER_UPDATE: "theme_user_update",
   THEME_USER_DELETE: "theme_user_delete",
 
+  // Transaction Panel Users
+  TRANSACTION_PANEL_USER_MODULE: "transaction_panel_user_module",
+  TRANSACTION_PANEL_USER_CREATE: "transaction_panel_user_create",
+  TRANSACTION_PANEL_USER_UPDATE: "transaction_panel_user_update",
+  TRANSACTION_PANEL_USER_DELETE: "transaction_panel_user_delete",
+
   // Bank Permission
   BANK_MODULE: "bank_module",
   BANK_DEPOSIT: "bank_deposit",
@@ -32,6 +38,10 @@ export const APP_MODULES = {
   // Report Permissions
   REPORT_MODULE: "report_module",
   REPORT_ACCOUNT_STATEMENT: "report_account_statement",
+  REPORT_USER_HISTORY: "report_user_history",
+
+  // Event Bet Permissions
+  EVENT_BET_MODULE: "event_bet_module",
 };
 
 const appModuleSchema = new mongoose.Schema({

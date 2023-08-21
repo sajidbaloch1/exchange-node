@@ -15,7 +15,7 @@ const getSportWiseTodayEvent = async (req, res) => {
     if (!sportId) {
         throw new Error("sportId is required");
     }
-    const matchList = await exchangeHomeService.sportWiseTodayEvent(sportId);
+    const matchList = await exchangeHomeService.sportWiseMatchList(sportId);
 
     res.status(200).json({ success: true, data: matchList });
 };

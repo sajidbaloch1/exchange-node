@@ -203,6 +203,32 @@ const casinoStatusModify = async ({ _id, fieldName, status }) => {
   }
 };
 
+/**
+ * Fetch all casino from the database
+ */
+const allCasino = async (_id) => {
+  try {
+    let existingCasino = await Casino.find({ isVisible: true, isDeleted: false })
+    let data = []
+    for (var i = 0; i < existingCasino.length; i++) {
+      const fetchExistingCasino = await Casino.findById(existingCasino[i]._id)
+      let image = await fetchExistingCasino.getImageUrl(
+        CASINO_IMAGE_TYPES.CASINO_IMAGE,
+        CASINO_IMAGE_SIZES.CASINO_IMAGE.DEFAULT
+      );
+
+      data.push({
+        ...existingCasino[i]._doc,
+        image,
+      });
+    }
+
+
+    return data;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
 
 export default {
   fetchAllCasino,
@@ -211,4 +237,5 @@ export default {
   modifyCasino,
   removeCasino,
   casinoStatusModify,
+  allCasino
 };

@@ -72,6 +72,13 @@ const updateCasinoStatus = async (req, res) => {
   res.status(200).json({ success: true, data: { details: updatedCasinoStatus } });
 };
 
+const allCasino = async (req, res) => {
+
+  const casinos = await casinoService.allCasino();
+
+  res.status(200).json({ success: true, data: { details: casinos } });
+};
+
 
 export default {
   getAllCasino,
@@ -80,5 +87,5 @@ export default {
   updateCasino,
   deleteCasino,
   updateCasinoStatus,
-
+  allCasino
 };

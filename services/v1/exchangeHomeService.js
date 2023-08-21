@@ -43,10 +43,10 @@ const sportsList = async () => {
 
 
 // Sport wise match list
-const sportWiseTodayEvent = async (sportId) => {
+const sportWiseMatchList = async (sportId) => {
     try {
-        const startOfDay = new Date(new Date().setUTCHours(0, 0, 0, 0)).toISOString()
-        const endOfDay = new Date(new Date().setUTCHours(23, 59, 59, 999)).toISOString()
+        const startOfDay = new Date(new Date()).toISOString()
+        const endOfDay = new Date(new Date(new Date().setDate(new Date().getDate() + 1)).setUTCHours(23, 59, 59, 999)).toISOString()
 
         let findMatchOdds = await BetCategory.findOne({
             name: DEFAULT_CATEGORIES[0]
@@ -58,25 +58,22 @@ const sportWiseTodayEvent = async (sportId) => {
                 $gte: startOfDay,
                 $lt: endOfDay
             }
-        }, { name: 1, matchDate: 1, _id: 1, apiCompetitionId: 1 });
+        }, { name: 1, matchDate: 1, _id: 1, apiCompetitionId: 1 }).sort({ matchDate: 1 });
         let ids = findEvents.map((item) => item._id);
-
         let findMarketIds = await Market.find({
             typeId: findMatchOdds._id,
             eventId: { $in: ids }
-        }, { _id: 0, marketId: 1, eventId: 1 });
+        }, { _id: 0, marketId: 1, eventId: 1 }).sort({ startDate: 1 });
 
         let allMarketId = findMarketIds.map((item) => item.marketId).toString().replace(/["']/g, "");
-
-        var marketUrl = `${appConfig.BASE_URL}?action=matchodds&mid=${allMarketId}`;
+        var marketUrl = `${appConfig.BASE_URL}?action=matchodds&market_id=${allMarketId}`;
         const { statusCode, data } = await commonService.fetchData(
             marketUrl
         );
-
         let allData = [];
         if (statusCode === 200) {
             for (const market of data) {
-                let eventId = findMarketIds.filter(item => item.marketId == market.stMarketID);
+                let eventId = findMarketIds.filter(item => item.marketId == Number(market.marketId));
                 let eventInfo = findEvents.filter(item => item._id == eventId[0].eventId.toString());
                 let findCompetition = await Competition.findOne({
                     apiCompetitionId: eventInfo[0].apiCompetitionId,
@@ -86,10 +83,15 @@ const sportWiseTodayEvent = async (sportId) => {
                         eventName: eventInfo[0].name,
                         competitionName: findCompetition.name,
                         matchDate: eventInfo[0].matchDate,
-                        matchOdds: {
-                            back: market['selectionDepth'][0]['Back'][0]['Price'],
-                            lay: market['selectionDepth'][0]['Lay'][0]['Price']
-                        }
+                        matchOdds: market["runners"].map(function (item) {
+                            delete item.ex;
+                            delete item.selectionId;
+                            delete item.status;
+                            delete item.lastPriceTraded;
+                            delete item.removalDate;
+
+                            return item;
+                        })
                     })
                 }
             }
@@ -104,5 +106,5 @@ const sportWiseTodayEvent = async (sportId) => {
 
 export default {
     sportsList,
-    sportWiseTodayEvent
+    sportWiseMatchList
 };

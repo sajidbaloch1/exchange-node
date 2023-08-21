@@ -66,7 +66,7 @@ const updateUser = async (req, res) => {
     description: body.description,
   });
 
-  const userDetails = getTrimmedUser(updateUser);
+  const userDetails = getTrimmedUser(updatedUser);
   io.user.emit(`user:${userDetails._id}`, userDetails);
 
   res.status(200).json({ success: true, data: { details: updatedUser } });

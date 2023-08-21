@@ -1,4 +1,4 @@
-import { defaultModules } from "../../lib/helpers/permissions.js";
+import defaultModules from "../../lib/permissions/defaultModules.js";
 import AppModule from "../../models/v1/AppModule.js";
 
 export default async function appModulesSeeder() {

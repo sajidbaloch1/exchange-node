@@ -165,7 +165,6 @@ const modifyCasino = async ({ files, ...reqBody }) => {
     }
 
     casino.name = reqBody.name;
-    casino.isVisible = reqBody.isVisible;
 
     await casino.save();
     await uploadCasinoImages(reqBody._id, files);

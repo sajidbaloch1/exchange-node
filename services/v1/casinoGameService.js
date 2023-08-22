@@ -72,6 +72,33 @@ const fetchAllCasinoGame = async ({ ...reqBody }) => {
         $match: filters,
       },
       {
+        $lookup: {
+          from: "casinos",
+          localField: "casinoId",
+          foreignField: "_id",
+          as: "casino",
+          pipeline: [
+            {
+              $project: { name: 1 },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: "$casino",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $set: {
+          casinoName: "$casino.name",
+        },
+      },
+      {
+        $unset: ["casino"],
+      },
+      {
         $facet: {
           totalRecords: [{ $count: "count" }],
           paginatedResults: [
@@ -136,15 +163,13 @@ const fetchCasinoGameId = async (_id) => {
 const addCasinoGame = async ({ files, ...reqBody }) => {
   const {
     name,
-    casinoId,
-    isFavourite
+    casinoId
   } = reqBody;
 
   try {
     const newCasinoGameObj = {
       name,
-      casinoId,
-      isFavourite
+      casinoId
     };
 
     const newCasinoGame = await CasinoGame.create(newCasinoGameObj);
@@ -170,9 +195,6 @@ const modifyCasinoGame = async ({ files, ...reqBody }) => {
 
     casinoGame.name = reqBody.name;
     casinoGame.casinoId = reqBody.casinoId;
-    casinoGame.isFavourite = reqBody.isFavourite;
-    casinoGame.isVisible = reqBody.isVisible;
-
     await casinoGame.save();
     await uploadCasinoGameImages(reqBody._id, files);
     return casinoGame;

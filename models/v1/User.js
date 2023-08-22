@@ -122,7 +122,13 @@ const userSchema = new mongoose.Schema({
   balance: { type: Number, default: 0 },
 
   // The Profit or Loss of the client.
-  userPl: { type: Number },
+  userPl: { type: Number, default: 0 },
+
+  //Downpoint for users
+  downPoint: { type: Number, default: 0 },
+
+  //Uppoints for users
+  upPoint: { type: Number, default: 0 },
 
   // Flag indicating whether the user is forced to change password on next login. Default is false.
   forcePasswordChange: { type: Boolean, default: false },

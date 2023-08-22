@@ -1,10 +1,10 @@
+import BetCategory, { DEFAULT_CATEGORIES } from "../../models/v1/BetCategory.js";
 import Competition from "../../models/v1/Competition.js";
 import Event from "../../models/v1/Event.js";
+import MarketRunner from "../../models/v1/MarketRunner.js";
 import Sport from "../../models/v1/Sport.js";
-import BetCategory, { DEFAULT_CATEGORIES } from "../../models/v1/BetCategory.js";
 
 //Import Service
-import MarketService from "../../services/v1/marketService.js";
 import commonService from "../../services/v1/commonService.js";
 
 import { appConfig } from "../../config/app.js";
@@ -12,28 +12,29 @@ import Market from "../../models/v1/Market.js";
 
 //Sync all APIs for Sports, Competitions, Events
 const syncDetail = async (req, res) => {
-  try {
-    // Call the syncSports function to sync sports data
-    var sportIds = await syncSports();
-    console.log("All Sports has been synced");
+  //try {
+  // Call the syncSports function to sync sports data
+  var sportIds = await syncSports();
+  console.log("All Sports has been synced");
 
-    // Call the syncCompetition function to sync competition data
-    var competitionIds = await syncCompetition(sportIds);
-    console.log("All Competitions has been synced");
+  // Call the syncCompetition function to sync competition data
+  var competitionIds = await syncCompetition(sportIds);
+  console.log("All Competitions has been synced");
 
-    // Call the syncEvent function to sync Event data
-    var eventApiIds = await syncEvents(competitionIds);
-    console.log("All Events has been synced");
+  // Call the syncEvent function to sync Event data
+  var eventApiIds = await syncEvents(competitionIds);
+  console.log("All Events has been synced");
 
-    // Call the syncMarket function to sync Market data
-    await syncMarket(eventApiIds);
+  // Call the syncMarket function to sync Market data
+  await syncMarket(eventApiIds);
+  console.log("All Markets has been synced");
 
-    // Respond with a 200 status code and success message
-    res.status(200).json({ message: "All data has been synced!" });
-  } catch (e) {
-    // Handle any errors that occurred during the sync process
-    res.status(500).json({ error: "An error occurred" });
-  }
+  // Respond with a 200 status code and success message
+  res.status(200).json({ message: "All data has been synced!" });
+  // } catch (e) {
+  //   // Handle any errors that occurred during the sync process
+  //   res.status(500).json({ error: "An error occurred" });
+  // }
 };
 
 // Common Function to Sync Sports
@@ -210,8 +211,6 @@ async function syncMarket(eventApiIds) {
 
     // Check if the API request was successful (status code 200)
     if (statusCode === 200) {
-      var marketObjArray = [];
-
       // Iterate through each event data for the current competition
       for (const market of data) {
         var type_id = "";
@@ -223,7 +222,7 @@ async function syncMarket(eventApiIds) {
           type_id = betCategoryIdMap[DEFAULT_CATEGORIES[2]];
         }
 
-        //Prepare Object for market
+        //Add or Upsert market in DB
         const marketObj = {
           name: market.marketName,
           typeId: type_id,
@@ -234,30 +233,35 @@ async function syncMarket(eventApiIds) {
           competitionId: eventDetail.competitionId,
           apiSportId: eventDetail.apiSportId,
           sportId: eventDetail.sportId,
-          marketRunners: market.runners,
           startDate: market.marketStartTime,
         };
 
-        marketObjArray.push(marketObj);
-        marketIdsArray.push(market.marketId);
-      }
-
-      if (marketObjArray.length > 0) {
-        // Bulk upsert operation
-        const marketOps = marketObjArray.map((market) => ({
-          updateOne: {
-            filter: {
-              marketId: market.marketId,
-              apiSportId: market.apiSportId,
-              apiCompetitionId: market.apiCompetitionId,
-              apiEventId: market.apiEventId,
-            },
-            update: market,
-            upsert: true,
+        var marketData = await Market.findOneAndUpdate(
+          {
+            marketId: market.marketId,
+            apiSportId: market.apiSportId,
+            apiCompetitionId: market.apiCompetitionId,
+            apiEventId: market.apiEventId,
           },
-        }));
+          { $set: marketObj },
+          { upsert: true, new: true }
+        );
 
-        await Market.bulkWrite(marketOps);
+        //Save Market Runners data in DB
+        for (const runner of market.runners) {
+          var marketRunner = {
+            marketId: marketData._id,
+            selectionId: runner.selectionId,
+            runnerName: runner.runnerName,
+            handicap: runner.handicap,
+            priority: runner.priority,
+          };
+
+          await MarketRunner.create(marketRunner);
+        }
+
+        //Push marketId in array
+        marketIdsArray.push(market.marketId);
       }
     }
   }
@@ -266,5 +270,5 @@ async function syncMarket(eventApiIds) {
 }
 
 export default {
-  syncDetail
+  syncDetail,
 };

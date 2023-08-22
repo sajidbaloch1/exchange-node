@@ -3,7 +3,7 @@ import userService from "../../../services/v1/userService.js";
 import { validateAuth, validateUser } from "./middlewares.js";
 
 async function handleConnection(socket) {
-  console.log("A user connected", socket.id);
+  // console.log("A user connected", socket.id);
 
   try {
     const user = await userService.fetchUserId(socket.userId);
@@ -15,7 +15,7 @@ async function handleConnection(socket) {
   }
 
   socket.on("disconnect", () => {
-    console.log("A user disconnected", socket.id);
+    // console.log("A user disconnected", socket.id);
   });
 }
 

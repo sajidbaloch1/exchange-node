@@ -383,8 +383,8 @@ const getEventMatchData = async ({ eventId }) => {
 
     ]);
 
+    return event[0];
 
-    return event;
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

@@ -37,6 +37,9 @@ const betSchema = new mongoose.Schema({
   // back or lay
   isBack: { type: Boolean, required: true },
 
+  //Runner ID on which runner we are betting
+  runnerId: { type: mongoose.Schema.Types.ObjectId },
+
   betOrderType: { type: String, enum: Object.values(BET_ORDER_TYPE), required: true },
 
   betOrderStatus: { type: String, enum: Object.values(BET_ORDER_STATUS), required: true },
@@ -48,6 +51,8 @@ const betSchema = new mongoose.Schema({
   deviceInfo: { type: String, required: true },
 
   ipAddress: { type: String, required: true },
+
+  marketRunnerId: { type: mongoose.Schema.Types.ObjectId, ref: "market_runner", required: true },
 });
 
 betSchema.plugin(timestampPlugin);

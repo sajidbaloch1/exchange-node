@@ -21,7 +21,17 @@ const getAllBet = async (req, res) => {
     res.status(201).json({ success: true, data: { details: newBet } });
 };
 
+// Bet complete
+
+const betComplete = async (req, res) => {
+    const { body } = await betRequest.betCompleteRequest(req);
+
+    const completeBet = await betService.completeBet({ ...body });
+
+    res.status(201).json({ success: true, data: { details: completeBet } });
+}
 export default {
     createBet,
-    getAllBet
+    getAllBet,
+    betComplete
 };

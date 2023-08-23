@@ -369,8 +369,7 @@ const getEventMatchData = async ({ eventId }) => {
 
     ]);
 
-
-    return event;
+    return event[0];
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

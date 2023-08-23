@@ -12,29 +12,29 @@ import Market from "../../models/v1/Market.js";
 
 //Sync all APIs for Sports, Competitions, Events
 const syncDetail = async (req, res) => {
-  //try {
-  // Call the syncSports function to sync sports data
-  var sportIds = await syncSports();
-  console.log("All Sports has been synced");
+  try {
+    // Call the syncSports function to sync sports data
+    var sportIds = await syncSports();
+    console.log("All Sports has been synced");
 
-  // Call the syncCompetition function to sync competition data
-  var competitionIds = await syncCompetition(sportIds);
-  console.log("All Competitions has been synced");
+    // Call the syncCompetition function to sync competition data
+    var competitionIds = await syncCompetition(sportIds);
+    console.log("All Competitions has been synced");
 
-  // Call the syncEvent function to sync Event data
-  var eventApiIds = await syncEvents(competitionIds);
-  console.log("All Events has been synced");
+    // Call the syncEvent function to sync Event data
+    var eventApiIds = await syncEvents(competitionIds);
+    console.log("All Events has been synced");
 
-  // Call the syncMarket function to sync Market data
-  await syncMarket(eventApiIds);
-  console.log("All Markets has been synced");
+    // Call the syncMarket function to sync Market data
+    await syncMarket(eventApiIds);
+    console.log("All Markets has been synced");
 
-  // Respond with a 200 status code and success message
-  res.status(200).json({ message: "All data has been synced!" });
-  // } catch (e) {
-  //   // Handle any errors that occurred during the sync process
-  //   res.status(500).json({ error: "An error occurred" });
-  // }
+    // Respond with a 200 status code and success message
+    res.status(200).json({ message: "All data has been synced!" });
+  } catch (e) {
+    // Handle any errors that occurred during the sync process
+    res.status(500).json({ error: "An error occurred" });
+  }
 };
 
 // Common Function to Sync Sports

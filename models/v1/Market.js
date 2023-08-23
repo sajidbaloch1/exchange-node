@@ -118,6 +118,7 @@ const marketSchema = new mongoose.Schema({
   startDate: {
     type: Date,
   },
+  winnerRunnerId: { type: mongoose.Schema.Types.ObjectId, ref: "market_runner" },
 });
 
 // Indexing for frequently queried fields

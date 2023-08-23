@@ -19,6 +19,8 @@ async function createBetRequest(req) {
         betPl: Yup.number().required(),
         deviceInfo: Yup.string().required(),
         ipAddress: Yup.string().required(),
+        marketRunnerId: Yup.string().required()
+            .test("marketRunnerId", "Invalid marketRunnerId!", (v) => !v || isValidObjectId),
     });
 
     await validationSchema.validate(req.body);
@@ -65,7 +67,21 @@ async function getAllBetRequest(req) {
     return req;
 }
 
+async function betCompleteRequest(req) {
+    const validationSchema = Yup.object().shape({
+        marketId: Yup.string().required()
+            .test("marketId", "Invalid marketId!", (v) => !v || isValidObjectId),
+        winRunnerId: Yup.string().required()
+            .test("marketRunnerId", "Invalid marketRunnerId!", (v) => !v || isValidObjectId),
+    });
+
+    await validationSchema.validate(req.body);
+
+    return req;
+}
+
 export default {
     createBetRequest,
-    getAllBetRequest
+    getAllBetRequest,
+    betCompleteRequest
 };

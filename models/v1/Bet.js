@@ -51,6 +51,8 @@ const betSchema = new mongoose.Schema({
   deviceInfo: { type: String, required: true },
 
   ipAddress: { type: String, required: true },
+
+  marketRunnerId: { type: mongoose.Schema.Types.ObjectId, ref: "market_runner", required: true },
 });
 
 betSchema.plugin(timestampPlugin);

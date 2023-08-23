@@ -3,6 +3,7 @@ import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { deleteImageFromS3, uploadImageToS3 } from "../../lib/files/image-upload.js";
 import ThemeSetting, { THEME_IMAGE_SIZES, THEME_IMAGE_TYPES } from "../../models/v1/ThemeSetting.js";
 import User from "../../models/v1/User.js";
+import Currency from "../../models/v1/Currency.js";
 
 const uploadThemeImages = async (themeSettingId, files) => {
   const themeSetting = await ThemeSetting.findById(themeSettingId);
@@ -62,7 +63,7 @@ const fetchThemeSettingId = async (userId) => {
   try {
     const existingThemeSetting = await ThemeSetting.findOne({ userId: userId });
     if (!existingThemeSetting) {
-      throw new Error("Theme Setting not found!");
+      return [];
     }
 
     // Banner Images
@@ -94,17 +95,14 @@ const fetchThemeSettingId = async (userId) => {
     );
 
     // Desktop Logo
-    const logoImage = await existingThemeSetting.getImageUrl(
-      THEME_IMAGE_TYPES.LOGO,
-      THEME_IMAGE_SIZES.LOGO.DEFAULT
-    );
+    const logoImage = await existingThemeSetting.getImageUrl(THEME_IMAGE_TYPES.LOGO, THEME_IMAGE_SIZES.LOGO.DEFAULT);
 
     const data = {
       ...existingThemeSetting._doc,
       bannerImages,
       welcomeMobileImage,
       welcomeDesktopImage,
-      logoImage
+      logoImage,
     };
 
     return data;
@@ -227,8 +225,17 @@ const deleteBannerImage = async ({ _id: themeSettingId, bannerImageName }) => {
  */
 const getThemeSettingByCurrencyAndDomain = async ({ ...reqBody }) => {
   try {
-    const { currencyId, domainUrl } = reqBody;
-
+    const { currency, domainUrl } = reqBody;
+    const regex = new RegExp(`^${currency}$`, "i");
+    let findCurrency = await Currency.findOne({ name: { $regex: regex } });
+    let currencyId = "";
+    if (findCurrency) {
+      currencyId = findCurrency._id;
+    }
+    else {
+      findCurrency = await Currency.findOne({ name: { $regex: 'inr' } });
+      currencyId = findCurrency._id;
+    }
     let getThemeSetting = {};
     const findSuperAdmin = await User.findOne({ currencyId: currencyId, domainUrl: domainUrl });
     if (findSuperAdmin) {
@@ -263,17 +270,14 @@ const getThemeSettingByCurrencyAndDomain = async ({ ...reqBody }) => {
       );
 
       // Desktop Logo
-      const logoImage = await getThemeSetting.getImageUrl(
-        THEME_IMAGE_TYPES.LOGO,
-        THEME_IMAGE_SIZES.LOGO.DEFAULT
-      );
+      const logoImage = await getThemeSetting.getImageUrl(THEME_IMAGE_TYPES.LOGO, THEME_IMAGE_SIZES.LOGO.DEFAULT);
 
       getThemeSetting = {
         ...getThemeSetting._doc,
         bannerImages,
         welcomeMobileImage,
         welcomeDesktopImage,
-        logoImage
+        logoImage,
       };
     }
     return getThemeSetting;

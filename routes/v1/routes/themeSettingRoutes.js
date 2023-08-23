@@ -7,6 +7,6 @@ const router = express.Router();
 route(router, "post", "/getThemeSettingById", themeSettingController.getThemeSettingById);
 route(router, "post", "/updateThemeSetting", themeSettingController.updateThemeSetting);
 route(router, "post", "/deleteBanner", themeSettingController.deleteBanner);
-route(router, "post", "/themeSettingByCurrencyAndDomain", themeSettingController.getThemeSettingByCurrencyAndDomain);
+route(router, "post", "/themeSettingByCurrencyAndDomain", themeSettingController.getThemeSettingByCurrencyAndDomain, false);
 
 export default router;

@@ -2,6 +2,8 @@ import Bet from "../../models/v1/Bet.js";
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
+import User, { USER_ROLE } from "../../models/v1/User.js";
+import Market from "../../models/v1/Market.js";
 /**
  * create Bet in the database
  */
@@ -20,6 +22,7 @@ const addBet = async ({ ...reqBody }) => {
       betPl,
       deviceInfo,
       ipAddress,
+      marketRunnerId
     } = reqBody;
 
     const newBetObj = {
@@ -35,6 +38,7 @@ const addBet = async ({ ...reqBody }) => {
       betPl,
       deviceInfo,
       ipAddress,
+      marketRunnerId
     };
     const newBet = await Bet.create(newBetObj);
 
@@ -194,7 +198,78 @@ const fetchAllBet = async ({ ...reqBody }) => {
   }
 };
 
+async function updateUserPl(userId, profitLoss) {
+  let findUser = await User.findOne({ _id: userId });
+  findUser.userPl = findUser.userPl + profitLoss;
+  findUser.save();
+
+  if (findUser.role != USER_ROLE.SUPER_ADMIN) {
+    await updateUserPl(findUser.parentId, profitLoss)
+  }
+  else {
+    return;
+  }
+
+}
+
+const completeBet = async ({ ...reqBody }) => {
+  try {
+    const {
+      marketId,
+      winRunnerId,
+    } = reqBody;
+
+    let findMarket = await Market.findOne({ _id: marketId });
+    if (findMarket.winnerRunnerId == undefined || findMarket.winnerRunnerId == "" || findMarket.winnerRunnerId == null) {
+      let findBet = await Bet.find({ marketId: marketId });
+
+      for (var i = 0; i < findBet.length; i++) {
+        let newFindBet = await Bet.findOne({ userId: findBet[i].userId, marketId: findBet[i].marketId });
+        let profit = 0;
+        let loss = 0;
+        if (findBet[i].isBack == true) {
+          if (winRunnerId == findBet[i].marketRunnerId) {
+            profit = (findBet[i].odds - 1).toFixed(2) * findBet[i].stake;
+            newFindBet.betPl = profit;
+          }
+          else {
+            loss = findBet[i].stake * (-1);
+            newFindBet.betPl = loss * (-1);
+          }
+        }
+        else {
+          if (winRunnerId != findBet[i].marketRunnerId) {
+            profit = findBet[i].stake;
+            newFindBet.betPl = profit;
+          }
+          else {
+            loss = ((findBet[i].odds - 1).toFixed(2) * findBet[i].stake) * (-1);
+            newFindBet.betPl = loss * (-1);
+          }
+        }
+        newFindBet.save();
+        if (loss == 0) {
+          await updateUserPl(findBet[i].userId, profit)
+        }
+        else {
+          await updateUserPl(findBet[i].userId, loss)
+        }
+      }
+      findMarket.winnerRunnerId = winRunnerId;
+      findMarket.save();
+      return reqBody;
+    }
+    else {
+      throw new ErrorResponse("Winner already added.").status(200);
+    }
+
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+
 export default {
   addBet,
-  fetchAllBet
+  fetchAllBet,
+  completeBet
 };

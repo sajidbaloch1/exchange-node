@@ -75,10 +75,6 @@ const marketSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  // An array of mixed data types representing market runners
-  marketRunners: {
-    type: [mongoose.Schema.Types.Mixed],
-  },
   // Bet delay for the market (null by default)
   betDelay: {
     type: Number,
@@ -122,6 +118,7 @@ const marketSchema = new mongoose.Schema({
   startDate: {
     type: Date,
   },
+  winnerRunnerId: { type: mongoose.Schema.Types.ObjectId, ref: "market_runner" },
 });
 
 // Indexing for frequently queried fields

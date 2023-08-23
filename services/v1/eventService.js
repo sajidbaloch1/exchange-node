@@ -357,6 +357,20 @@ const getEventMatchData = async ({ eventId }) => {
         },
       },
       {
+        $lookup: {
+          from: "market_runners",
+          localField: "_id",
+          foreignField: "marketId",
+          as: "market_runner",
+          pipeline: [
+            {
+              $project: { runnerName: 1 },
+            },
+          ],
+        },
+      },
+
+      {
         $set: {
           sportsName: "$sport.name",
           competitionName: "$competition.name",
@@ -369,8 +383,8 @@ const getEventMatchData = async ({ eventId }) => {
 
     ]);
 
-
     return event[0];
+
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }

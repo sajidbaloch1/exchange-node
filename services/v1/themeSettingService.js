@@ -63,7 +63,7 @@ const fetchThemeSettingId = async (userId) => {
   try {
     const existingThemeSetting = await ThemeSetting.findOne({ userId: userId });
     if (!existingThemeSetting) {
-      throw new Error("Theme Setting not found!");
+      return [];
     }
 
     // Banner Images
@@ -95,17 +95,14 @@ const fetchThemeSettingId = async (userId) => {
     );
 
     // Desktop Logo
-    const logoImage = await existingThemeSetting.getImageUrl(
-      THEME_IMAGE_TYPES.LOGO,
-      THEME_IMAGE_SIZES.LOGO.DEFAULT
-    );
+    const logoImage = await existingThemeSetting.getImageUrl(THEME_IMAGE_TYPES.LOGO, THEME_IMAGE_SIZES.LOGO.DEFAULT);
 
     const data = {
       ...existingThemeSetting._doc,
       bannerImages,
       welcomeMobileImage,
       welcomeDesktopImage,
-      logoImage
+      logoImage,
     };
 
     return data;
@@ -273,17 +270,14 @@ const getThemeSettingByCurrencyAndDomain = async ({ ...reqBody }) => {
       );
 
       // Desktop Logo
-      const logoImage = await getThemeSetting.getImageUrl(
-        THEME_IMAGE_TYPES.LOGO,
-        THEME_IMAGE_SIZES.LOGO.DEFAULT
-      );
+      const logoImage = await getThemeSetting.getImageUrl(THEME_IMAGE_TYPES.LOGO, THEME_IMAGE_SIZES.LOGO.DEFAULT);
 
       getThemeSetting = {
         ...getThemeSetting._doc,
         bannerImages,
         welcomeMobileImage,
         welcomeDesktopImage,
-        logoImage
+        logoImage,
       };
     }
     return getThemeSetting;

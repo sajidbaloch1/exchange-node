@@ -28,6 +28,8 @@ const betSchema = new mongoose.Schema({
   // Any match or fancy
   eventId: { type: mongoose.Schema.Types.ObjectId, ref: "event", required: true },
 
+  runnerId: { type: mongoose.Schema.Types.ObjectId, ref: "runner", required: true },
+
   // odd rate of bet
   odds: { type: Number, required: true },
 

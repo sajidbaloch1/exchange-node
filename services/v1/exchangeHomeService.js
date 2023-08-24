@@ -11,7 +11,7 @@ import commonService from "./commonService.js";
  */
 const sportsList = async () => {
   try {
-    const allSports = await Sport.find({ isActive: true, isDeleted: false }, { _id: 1, name: 1 });
+    const allSports = await Sport.find({ isActive: true, isDeleted: false }, { _id: 1, name: 1 }).sort("name");
     let data = [];
     for (var i = 0; i < allSports.length; i++) {
       const getAllCompetition = await Competition.find(

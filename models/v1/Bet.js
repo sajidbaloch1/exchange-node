@@ -28,11 +28,6 @@ const betSchema = new mongoose.Schema({
   // Any match or fancy
   eventId: { type: mongoose.Schema.Types.ObjectId, ref: "event", required: true },
 
-  runnerId: { type: mongoose.Schema.Types.ObjectId, ref: "runner", required: true },
-
-  // odd rate of bet
-  odds: { type: Number, required: true },
-
   // stake amount (points)
   stake: { type: Number, required: true },
 
@@ -40,7 +35,7 @@ const betSchema = new mongoose.Schema({
   isBack: { type: Boolean, required: true },
 
   //Runner ID on which runner we are betting
-  runnerId: { type: mongoose.Schema.Types.ObjectId },
+  runnerId: { type: mongoose.Schema.Types.ObjectId, ref: "market_runner", required: true },
 
   betOrderType: { type: String, enum: Object.values(BET_ORDER_TYPE), required: true },
 

@@ -1,18 +1,18 @@
 import mongoose from "mongoose";
 import timestampPlugin from "../plugins/timestamp.js";
 
-const BET_ORDER_TYPE = {
+export const BET_ORDER_TYPE = {
   MARKET: "market",
   LIMIT: "limit",
 };
 
-const BET_ORDER_STATUS = {
+export const BET_ORDER_STATUS = {
   PENDING: "pending",
   PLACED: "placed",
   CANCELLED: "cancelled",
 };
 
-const BET_RESULT_STATUS = {
+export const BET_RESULT_STATUS = {
   RUNNING: "running",
   WON: "won",
   LOST: "lost",
@@ -28,7 +28,6 @@ const betSchema = new mongoose.Schema({
   // Any match or fancy
   eventId: { type: mongoose.Schema.Types.ObjectId, ref: "event", required: true },
 
-  // odd rate of bet
   odds: { type: Number, required: true },
 
   // stake amount (points)
@@ -38,7 +37,7 @@ const betSchema = new mongoose.Schema({
   isBack: { type: Boolean, required: true },
 
   //Runner ID on which runner we are betting
-  runnerId: { type: mongoose.Schema.Types.ObjectId },
+  runnerId: { type: mongoose.Schema.Types.ObjectId, ref: "market_runner", required: true },
 
   betOrderType: { type: String, enum: Object.values(BET_ORDER_TYPE), required: true },
 
@@ -46,13 +45,11 @@ const betSchema = new mongoose.Schema({
 
   betResultStatus: { type: String, enum: Object.values(BET_RESULT_STATUS), required: true },
 
-  betPl: { type: Number, required: true },
+  betPl: { type: Number, default: 0 },
 
   deviceInfo: { type: String, required: true },
 
   ipAddress: { type: String, required: true },
-
-  marketRunnerId: { type: mongoose.Schema.Types.ObjectId, ref: "market_runner", required: true },
 });
 
 betSchema.plugin(timestampPlugin);

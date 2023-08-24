@@ -10,7 +10,7 @@ const eventSchema = new mongoose.Schema({
   sportId: { type: mongoose.Schema.Types.ObjectId, ref: "sport", required: [true, "Sport is Required!"] },
 
   // API identifier for the sport (if applicable)
-  apiSportId: { type: Number, default: null },
+  apiSportId: { type: String, default: null },
 
   // Reference to the competition associated with this event
   competitionId: {
@@ -20,10 +20,10 @@ const eventSchema = new mongoose.Schema({
   },
 
   // API identifier for the competition (if applicable)
-  apiCompetitionId: { type: Number, default: null },
+  apiCompetitionId: { type: String, default: null },
 
   // API identifier for the specific match of the event (if applicable)
-  apiEventId: { type: Number, default: null },
+  apiEventId: { type: String, default: null },
 
   // Date of the match
   matchDate: { type: Date, default: null },

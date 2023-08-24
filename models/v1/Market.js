@@ -13,18 +13,18 @@ const marketSchema = new mongoose.Schema({
     ref: "bet_category",
     required: [true, "Bet Category Id is Required!"],
   },
+
   // Status of the market, represented as a number (0 by default)
-  marketStatus: {
-    type: Number,
-    default: 0,
-  },
+  marketStatus: { type: Number, default: 0 },
+
   // Market ID, represented as a number (null by default)
   marketId: {
-    type: Number,
+    type: String,
     default: null,
     // Indexing recommended if queried frequently
     index: true,
   },
+
   // Reference to the event this market belongs to
   eventId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -33,13 +33,15 @@ const marketSchema = new mongoose.Schema({
     // Indexing recommended if frequently used in population or lookup
     index: true,
   },
+
   // API-based Event ID (null by default)
   apiEventId: {
-    type: Number,
+    type: String,
     default: null,
     // Indexing recommended if queried frequently
     index: true,
   },
+
   // Reference to the competition this market belongs to
   competitionId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -48,13 +50,15 @@ const marketSchema = new mongoose.Schema({
     // Indexing recommended if frequently used in population or lookup
     index: true,
   },
+
   // API-based Competition ID (null by default)
   apiCompetitionId: {
-    type: Number,
+    type: String,
     default: null,
     // Indexing recommended if queried frequently
     index: true,
   },
+
   // Reference to the sport this market belongs to
   sportId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -63,13 +67,15 @@ const marketSchema = new mongoose.Schema({
     // Indexing recommended if frequently used in population or lookup
     index: true,
   },
+
   // API-based Sport ID (null by default)
   apiSportId: {
-    type: Number,
+    type: String,
     default: null,
     // Indexing recommended if queried frequently
     index: true,
   },
+
   // Indicates whether the market is manually managed (false by default)
   isManual: {
     type: Boolean,

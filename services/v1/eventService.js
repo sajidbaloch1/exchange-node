@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
+import { appConfig } from "../../config/app.js";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import Event from "../../models/v1/Event.js";
 import Market from "../../models/v1/Market.js";
-import { appConfig } from "../../config/app.js";
 import commonService from "./commonService.js";
 
 // Fetch all event from the database
@@ -63,8 +63,7 @@ const fetchAllEvent = async ({ ...reqBody }) => {
     }
 
     if (fromDate && toDate) {
-      filters.matchDate = { $gte: new Date(fromDate), $lte: new Date(toDate) }
-
+      filters.matchDate = { $gte: new Date(fromDate), $lte: new Date(toDate) };
     }
 
     if (searchQuery) {
@@ -280,11 +279,16 @@ const activeEvent = async ({ eventIds, competitionId }) => {
 
 const upcomingEvents = async () => {
   try {
-    const event = await Event.find({
-      matchDate: {
-        $gt: new Date()
-      }
-    }, { name: 1, matchDate: 1 }).sort({ matchDate: 1 }).limit(10);
+    const event = await Event.find(
+      {
+        matchDate: {
+          $gt: new Date(),
+        },
+      },
+      { name: 1, matchDate: 1 }
+    )
+      .sort({ matchDate: 1 })
+      .limit(10);
 
     return event;
   } catch (e) {
@@ -297,7 +301,7 @@ const getEventMatchData = async ({ eventId }) => {
     const event = await Market.aggregate([
       {
         $match: {
-          eventId: new mongoose.Types.ObjectId(eventId)
+          eventId: new mongoose.Types.ObjectId(eventId),
         },
       },
       {
@@ -381,11 +385,9 @@ const getEventMatchData = async ({ eventId }) => {
       {
         $unset: ["sport", "competition", "event"],
       },
-
     ]);
 
     return event[0];
-
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -396,7 +398,7 @@ const getEventMatchDataFront = async ({ eventId }) => {
     const event = await Event.aggregate([
       {
         $match: {
-          _id: new mongoose.Types.ObjectId(eventId)
+          _id: new mongoose.Types.ObjectId(eventId),
         },
       },
       {
@@ -455,7 +457,7 @@ const getEventMatchDataFront = async ({ eventId }) => {
                 as: "market_runner",
                 pipeline: [
                   {
-                    $project: { runnerName: 1 },
+                    $project: { runnerName: 1, priority: 1 },
                   },
                 ],
               },
@@ -463,19 +465,17 @@ const getEventMatchDataFront = async ({ eventId }) => {
           ],
         },
       },
-
-
       {
         $set: {
           sportsName: "$sport.name",
-          competitionName: "$competition.name"
+          competitionName: "$competition.name",
         },
       },
       {
         $unset: ["sport", "competition"],
       },
-
     ]);
+
     for (var i = 0; i < event[0].market.length; i++) {
       if (event[0].market[i].minStake == 0) {
         event[0].market[i].minStake = event[0].minStake;
@@ -498,25 +498,22 @@ const getEventMatchDataFront = async ({ eventId }) => {
             return item;
           });
         } else {
-          odds = []
+          odds = [];
         }
         for (var j = 0; j < event[0].market[i].market_runner.length; j++) {
           if (odds.length > 0) {
             let filterdata = odds.filter(function (item) {
               return item.runner == event[0].market[i].market_runner[j].runnerName;
             });
-            event[0].market[i].market_runner[j].matchOdds = filterdata[0]
+            event[0].market[i].market_runner[j].matchOdds = filterdata[0];
             delete event[0].market[i].market_runner[j].matchOdds.runner;
+          } else {
+            event[0].market[i].market_runner[j].matchOdds = {};
           }
-          else {
-            event[0].market[i].market_runner[j].matchOdds = {}
-          }
-
         }
       }
     }
     return event[0];
-
   } catch (e) {
     throw new ErrorResponse(e.message).status(200);
   }
@@ -532,5 +529,5 @@ export default {
   activeEvent,
   upcomingEvents,
   getEventMatchData,
-  getEventMatchDataFront
+  getEventMatchDataFront,
 };

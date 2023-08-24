@@ -1,45 +1,30 @@
-import Bet from "../../models/v1/Bet.js";
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
-import User, { USER_ROLE } from "../../models/v1/User.js";
+import Bet, { BET_ORDER_STATUS, BET_RESULT_STATUS } from "../../models/v1/Bet.js";
 import Market from "../../models/v1/Market.js";
+import User, { USER_ROLE } from "../../models/v1/User.js";
+
 /**
  * create Bet in the database
  */
-const addBet = async ({ ...reqBody }) => {
+const addBet = async ({ user, ...reqBody }) => {
   try {
-    const {
-      userId,
-      marketId,
-      eventId,
-      odds,
-      stake,
-      isBack,
-      betOrderType,
-      betOrderStatus,
-      betResultStatus,
-      betPl,
-      deviceInfo,
-      ipAddress,
-      marketRunnerId
-    } = reqBody;
-
     const newBetObj = {
-      userId,
-      marketId,
-      eventId,
-      odds,
-      stake,
-      isBack,
-      betOrderType,
-      betOrderStatus,
-      betResultStatus,
-      betPl,
-      deviceInfo,
-      ipAddress,
-      marketRunnerId
+      userId: user._id,
+      marketId: reqBody.marketId,
+      eventId: reqBody.eventId,
+      odds: reqBody.odds,
+      stake: reqBody.stake,
+      isBack: reqBody.isBack,
+      betOrderType: reqBody.betOrderType,
+      betOrderStatus: BET_ORDER_STATUS.PLACED,
+      betResultStatus: BET_RESULT_STATUS.RUNNING,
+      deviceInfo: reqBody.deviceInfo,
+      ipAddress: reqBody.ipAddress,
+      runnerId: reqBody.runnerId,
     };
+
     const newBet = await Bet.create(newBetObj);
 
     return newBet;
@@ -51,17 +36,7 @@ const addBet = async ({ ...reqBody }) => {
 // Fetch all bet from the database
 const fetchAllBet = async ({ ...reqBody }) => {
   try {
-    const {
-      page,
-      perPage,
-      sortBy,
-      direction,
-      searchQuery,
-      eventId,
-      marketId,
-      betType,
-      username
-    } = reqBody;
+    const { page, perPage, sortBy, direction, searchQuery, eventId, marketId, betType, username } = reqBody;
 
     // Pagination and Sorting
     const sortDirection = direction === "asc" ? 1 : -1;
@@ -84,14 +59,13 @@ const fetchAllBet = async ({ ...reqBody }) => {
     if (betType) {
       if (betType == "back") {
         filters.isBack = true;
-      }
-      else if (betType == "lay") {
+      } else if (betType == "lay") {
         filters.isBack = false;
       }
     }
 
     if (username) {
-      filters['user.username'] = { "$regex": username, "$options": "i" }
+      filters["user.username"] = { $regex: username, $options: "i" };
     }
 
     if (searchQuery) {
@@ -106,18 +80,11 @@ const fetchAllBet = async ({ ...reqBody }) => {
           localField: "eventId",
           foreignField: "_id",
           as: "event",
-          pipeline: [
-            {
-              $project: { name: 1 },
-            },
-          ],
+          pipeline: [{ $project: { name: 1 } }],
         },
       },
       {
-        $unwind: {
-          path: "$event",
-          preserveNullAndEmptyArrays: true,
-        },
+        $unwind: { path: "$event", preserveNullAndEmptyArrays: true },
       },
       {
         $lookup: {
@@ -125,30 +92,29 @@ const fetchAllBet = async ({ ...reqBody }) => {
           localField: "userId",
           foreignField: "_id",
           as: "user",
-          pipeline: [
-            {
-              $project: { username: 1 },
-            },
-          ],
+          pipeline: [{ $project: { username: 1 } }],
         },
       },
       {
-        $unwind: {
-          path: "$user",
-          preserveNullAndEmptyArrays: true,
+        $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+      },
+      {
+        $lookup: {
+          from: "market_runners",
+          localField: "runnerId",
+          foreignField: "_id",
+          as: "marketRunner",
+          pipeline: [{ $project: { runnerName: 1 } }],
         },
       },
+      { $unwind: "$marketRunner" },
       {
         $lookup: {
           from: "markets",
           localField: "marketId",
           foreignField: "_id",
           as: "market",
-          pipeline: [
-            {
-              $project: { name: 1 },
-            },
-          ],
+          pipeline: [{ $project: { name: 1 } }],
         },
       },
       {
@@ -165,10 +131,11 @@ const fetchAllBet = async ({ ...reqBody }) => {
           eventName: "$event.name",
           userName: "$user.username",
           marketName: "$market.name",
+          runnerName: "$marketRunner.runnerName",
         },
       },
       {
-        $unset: ["event", "user", "market"],
+        $unset: ["event", "user", "market", "marketRunner"],
       },
       {
         $facet: {
@@ -204,23 +171,22 @@ async function updateUserPl(userId, profitLoss) {
   findUser.save();
 
   if (findUser.role != USER_ROLE.SUPER_ADMIN) {
-    await updateUserPl(findUser.parentId, profitLoss)
-  }
-  else {
+    await updateUserPl(findUser.parentId, profitLoss);
+  } else {
     return;
   }
-
 }
 
 const completeBet = async ({ ...reqBody }) => {
   try {
-    const {
-      marketId,
-      winRunnerId,
-    } = reqBody;
+    const { marketId, winRunnerId } = reqBody;
 
     let findMarket = await Market.findOne({ _id: marketId });
-    if (findMarket.winnerRunnerId == undefined || findMarket.winnerRunnerId == "" || findMarket.winnerRunnerId == null) {
+    if (
+      findMarket.winnerRunnerId == undefined ||
+      findMarket.winnerRunnerId == "" ||
+      findMarket.winnerRunnerId == null
+    ) {
       let findBet = await Bet.find({ marketId: marketId });
 
       for (var i = 0; i < findBet.length; i++) {
@@ -231,38 +197,32 @@ const completeBet = async ({ ...reqBody }) => {
           if (winRunnerId == findBet[i].marketRunnerId) {
             profit = (findBet[i].odds - 1).toFixed(2) * findBet[i].stake;
             newFindBet.betPl = profit;
+          } else {
+            loss = findBet[i].stake * -1;
+            newFindBet.betPl = loss * -1;
           }
-          else {
-            loss = findBet[i].stake * (-1);
-            newFindBet.betPl = loss * (-1);
-          }
-        }
-        else {
+        } else {
           if (winRunnerId != findBet[i].marketRunnerId) {
             profit = findBet[i].stake;
             newFindBet.betPl = profit;
-          }
-          else {
-            loss = ((findBet[i].odds - 1).toFixed(2) * findBet[i].stake) * (-1);
-            newFindBet.betPl = loss * (-1);
+          } else {
+            loss = (findBet[i].odds - 1).toFixed(2) * findBet[i].stake * -1;
+            newFindBet.betPl = loss * -1;
           }
         }
         newFindBet.save();
         if (loss == 0) {
-          await updateUserPl(findBet[i].userId, profit)
-        }
-        else {
-          await updateUserPl(findBet[i].userId, loss)
+          await updateUserPl(findBet[i].userId, profit);
+        } else {
+          await updateUserPl(findBet[i].userId, loss);
         }
       }
       findMarket.winnerRunnerId = winRunnerId;
       findMarket.save();
       return reqBody;
-    }
-    else {
+    } else {
       throw new ErrorResponse("Winner already added.").status(200);
     }
-
   } catch (e) {
     throw new Error(e);
   }
@@ -271,5 +231,5 @@ const completeBet = async ({ ...reqBody }) => {
 export default {
   addBet,
   fetchAllBet,
-  completeBet
+  completeBet,
 };

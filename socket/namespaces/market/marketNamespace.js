@@ -1,4 +1,4 @@
-import { clearEmptyEmitters, startBroadcast } from "./broadcast.js";
+import { clearEmptyEmitters, emitMarketData, startBroadcast } from "./broadcast.js";
 
 async function handleConnection(socket) {
   // console.log("A user connected", socket.id);
@@ -7,6 +7,7 @@ async function handleConnection(socket) {
 
     socket.on("join:market", async (market) => {
       socket.join(`market:${market.id}`);
+      await emitMarketData(socket, market);
       await startBroadcast(socket, market);
     });
   } catch (e) {

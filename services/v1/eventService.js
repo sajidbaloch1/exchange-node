@@ -3,6 +3,8 @@ import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import Event from "../../models/v1/Event.js";
 import Market from "../../models/v1/Market.js";
+import { appConfig } from "../../config/app.js";
+import commonService from "./commonService.js";
 
 // Fetch all event from the database
 const fetchAllEvent = async ({ ...reqBody }) => {
@@ -48,7 +50,6 @@ const fetchAllEvent = async ({ ...reqBody }) => {
         isManual: true,
       };
     }
-    console.log(sportId);
     if (sportId) {
       filters.sportId = new mongoose.Types.ObjectId(sportId);
     }
@@ -390,6 +391,137 @@ const getEventMatchData = async ({ eventId }) => {
   }
 };
 
+const getEventMatchDataFront = async ({ eventId }) => {
+  try {
+    const event = await Event.aggregate([
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(eventId)
+        },
+      },
+      {
+        $lookup: {
+          from: "sports",
+          localField: "sportId",
+          foreignField: "_id",
+          as: "sport",
+          pipeline: [
+            {
+              $project: { name: 1 },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: "$sport",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "competitions",
+          localField: "competitionId",
+          foreignField: "_id",
+          as: "competition",
+          pipeline: [
+            {
+              $project: { name: 1 },
+            },
+          ],
+        },
+      },
+      {
+        $unwind: {
+          path: "$competition",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "markets",
+          localField: "_id",
+          foreignField: "eventId",
+          as: "market",
+          pipeline: [
+            //   {
+            //     $project: { runnerName: 1 },
+            //   },
+            {
+              $lookup: {
+                from: "market_runners",
+                localField: "_id",
+                foreignField: "marketId",
+                as: "market_runner",
+                pipeline: [
+                  {
+                    $project: { runnerName: 1 },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+
+
+      {
+        $set: {
+          sportsName: "$sport.name",
+          competitionName: "$competition.name"
+        },
+      },
+      {
+        $unset: ["sport", "competition"],
+      },
+
+    ]);
+    for (var i = 0; i < event[0].market.length; i++) {
+      if (event[0].market[i].minStake == 0) {
+        event[0].market[i].minStake = event[0].minStake;
+      }
+      if (event[0].market[i].maxStake == 0) {
+        event[0].market[i].maxStake = event[0].maxStake;
+      }
+      var marketUrl = `${appConfig.BASE_URL}?action=matchodds&market_id=${event[0].market[i].marketId}`;
+      const { statusCode, data } = await commonService.fetchData(marketUrl);
+      if (statusCode === 200) {
+        const market = data;
+        let odds;
+        if (market.length > 0 && market[0]["runners"]) {
+          odds = market[0]["runners"].map(function (item) {
+            delete item.ex;
+            delete item.status;
+            delete item.lastPriceTraded;
+            delete item.selectionId;
+            delete item.removalDate;
+            return item;
+          });
+        } else {
+          odds = []
+        }
+        for (var j = 0; j < event[0].market[i].market_runner.length; j++) {
+          if (odds.length > 0) {
+            let filterdata = odds.filter(function (item) {
+              return item.runner == event[0].market[i].market_runner[j].runnerName;
+            });
+            event[0].market[i].market_runner[j].matchOdds = filterdata[0]
+            delete event[0].market[i].market_runner[j].matchOdds.runner;
+          }
+          else {
+            event[0].market[i].market_runner[j].matchOdds = {}
+          }
+
+        }
+      }
+    }
+    return event[0];
+
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   fetchAllEvent,
   fetchEventId,
@@ -400,4 +532,5 @@ export default {
   activeEvent,
   upcomingEvents,
   getEventMatchData,
+  getEventMatchDataFront
 };

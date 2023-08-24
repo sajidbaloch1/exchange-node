@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
+import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
 import Bet, { BET_ORDER_STATUS, BET_RESULT_STATUS } from "../../models/v1/Bet.js";
 import Market from "../../models/v1/Market.js";
 import User, { USER_ROLE } from "../../models/v1/User.js";
-import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
 
 /**
  * create Bet in the database
@@ -198,19 +198,16 @@ const completeBet = async ({ ...reqBody }) => {
           if (winRunnerId == findBet[i].marketRunnerId) {
             profit = (findBet[i].odds - 1).toFixed(2) * findBet[i].stake;
             newFindBet.betPl = profit;
-          }
-          else {
-            loss = findBet[i].stake * (-1);
+          } else {
+            loss = findBet[i].stake * -1;
             newFindBet.betPl = loss;
           }
-        }
-        else {
+        } else {
           if (winRunnerId != findBet[i].marketRunnerId) {
             profit = findBet[i].stake;
             newFindBet.betPl = profit;
-          }
-          else {
-            loss = ((findBet[i].odds - 1).toFixed(2) * findBet[i].stake) * (-1);
+          } else {
+            loss = (findBet[i].odds - 1).toFixed(2) * findBet[i].stake * -1;
             newFindBet.betPl = loss;
           }
         }
@@ -234,11 +231,7 @@ const completeBet = async ({ ...reqBody }) => {
 
 const settlement = async ({ ...reqBody }) => {
   try {
-    const {
-      settlementData,
-      loginUserId,
-      transactionCode,
-    } = reqBody;
+    const { settlementData, loginUserId, transactionCode } = reqBody;
     let findLoginUser = await User.findOne({ _id: loginUserId });
     const loginUsertransactionCode = decryptTransactionCode(findLoginUser.transactionCode);
     if (transactionCode == loginUsertransactionCode) {
@@ -248,38 +241,35 @@ const settlement = async ({ ...reqBody }) => {
 
         if (findUser) {
           if (findUser.userPl >= 0) {
-            findParentUser.downPoint = findParentUser.downPoint + Number(settlementData[i].amount) * (-1);
+            findParentUser.downPoint = findParentUser.downPoint + Number(settlementData[i].amount) * -1;
             await findParentUser.save();
             findUser.userPl = Number(findUser.userPl) - Number(settlementData[i].amount);
             findUser.balance = Number(findUser.balance) - Number(settlementData[i].amount);
             findUser.upPoint = findUser.upPoint + Number(settlementData[i].amount);
             await findUser.save();
-          }
-          else {
+          } else {
             findParentUser.downPoint = findParentUser.downPoint + settlementData[i].amount;
             await findParentUser.save();
             findUser.userPl = Number(findUser.userPl) + Number(settlementData[i].amount);
             findUser.balance = Number(findUser.balance) + Number(settlementData[i].amount);
-            findUser.upPoint = findUser.upPoint + Number(settlementData[i].amount) * (-1);
+            findUser.upPoint = findUser.upPoint + Number(settlementData[i].amount) * -1;
             await findUser.save();
           }
-        }
-        else {
+        } else {
           throw new ErrorResponse("User not found.").status(200);
         }
       }
-    }
-    else {
+    } else {
       throw new ErrorResponse("Invalid transaction code.").status(200);
     }
 
     return settlementData.map(function (item) {
       return item;
-    });;
+    });
   } catch (e) {
     throw new Error(e);
   }
-}
+};
 
 const getChildUserData = async ({ userId }) => {
   try {
@@ -287,7 +277,7 @@ const getChildUserData = async ({ userId }) => {
     const filters = {
       isDeleted: false,
       isActive: true,
-      parentId: new mongoose.Types.ObjectId(userId)
+      parentId: new mongoose.Types.ObjectId(userId),
     };
     const users = await User.aggregate([
       {
@@ -296,17 +286,34 @@ const getChildUserData = async ({ userId }) => {
       {
         $unset: ["__v", "password"],
       },
+      {
+        $project: {
+          username: 1,
+          fullName: 1,
+          role: 1,
+          creditPoints: { $ifNull: ["$creditPoints", 0] },
+          balance: { $ifNull: ["$balance", 0] },
+          userPl: { $ifNull: ["$userPl", 0] },
+          exposure: { $ifNull: ["$exposure", 0] },
+        },
+      },
     ]);
+
+    //Add new attribute points = creditPoints +userPl
+    users.forEach((user) => {
+      user.points = user.creditPoints + user.userPl;
+    });
+
     return users;
   } catch (e) {
     throw new Error(e);
   }
-}
+};
 
 export default {
   addBet,
   fetchAllBet,
   completeBet,
   settlement,
-  getChildUserData
+  getChildUserData,
 };

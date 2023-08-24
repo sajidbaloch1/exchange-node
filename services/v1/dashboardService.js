@@ -37,8 +37,8 @@ const fetchDashboardId = async (_id) => {
           totalPoint: 1,
           totalExposure: 1,
           AllPts: { $sum: ["$balance", "$totalPoint"] },
-          upPoint: 1,
-          downPoint: 1,
+          upPoint: { $ifNull: ["$upPoint", 0] },
+          downPoint: { $ifNull: ["$downPoint", 0] },
         },
       },
       {

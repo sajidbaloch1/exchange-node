@@ -7,5 +7,7 @@ const router = express.Router();
 route(router, "post", "/createBet", betController.createBet);
 route(router, "post", "/getAllBet", betController.getAllBet);
 route(router, "post", "/betComplete", betController.betComplete);
+route(router, "post", "/settlement", betController.settlement);
+route(router, "post", "/getChildUserData", betController.getChildUserData);
 
 export default router;

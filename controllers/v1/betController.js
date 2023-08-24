@@ -3,54 +3,55 @@ import betService from "../../services/v1/betService.js";
 
 // Create a new bet
 const createBet = async (req, res) => {
-    const { body } = await betRequest.createBetRequest(req);
+  const { body } = await betRequest.createBetRequest(req);
 
-    const newBet = await betService.addBet({ user: req.user, ...body });
+  const newBet = await betService.addBet({ user: req.user, ...body });
 
-    res.status(201).json({ success: true, data: { details: newBet } });
+  res.status(201).json({ success: true, data: { details: newBet } });
 };
 
 // Get list bet
 
 const getAllBet = async (req, res) => {
-    const { body } = await betRequest.getAllBetRequest(req);
+  const { body } = await betRequest.getAllBetRequest(req);
 
-    const newBet = await betService.fetchAllBet({ ...body });
+  const newBet = await betService.fetchAllBet({ ...body });
 
-    res.status(201).json({ success: true, data: { details: newBet } });
+  res.status(201).json({ success: true, data: { details: newBet } });
 };
 
 // Bet complete
 
 const betComplete = async (req, res) => {
-    const { body } = await betRequest.betCompleteRequest(req);
+  const { body } = await betRequest.betCompleteRequest(req);
 
-    const completeBet = await betService.completeBet({ ...body });
+  const completeBet = await betService.completeBet({ ...body });
 
-    res.status(201).json({ success: true, data: { details: completeBet } });
-}
+  res.status(201).json({ success: true, data: { details: completeBet } });
+};
 // Settlement
 
 const settlement = async (req, res) => {
-    const { body } = await betRequest.settlementRequest(req);
-    const settlement = await betService.settlement({ ...body });
-    res.status(201).json({ success: true, data: { details: settlement } });
-}
+  const { body } = await betRequest.settlementRequest(req);
+  const settlement = await betService.settlement({ ...body });
+  res.status(201).json({ success: true, data: { details: settlement } });
+};
 
 const getChildUserData = async (req, res) => {
-    const { userId } = req.body;
+  const { userId, filterUserId = "" } = req.body;
 
-    if (!userId) {
-        throw new Error("_id is required!");
-    }
-    const getChildUserData = await betService.getChildUserData({ userId });
-    res.status(201).json({ success: true, data: { details: getChildUserData } });
-}
+  if (!userId) {
+    throw new Error("_id is required!");
+  }
+
+  const getChildUserData = await betService.getChildUserData({ userId, filterUserId });
+  res.status(201).json({ success: true, data: { details: getChildUserData } });
+};
 
 export default {
-    createBet,
-    getAllBet,
-    betComplete,
-    settlement,
-    getChildUserData
+  createBet,
+  getAllBet,
+  betComplete,
+  settlement,
+  getChildUserData,
 };

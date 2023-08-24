@@ -271,7 +271,7 @@ const settlement = async ({ ...reqBody }) => {
   }
 };
 
-const getChildUserData = async ({ userId }) => {
+const getChildUserData = async ({ userId, filterUserId }) => {
   try {
     // Filters
     const filters = {
@@ -279,6 +279,13 @@ const getChildUserData = async ({ userId }) => {
       isActive: true,
       parentId: new mongoose.Types.ObjectId(userId),
     };
+
+    //If filterUserId has value then add in filter
+    if (filterUserId) {
+      filters._id = new mongoose.Types.ObjectId(filterUserId);
+    }
+
+    //Get all users
     const users = await User.aggregate([
       {
         $match: filters,

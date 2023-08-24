@@ -5,10 +5,10 @@ import UserStake from "../../models/v1/UserStake.js";
 /**
  * Fetch Stake by Id from the database
  */
-const fetchStakeById = async (user_id) => {
+const fetchStakeById = async (user_id, stakeType) => {
   try {
     //Find User stake
-    const stake = await UserStake.findOne({ userId: new mongoose.Types.ObjectId(user_id) });
+    const stake = await UserStake.findOne({ userId: new mongoose.Types.ObjectId(user_id), stakeType: stakeType });
 
     return stake;
   } catch (e) {
@@ -19,10 +19,11 @@ const fetchStakeById = async (user_id) => {
 /**
  * create Stake in the database
  */
-const addStake = async ({ userId, inputValues }) => {
+const addStake = async ({ userId, stakeType, inputValues }) => {
   try {
     const newStakeObj = {
       userId: userId,
+      stakeType: stakeType,
       inputValues: inputValues,
     };
     const newstake = await UserStake.create(newStakeObj);

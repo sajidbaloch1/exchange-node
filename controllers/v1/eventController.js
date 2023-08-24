@@ -101,6 +101,15 @@ const getEventMatchData = async (req, res) => {
   res.status(200).json({ success: true, data: { details: GetEventMatchData } });
 };
 
+const getEventMatchDataFront = async (req, res) => {
+  const { eventId } = req.body;
+  const GetEventMatchData = await eventService.getEventMatchDataFront({
+    eventId
+  });
+
+  res.status(200).json({ success: true, data: { details: GetEventMatchData } });
+};
+
 export default {
   getAllEvent,
   getEventById,
@@ -110,5 +119,6 @@ export default {
   updateEventStatus,
   activeAllEvent,
   upcomingEvent,
-  getEventMatchData
+  getEventMatchData,
+  getEventMatchDataFront
 };

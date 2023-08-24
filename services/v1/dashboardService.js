@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 import User from "../../models/v1/User.js";
 // Fetch all Dashboard from the database
 const fetchDashboardId = async (_id) => {
@@ -37,8 +37,8 @@ const fetchDashboardId = async (_id) => {
           totalPoint: 1,
           totalExposure: 1,
           AllPts: { $sum: ["$balance", "$totalPoint"] },
-          upperPoint: { $literal: 0 },
-          downPoint: { $literal: 0 },
+          upPoint: { $ifNull: ["$upPoint", 0] },
+          downPoint: { $ifNull: ["$downPoint", 0] },
         },
       },
       {
@@ -49,7 +49,7 @@ const fetchDashboardId = async (_id) => {
           totalExposure: 1,
           AllPts: 1,
           settlementPoint: { $subtract: ["$AllPts", "$creditPoints"] },
-          upperPoint: 1,
+          upPoint: 1,
           downPoint: 1,
         },
       },

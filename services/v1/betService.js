@@ -4,6 +4,7 @@ import { generatePaginationQueries, generateSearchFilters } from "../../lib/help
 import Bet, { BET_ORDER_STATUS, BET_RESULT_STATUS } from "../../models/v1/Bet.js";
 import Market from "../../models/v1/Market.js";
 import User, { USER_ROLE } from "../../models/v1/User.js";
+import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
 
 /**
  * create Bet in the database
@@ -197,17 +198,20 @@ const completeBet = async ({ ...reqBody }) => {
           if (winRunnerId == findBet[i].marketRunnerId) {
             profit = (findBet[i].odds - 1).toFixed(2) * findBet[i].stake;
             newFindBet.betPl = profit;
-          } else {
-            loss = findBet[i].stake * -1;
-            newFindBet.betPl = loss * -1;
           }
-        } else {
+          else {
+            loss = findBet[i].stake * (-1);
+            newFindBet.betPl = loss;
+          }
+        }
+        else {
           if (winRunnerId != findBet[i].marketRunnerId) {
             profit = findBet[i].stake;
             newFindBet.betPl = profit;
-          } else {
-            loss = (findBet[i].odds - 1).toFixed(2) * findBet[i].stake * -1;
-            newFindBet.betPl = loss * -1;
+          }
+          else {
+            loss = ((findBet[i].odds - 1).toFixed(2) * findBet[i].stake) * (-1);
+            newFindBet.betPl = loss;
           }
         }
         newFindBet.save();
@@ -228,8 +232,77 @@ const completeBet = async ({ ...reqBody }) => {
   }
 };
 
+const settlement = async ({ ...reqBody }) => {
+  try {
+    const {
+      settlementData,
+    } = reqBody;
+    for (var i = 0; i < settlementData.length; i++) {
+      let findUser = await User.findOne({ _id: settlementData[i].userId });
+      let findParentUser = await User.findOne({ _id: findUser.parentId });
+      const transactionCode = decryptTransactionCode(findParentUser.transactionCode);
+      if (transactionCode == settlementData[i].transactionCode) {
+        if (findUser) {
+          if (findUser.userPl >= 0) {
+            findParentUser.downPoint = findParentUser.downPoint + Number(settlementData[i].amount) * (-1);
+            await findParentUser.save();
+            findUser.userPl = Number(findUser.userPl) - Number(settlementData[i].amount);
+            findUser.balance = Number(findUser.balance) - Number(settlementData[i].amount);
+            findUser.upPoint = findUser.upPoint + Number(settlementData[i].amount);
+            await findUser.save();
+          }
+          else {
+            findParentUser.downPoint = findParentUser.downPoint + settlementData[i].amount;
+            await findParentUser.save();
+            findUser.userPl = Number(findUser.userPl) + Number(settlementData[i].amount);
+            findUser.balance = Number(findUser.balance) + Number(settlementData[i].amount);
+            findUser.upPoint = findUser.upPoint + Number(settlementData[i].amount) * (-1);
+            await findUser.save();
+          }
+        }
+        else {
+          throw new ErrorResponse("User not found.").status(200);
+        }
+      }
+      else {
+        throw new ErrorResponse("Invalid transaction code.").status(200);
+      }
+    }
+    return settlementData.map(function (item) {
+      delete item.transactionCode;
+      return item;
+    });;
+  } catch (e) {
+    throw new Error(e);
+  }
+}
+
+const getChildUserData = async ({ userId }) => {
+  try {
+    // Filters
+    const filters = {
+      isDeleted: false,
+      isActive: true,
+      parentId: new mongoose.Types.ObjectId(userId)
+    };
+    const users = await User.aggregate([
+      {
+        $match: filters,
+      },
+      {
+        $unset: ["__v", "password"],
+      },
+    ]);
+    return users;
+  } catch (e) {
+    throw new Error(e);
+  }
+}
+
 export default {
   addBet,
   fetchAllBet,
   completeBet,
+  settlement,
+  getChildUserData
 };

@@ -2,11 +2,17 @@ import mongoose from "mongoose";
 import softDeletePlugin from "../plugins/soft-delete.js";
 import timestampPlugin from "../plugins/timestamp.js";
 
+export const TYPES = {
+  GAMES: "games",
+  CASINO: "casino",
+};
+
 const stakeSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
+  stakeType: { type: String, enum: Object.values(TYPES), default: TYPES.GAMES },
   inputValues: [
     {
       priceLabel: {

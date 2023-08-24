@@ -1,13 +1,14 @@
+import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
-
 import UserStake from "../../models/v1/UserStake.js";
 
 /**
  * Fetch Stake by Id from the database
  */
-const fetchStakeById = async (_id) => {
+const fetchStakeById = async (user_id) => {
   try {
-    const stake = await UserStake.findById(_id);
+    //Find User stake
+    const stake = await UserStake.findOne({ userId: new mongoose.Types.ObjectId(user_id) });
 
     return stake;
   } catch (e) {

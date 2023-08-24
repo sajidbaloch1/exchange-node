@@ -236,12 +236,16 @@ const settlement = async ({ ...reqBody }) => {
   try {
     const {
       settlementData,
+      loginUserId,
+      transactionCode,
     } = reqBody;
-    for (var i = 0; i < settlementData.length; i++) {
-      let findUser = await User.findOne({ _id: settlementData[i].userId });
-      let findParentUser = await User.findOne({ _id: findUser.parentId });
-      const transactionCode = decryptTransactionCode(findParentUser.transactionCode);
-      if (transactionCode == settlementData[i].transactionCode) {
+    let findLoginUser = await User.findOne({ _id: loginUserId });
+    const loginUsertransactionCode = decryptTransactionCode(findLoginUser.transactionCode);
+    if (transactionCode == loginUsertransactionCode) {
+      for (var i = 0; i < settlementData.length; i++) {
+        let findUser = await User.findOne({ _id: settlementData[i].userId });
+        let findParentUser = await User.findOne({ _id: findUser.parentId });
+
         if (findUser) {
           if (findUser.userPl >= 0) {
             findParentUser.downPoint = findParentUser.downPoint + Number(settlementData[i].amount) * (-1);
@@ -264,12 +268,12 @@ const settlement = async ({ ...reqBody }) => {
           throw new ErrorResponse("User not found.").status(200);
         }
       }
-      else {
-        throw new ErrorResponse("Invalid transaction code.").status(200);
-      }
     }
+    else {
+      throw new ErrorResponse("Invalid transaction code.").status(200);
+    }
+
     return settlementData.map(function (item) {
-      delete item.transactionCode;
       return item;
     });;
   } catch (e) {

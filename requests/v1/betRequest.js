@@ -83,6 +83,10 @@ async function betCompleteRequest(req) {
 async function settlementRequest(req) {
     const validationSchema = Yup.object().shape({
         settlementData: Yup.array().required(),
+        loginUserId: Yup.string()
+            .nullable(true)
+            .test("userId", "Invalid userId!", (v) => !v || isValidObjectId),
+        transactionCode: Yup.string().length(6).required()
     });
 
     await validationSchema.validate(req.body);

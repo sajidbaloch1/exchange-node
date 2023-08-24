@@ -2,13 +2,13 @@ import userStakeService from "../../services/v1/userStakeService.js";
 
 // Get stake by ID
 const getStakeById = async (req, res) => {
-  const { _id } = req.body;
+  const { user_id, stakeType } = req.body;
 
-  if (!_id) {
-    throw new Error("_id is required");
+  if (!user_id || !stakeType) {
+    throw new Error("User Id OR Type  is required");
   }
 
-  const stake = await userStakeService.fetchStakeById(_id);
+  const stake = await userStakeService.fetchStakeById(user_id, stakeType);
 
   res.status(200).json({ success: true, data: { details: stake } });
 };
@@ -22,6 +22,7 @@ const createStake = async (req, res) => {
   }
   const newstake = await userStakeService.addStake({
     userId: req.user._id,
+    stakeType: req.body.stakeType,
     inputValues,
   });
 

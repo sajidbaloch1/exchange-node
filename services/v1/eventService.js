@@ -50,7 +50,6 @@ const fetchAllEvent = async ({ ...reqBody }) => {
         isManual: true,
       };
     }
-    console.log(sportId);
     if (sportId) {
       filters.sportId = new mongoose.Types.ObjectId(sportId);
     }
@@ -504,10 +503,8 @@ const getEventMatchDataFront = async ({ eventId }) => {
         for (var j = 0; j < event[0].market[i].market_runner.length; j++) {
           if (odds.length > 0) {
             let filterdata = odds.filter(function (item) {
-              console.log(item);
               return item.runner == event[0].market[i].market_runner[j].runnerName;
             });
-            console.log(filterdata);
             event[0].market[i].market_runner[j].matchOdds = filterdata[0]
             delete event[0].market[i].market_runner[j].matchOdds.runner;
           }

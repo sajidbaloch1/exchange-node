@@ -5,7 +5,7 @@ import timestampPlugin from "../plugins/timestamp.js";
 const sportSchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true },
 
-  apiSportId: { type: Number, default: null },
+  apiSportId: { type: String, default: null },
 
   isActive: { type: Boolean, default: true },
 

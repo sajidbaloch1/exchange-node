@@ -10,28 +10,18 @@ const marketRunnerSchema = new mongoose.Schema({
     required: [true, "Market Id is Required!"],
     index: true,
   },
+
   // Market ID, represented as a number (null by default)
-  apiMarketId: {
-    type: Number,
-    default: null,
-    // Indexing recommended if queried frequently
-    index: true,
-  },
-  selectionId: {
-    type: Number,
-  },
-  runnerName: {
-    type: String,
-    default: null,
-  },
-  handicap: {
-    type: Boolean,
-    default: true,
-  },
-  priority: {
-    type: Number,
-    default: 0,
-  },
+  // Indexing recommended if queried frequently
+  apiMarketId: { type: String, default: null, index: true },
+
+  selectionId: { type: Number },
+
+  runnerName: { type: String, default: null },
+
+  handicap: { type: Boolean, default: true },
+
+  priority: { type: Number, default: 0 },
 });
 
 marketRunnerSchema.plugin(timestampPlugin);

@@ -39,9 +39,30 @@ const betComplete = async (req, res) => {
 
   res.status(201).json({ success: true, data: { details: completeBet } });
 };
+// Settlement
+
+const settlement = async (req, res) => {
+  const { body } = await betRequest.settlementRequest(req);
+  const settlement = await betService.settlement({ ...body });
+  res.status(201).json({ success: true, data: { details: settlement } });
+};
+
+const getChildUserData = async (req, res) => {
+  const { userId, filterUserId = "" } = req.body;
+
+  if (!userId) {
+    throw new Error("_id is required!");
+  }
+
+  const getChildUserData = await betService.getChildUserData({ userId, filterUserId });
+  res.status(201).json({ success: true, data: { details: getChildUserData } });
+};
+
 export default {
   createBet,
   getAllBet,
   getUserEventBets,
   betComplete,
+  settlement,
+  getChildUserData,
 };

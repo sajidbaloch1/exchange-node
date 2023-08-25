@@ -1,6 +1,8 @@
 import chalk from "chalk";
 import appModulesSeeder from "./seeders/appModulesSeeder.js";
 import betCategorySeeder from "./seeders/betcategorySeeder.js";
+import currencySeeder from "./seeders/currencySeeder.js";
+import userSeeder from "./seeders/userSeeder.js";
 
 /**
  * Logs the results of the seeding process.
@@ -28,7 +30,7 @@ function logSeeds(seeders) {
  * @returns {Promise<void>} A Promise that resolves when the seeding process is complete.
  */
 export default async function seed({ verbose = false }) {
-  Promise.all([appModulesSeeder(), betCategorySeeder()])
+  Promise.all([appModulesSeeder(), betCategorySeeder(), currencySeeder(), userSeeder()])
     .then((seeders) => {
       const hasSeeders = seeders.find((seeder) => seeder.hasSeeded || seeder.error);
 

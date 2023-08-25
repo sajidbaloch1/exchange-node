@@ -43,7 +43,9 @@ const betComplete = async (req, res) => {
 
 const settlement = async (req, res) => {
   const { body } = await betRequest.settlementRequest(req);
+
   const settlement = await betService.settlement({ ...body });
+
   res.status(201).json({ success: true, data: { details: settlement } });
 };
 

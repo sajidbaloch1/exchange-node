@@ -47,6 +47,10 @@ const betSchema = new mongoose.Schema({
 
   betPl: { type: Number, default: 0 },
 
+  potentialWin: { type: Number, default: 0 },
+
+  potentialLoss: { type: Number, default: 0 },
+
   deviceInfo: { type: String, required: true },
 
   ipAddress: { type: String, required: true },

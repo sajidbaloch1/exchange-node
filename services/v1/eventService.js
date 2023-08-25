@@ -457,7 +457,7 @@ const getEventMatchDataFront = async ({ eventId }) => {
                 as: "market_runner",
                 pipeline: [
                   {
-                    $project: { runnerName: 1, priority: 1 },
+                    $project: { runnerName: 1, priority: 1, selectionId: 1 },
                   },
                 ],
               },

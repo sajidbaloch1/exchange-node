@@ -1,16 +1,87 @@
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
+import { getTrimmedUser } from "../../lib/helpers/auth.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
 import Bet, { BET_ORDER_STATUS, BET_RESULT_STATUS } from "../../models/v1/Bet.js";
 import Market from "../../models/v1/Market.js";
 import User, { USER_ROLE } from "../../models/v1/User.js";
+import { io } from "../../socket/index.js";
+import marketService from "./marketService.js";
 
 /**
  * create Bet in the database
  */
-const addBet = async ({ user, ...reqBody }) => {
+const addBet = async ({ user: loggedInUser, ...reqBody }) => {
   try {
+    // Market Validation
+    const data = await marketService.getMatchOdds(reqBody.apiMarketId);
+    if (!data) {
+      throw new Error("Market not found.");
+    }
+
+    const [{ matchOdds }] = data;
+    const runner = matchOdds.find((runner) => runner.selectionId === reqBody.runnerSelectionId);
+    if (!runner) {
+      throw new Error("Runner not found.");
+    }
+
+    const oddPrices = reqBody.isBack ? runner.back.map((o) => o.price) : runner.lay.map((o) => o.price);
+    if (!oddPrices.includes(reqBody.odds)) {
+      throw new Error("Invalid odds.");
+    }
+
+    // User Validation
+    const user = await User.findById(loggedInUser._id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    const potentialWin = reqBody.isBack ? reqBody.stake * reqBody.odds - reqBody.stake : reqBody.stake;
+    const potentialLoss = reqBody.isBack ? reqBody.stake : Math.abs(reqBody.stake * reqBody.odds - reqBody.stake);
+
+    // TODO: Figure this out
+    const existingBets = await Bet.aggregate([
+      {
+        $match: {
+          eventId: new mongoose.Types.ObjectId(reqBody.eventId),
+          userId: new mongoose.Types.ObjectId(loggedInUser._id),
+          marketId: new mongoose.Types.ObjectId(reqBody.marketId),
+          runnerId: new mongoose.Types.ObjectId(reqBody.runnerId),
+          betOrderStatus: BET_ORDER_STATUS.PLACED,
+          betResultStatus: BET_RESULT_STATUS.RUNNING,
+        },
+      },
+      {
+        $group: {
+          _id: "$isBack",
+          potentialLoss: { $sum: "$potentialLoss" },
+        },
+      },
+    ]);
+
+    let requiredExposure = potentialLoss;
+    let totalPotentialLoss = 0;
+
+    if (existingBets.length) {
+      let backLoss = existingBets.find((bet) => bet._id === true)?.potentialLoss || 0;
+      let layLoss = existingBets.find((bet) => bet._id === false)?.potentialLoss || 0;
+      totalPotentialLoss = backLoss + layLoss;
+      console.log(backLoss, layLoss);
+      if (reqBody.isBack) {
+        backLoss += potentialLoss;
+      } else {
+        layLoss += potentialLoss;
+      }
+      console.log(backLoss, layLoss);
+      requiredExposure = Math.abs(backLoss - layLoss);
+    }
+    console.log(requiredExposure);
+
+    if (user.balance < requiredExposure) {
+      throw new Error("Insufficient balance.");
+    }
+
     const newBetObj = {
       userId: user._id,
       marketId: reqBody.marketId,
@@ -24,9 +95,28 @@ const addBet = async ({ user, ...reqBody }) => {
       deviceInfo: reqBody.deviceInfo,
       ipAddress: reqBody.ipAddress,
       runnerId: reqBody.runnerId,
+      potentialWin: Math.abs(potentialWin),
+      potentialLoss: Math.abs(potentialLoss),
     };
 
     const newBet = await Bet.create(newBetObj);
+
+    user.exposure = Number(user.exposure) - totalPotentialLoss + requiredExposure;
+    await user.save();
+    io.user.emit(`user:${user._id}`, getTrimmedUser(user));
+
+    // let parentId = user.parentId;
+    // while (parentId !== null) {
+    //   const parentUser = await User.findOne({ _id: parentId });
+    //   if (!parentUser) {
+    //     break;
+    //   }
+
+    //   parentUser.exposure = Number(parentUser.exposure) + Number(requiredExposure);
+    //   await parentUser.save();
+
+    //   parentId = parentUser.parentId;
+    // }
 
     return newBet;
   } catch (e) {
@@ -299,8 +389,10 @@ const completeBet = async ({ ...reqBody }) => {
 const settlement = async ({ ...reqBody }) => {
   try {
     const { settlementData, loginUserId, transactionCode } = reqBody;
+
     let findLoginUser = await User.findOne({ _id: loginUserId });
     const loginUsertransactionCode = decryptTransactionCode(findLoginUser.transactionCode);
+
     if (transactionCode == loginUsertransactionCode) {
       for (var i = 0; i < settlementData.length; i++) {
         let findUser = await User.findOne({ _id: settlementData[i].userId });

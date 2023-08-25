@@ -6,7 +6,7 @@ const marketGetters = new Map();
 marketGetters.set("match_odds", marketService.getMatchOdds);
 
 export const emitMarketData = async (socket, market) => {
-  console.log("Emitting market data", marketEmitters.keys());
+  // console.log("Emitting market data", marketEmitters.keys());
   const getter = marketGetters.get(market.type);
   if (getter) {
     const result = await getter(market.id);
@@ -27,7 +27,7 @@ export async function startBroadcast(socket, market) {
     // TODO: Add a check to see if the market is open and set the interval accordingly
     const emitter = setInterval(async () => {
       await emitMarketData(socket, market);
-    }, 5000);
+    }, 1000);
     marketEmitters.set(market.id, emitter);
   }
 }

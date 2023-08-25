@@ -11,7 +11,6 @@ const createBet = async (req, res) => {
 };
 
 // Get list bet
-
 const getAllBet = async (req, res) => {
   const { body } = await betRequest.getAllBetRequest(req);
 
@@ -20,8 +19,19 @@ const getAllBet = async (req, res) => {
   res.status(201).json({ success: true, data: { details: newBet } });
 };
 
-// Bet complete
+const getUserEventBets = async (req, res) => {
+  const { eventId } = req.body;
 
+  if (!eventId) {
+    throw new Error("Event id is required");
+  }
+
+  const eventBets = await betService.fetchUserEventBets({ eventId, userId: req.user._id });
+
+  res.status(201).json({ success: true, data: { details: eventBets } });
+};
+
+// Bet complete
 const betComplete = async (req, res) => {
   const { body } = await betRequest.betCompleteRequest(req);
 
@@ -32,5 +42,6 @@ const betComplete = async (req, res) => {
 export default {
   createBet,
   getAllBet,
+  getUserEventBets,
   betComplete,
 };

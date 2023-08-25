@@ -177,6 +177,72 @@ async function updateUserPl(userId, profitLoss) {
   }
 }
 
+const fetchUserEventBets = async ({ ...reqBody }) => {
+  try {
+    const { eventId, userId } = reqBody;
+
+    const eventBets = await Bet.aggregate([
+      {
+        $match: {
+          eventId: new mongoose.Types.ObjectId(eventId),
+          userId: new mongoose.Types.ObjectId(userId),
+        },
+      },
+      {
+        $lookup: {
+          from: "market_runners",
+          localField: "runnerId",
+          foreignField: "_id",
+          as: "marketRunner",
+          pipeline: [{ $project: { runnerName: 1 } }],
+        },
+      },
+      { $unwind: "$marketRunner" },
+      {
+        $lookup: {
+          from: "markets",
+          localField: "marketId",
+          foreignField: "_id",
+          as: "market",
+          pipeline: [{ $project: { name: 1 } }],
+        },
+      },
+      {
+        $unwind: "$market",
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $group: {
+          _id: "$market",
+          bets: {
+            $push: {
+              _id: "$_id",
+              runner: "$marketRunner.runnerName",
+              stake: "$stake",
+              odds: "$odds",
+              isBack: "$isBack",
+              createdAt: "$createdAt",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          market: "$_id",
+          bets: 1,
+        },
+      },
+    ]);
+
+    return eventBets;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+
 const completeBet = async ({ ...reqBody }) => {
   try {
     const { marketId, winRunnerId } = reqBody;
@@ -231,5 +297,6 @@ const completeBet = async ({ ...reqBody }) => {
 export default {
   addBet,
   fetchAllBet,
+  fetchUserEventBets,
   completeBet,
 };

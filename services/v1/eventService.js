@@ -229,6 +229,7 @@ const modifyEvent = async ({ ...reqBody }) => {
     event.minStake = reqBody.minStake;
     event.maxStake = reqBody.maxStake;
     event.minStakeSession = reqBody.minStakeSession;
+    event.betLock = reqBody.betLock;
     event.betDelay = reqBody.betDelay;
     event.maxStakeSession = reqBody.maxStakeSession;
     event.isActive = reqBody.isActive;

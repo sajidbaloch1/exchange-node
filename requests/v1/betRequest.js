@@ -96,9 +96,25 @@ async function settlementRequest(req) {
   return req;
 }
 
+async function getRunnerPlsRequest(req) {
+  const validationSchema = Yup.object().shape({
+    marketId: Yup.string()
+      .required()
+      .test("marketId", "Invalid marketId!", (v) => !v || isValidObjectId),
+    eventId: Yup.string()
+      .required()
+      .test("eventId", "Invalid eventId!", (v) => !v || isValidObjectId),
+  });
+
+  await validationSchema.validate(req.body);
+
+  return req;
+}
+
 export default {
   createBetRequest,
   getAllBetRequest,
   betCompleteRequest,
   settlementRequest,
+  getRunnerPlsRequest,
 };

@@ -60,6 +60,14 @@ const getChildUserData = async (req, res) => {
   res.status(201).json({ success: true, data: { details: getChildUserData } });
 };
 
+const getRunnerPls = async (req, res) => {
+  const { body } = await betRequest.getRunnerPlsRequest(req);
+
+  const getRunnerPls = await betService.fetchRunnerPls({ user: req.user, ...body });
+
+  res.status(201).json({ success: true, data: { details: getRunnerPls } });
+};
+
 export default {
   createBet,
   getAllBet,
@@ -67,4 +75,5 @@ export default {
   betComplete,
   settlement,
   getChildUserData,
+  getRunnerPls,
 };

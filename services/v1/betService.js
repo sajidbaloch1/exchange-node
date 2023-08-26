@@ -6,9 +6,72 @@ import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
 import Bet, { BET_ORDER_STATUS, BET_RESULT_STATUS } from "../../models/v1/Bet.js";
 import Event from "../../models/v1/Event.js";
 import Market from "../../models/v1/Market.js";
+import MarketRunner from "../../models/v1/MarketRunner.js";
 import User, { USER_ROLE } from "../../models/v1/User.js";
 import { io } from "../../socket/index.js";
 import marketService from "./marketService.js";
+
+const fetchRunnerPls = async ({ user, ...reqBody }) => {
+  try {
+    const { eventId, marketId } = reqBody;
+
+    const bets = await Bet.aggregate([
+      {
+        $match: {
+          eventId: new mongoose.Types.ObjectId(eventId),
+          marketId: new mongoose.Types.ObjectId(marketId),
+          userId: new mongoose.Types.ObjectId(user._id),
+          betOrderStatus: BET_ORDER_STATUS.PLACED,
+          betResultStatus: BET_RESULT_STATUS.RUNNING,
+        },
+      },
+      { $sort: { createdAt: 1 } },
+    ]);
+
+    const marketRunners = await MarketRunner.find({ marketId: new mongoose.Types.ObjectId(marketId) });
+    const runner1 = marketRunners[0]._id;
+    const runner2 = marketRunners[1]._id;
+
+    const runners = {
+      [marketRunners[0]._id]: {
+        _id: marketRunners[0]._id,
+        marketId: marketRunners[0].marketId,
+        runnerName: marketRunners[0].runnerName,
+        pl: 0,
+      },
+      [marketRunners[1]._id]: {
+        _id: marketRunners[1]._id,
+        marketId: marketRunners[1].marketId,
+        runnerName: marketRunners[1].runnerName,
+        pl: 0,
+      },
+    };
+
+    bets.forEach((bet) => {
+      if (bet.isBack) {
+        if (bet.runnerId.toString() === runner1.toString()) {
+          runners[runner1].pl += bet.potentialWin;
+          runners[runner2].pl += bet.potentialLoss;
+        } else {
+          runners[runner1].pl += bet.potentialLoss;
+          runners[runner2].pl += bet.potentialWin;
+        }
+      } else {
+        if (bet.runnerId.toString() === runner1.toString()) {
+          runners[runner1].pl += bet.potentialLoss;
+          runners[runner2].pl += bet.potentialWin;
+        } else {
+          runners[runner1].pl += bet.potentialWin;
+          runners[runner2].pl += bet.potentialLoss;
+        }
+      }
+    });
+
+    return Object.values(runners);
+  } catch (e) {
+    throw new Error(e);
+  }
+};
 
 /**
  * create Bet in the database
@@ -29,7 +92,7 @@ const addBet = async ({ user: loggedInUser, ...reqBody }) => {
 
     const oddPrices = reqBody.isBack ? runner.back.map((o) => o.price) : runner.lay.map((o) => o.price);
     if (!oddPrices.includes(reqBody.odds)) {
-      throw new Error("Invalid odds.");
+      throw new Error("Bet not confirmed, Odds changed!");
     }
 
     // User Validation
@@ -42,60 +105,58 @@ const addBet = async ({ user: loggedInUser, ...reqBody }) => {
     }
 
     const potentialWin = reqBody.isBack ? reqBody.stake * reqBody.odds - reqBody.stake : reqBody.stake;
-    const potentialLoss = reqBody.isBack ? reqBody.stake : Math.abs(reqBody.stake * reqBody.odds - reqBody.stake);
+    const potentialLoss = reqBody.isBack ? -reqBody.stake : -(reqBody.stake * reqBody.odds - reqBody.stake);
 
-    const existingBets = await Bet.aggregate([
-      {
-        $match: {
-          eventId: new mongoose.Types.ObjectId(reqBody.eventId),
-          userId: new mongoose.Types.ObjectId(loggedInUser._id),
-          marketId: new mongoose.Types.ObjectId(reqBody.marketId),
-          runnerId: new mongoose.Types.ObjectId(reqBody.runnerId),
-          betOrderStatus: BET_ORDER_STATUS.PLACED,
-          betResultStatus: BET_RESULT_STATUS.RUNNING,
-        },
-      },
-      {
-        $group: {
-          _id: "$isBack",
-          potentialLoss: { $sum: "$potentialLoss" },
-        },
-      },
-    ]);
+    const runnerPls = await fetchRunnerPls({ user, ...reqBody });
 
-    let requiredExposure = potentialLoss;
-    let totalPotentialLoss = 0;
+    let totalPreviousLoss = 0;
+    let requiredExposure = 0;
 
-    if (existingBets.length) {
-      let backLoss = existingBets.find((bet) => bet._id === true)?.potentialLoss || 0;
-      let layLoss = existingBets.find((bet) => bet._id === false)?.potentialLoss || 0;
-      totalPotentialLoss = backLoss + layLoss;
-      // console.log(backLoss, layLoss);
-      if (reqBody.isBack) {
-        backLoss += potentialLoss;
-      } else {
-        layLoss += potentialLoss;
+    const pl = [0, 0];
+    runnerPls.forEach((runner) => {
+      if (runner.pl < 0) {
+        totalPreviousLoss += runner.pl;
       }
-      // console.log(backLoss, layLoss);
-      requiredExposure = Math.abs(backLoss - layLoss);
-    }
-    // console.log(requiredExposure);
+      if (runner._id.toString() === reqBody.runnerId) {
+        pl[0] = runner.pl;
+      } else {
+        pl[1] = runner.pl;
+      }
+    });
 
-    if (user.balance < requiredExposure) {
+    if (reqBody.isBack) {
+      pl[0] = pl[0] + potentialWin;
+      pl[1] = pl[1] + potentialLoss;
+    } else {
+      pl[0] = pl[0] + potentialLoss;
+      pl[1] = pl[1] + potentialWin;
+    }
+
+    requiredExposure = Math.min(...pl);
+
+    const newExposure = user.exposure + totalPreviousLoss + Math.abs(requiredExposure);
+
+    if (user.balance < Math.abs(requiredExposure)) {
       throw new Error("Insufficient balance.");
     }
 
-    if (user.exposure - totalPotentialLoss + requiredExposure > user.exposureLimit) {
+    if (newExposure > user.exposureLimit) {
       throw new Error("Exposure limit reached.");
     }
 
-    const event = await Event.findById(reqBody.eventId, { maxStake: 1, minStake: 1 });
-    if (!(event && event.isActive && !event?.isDeleted)) {
-      throw new Error("Event not found.");
+    const event = await Event.findById(reqBody.eventId, {
+      maxStake: 1,
+      minStake: 1,
+      isActive: 1,
+      isDeleted: 1,
+      betLock: 1,
+    });
+    if (!(event && event.isActive && !event?.isDeleted && !event.betLock)) {
+      throw new Error("Event closed.");
     }
 
     const market = await Market.findById(reqBody.marketId, { maxStake: 1, minStake: 1 });
-    if (!(market && market.isActive && !market?.isDeleted)) {
+    if (!market) {
       throw new Error("Market not found.");
     }
 
@@ -104,9 +165,6 @@ const addBet = async ({ user: loggedInUser, ...reqBody }) => {
         throw new Error("Invalid stake.");
       }
     } else {
-      if (!event) {
-        throw new Error("Event not found.");
-      }
       if (reqBody.stake < event.minStake || reqBody.stake > event.maxStake) {
         throw new Error("Invalid stake.");
       }
@@ -125,13 +183,13 @@ const addBet = async ({ user: loggedInUser, ...reqBody }) => {
       deviceInfo: reqBody.deviceInfo,
       ipAddress: reqBody.ipAddress,
       runnerId: reqBody.runnerId,
-      potentialWin: Math.abs(potentialWin),
-      potentialLoss: Math.abs(potentialLoss),
+      potentialWin: potentialWin,
+      potentialLoss: potentialLoss,
     };
 
     const newBet = await Bet.create(newBetObj);
 
-    user.exposure = user.exposure - totalPotentialLoss + requiredExposure;
+    user.exposure = newExposure < 0 ? 0 : newExposure;
     await user.save();
     io.user.emit(`user:${user._id}`, getTrimmedUser(user));
 
@@ -507,6 +565,7 @@ const getChildUserData = async ({ userId, filterUserId }) => {
 };
 
 export default {
+  fetchRunnerPls,
   addBet,
   fetchAllBet,
   fetchUserEventBets,

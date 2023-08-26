@@ -176,6 +176,8 @@ const addEvent = async ({ ...reqBody }) => {
     volumeLimit,
     minStake,
     maxStake,
+    betLock,
+    betDelay,
     minStakeSession,
     maxStakeSession,
   } = reqBody;
@@ -191,6 +193,8 @@ const addEvent = async ({ ...reqBody }) => {
       minStake,
       minStakeSession,
       maxStake,
+      betLock,
+      betDelay,
       maxStakeSession,
       isActive: true,
       isManual: true,
@@ -225,6 +229,7 @@ const modifyEvent = async ({ ...reqBody }) => {
     event.minStake = reqBody.minStake;
     event.maxStake = reqBody.maxStake;
     event.minStakeSession = reqBody.minStakeSession;
+    event.betDelay = reqBody.betDelay;
     event.maxStakeSession = reqBody.maxStakeSession;
     event.isActive = reqBody.isActive;
     event.completed = reqBody.completed;
@@ -482,6 +487,9 @@ const getEventMatchDataFront = async ({ eventId }) => {
       }
       if (event[0].market[i].maxStake == 0) {
         event[0].market[i].maxStake = event[0].maxStake;
+      }
+      if (event[0].market[i].betDelay == 0) {
+        event[0].market[i].betDelay = event[0].betDelay;
       }
       var marketUrl = `${appConfig.BASE_URL}?action=matchodds&market_id=${event[0].market[i].marketId}`;
       const { statusCode, data } = await commonService.fetchData(marketUrl);

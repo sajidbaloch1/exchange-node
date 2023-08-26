@@ -82,10 +82,8 @@ const marketSchema = new mongoose.Schema({
     default: false,
   },
   // Bet delay for the market (null by default)
-  betDelay: {
-    type: Number,
-    default: null,
-  },
+  betDelay: { type: Number, default: 1 },
+
   // Indicates whether the market is visible to players (false by default)
   visibleToPlayer: {
     type: Boolean,

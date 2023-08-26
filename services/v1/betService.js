@@ -4,6 +4,7 @@ import { getTrimmedUser } from "../../lib/helpers/auth.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
 import Bet, { BET_ORDER_STATUS, BET_RESULT_STATUS } from "../../models/v1/Bet.js";
+import Event from "../../models/v1/Event.js";
 import Market from "../../models/v1/Market.js";
 import User, { USER_ROLE } from "../../models/v1/User.js";
 import { io } from "../../socket/index.js";
@@ -36,11 +37,13 @@ const addBet = async ({ user: loggedInUser, ...reqBody }) => {
     if (!user) {
       throw new Error("User not found.");
     }
+    if (!(user.role === USER_ROLE.USER && user.isActive && !user?.isDeleted && !user.isBetLock)) {
+      throw new Error("Invalid request.");
+    }
 
     const potentialWin = reqBody.isBack ? reqBody.stake * reqBody.odds - reqBody.stake : reqBody.stake;
     const potentialLoss = reqBody.isBack ? reqBody.stake : Math.abs(reqBody.stake * reqBody.odds - reqBody.stake);
 
-    // TODO: Figure this out
     const existingBets = await Bet.aggregate([
       {
         $match: {
@@ -67,19 +70,46 @@ const addBet = async ({ user: loggedInUser, ...reqBody }) => {
       let backLoss = existingBets.find((bet) => bet._id === true)?.potentialLoss || 0;
       let layLoss = existingBets.find((bet) => bet._id === false)?.potentialLoss || 0;
       totalPotentialLoss = backLoss + layLoss;
-      console.log(backLoss, layLoss);
+      // console.log(backLoss, layLoss);
       if (reqBody.isBack) {
         backLoss += potentialLoss;
       } else {
         layLoss += potentialLoss;
       }
-      console.log(backLoss, layLoss);
+      // console.log(backLoss, layLoss);
       requiredExposure = Math.abs(backLoss - layLoss);
     }
-    console.log(requiredExposure);
+    // console.log(requiredExposure);
 
     if (user.balance < requiredExposure) {
       throw new Error("Insufficient balance.");
+    }
+
+    if (user.exposure - totalPotentialLoss + requiredExposure > user.exposureLimit) {
+      throw new Error("Exposure limit reached.");
+    }
+
+    const event = await Event.findById(reqBody.eventId, { maxStake: 1, minStake: 1 });
+    if (!(event && event.isActive && !event?.isDeleted)) {
+      throw new Error("Event not found.");
+    }
+
+    const market = await Market.findById(reqBody.marketId, { maxStake: 1, minStake: 1 });
+    if (!(market && market.isActive && !market?.isDeleted)) {
+      throw new Error("Market not found.");
+    }
+
+    if (market.maxStake > 0 && market.minStake > 0) {
+      if (reqBody.stake < market.minStake || reqBody.stake > market.maxStake) {
+        throw new Error("Invalid stake.");
+      }
+    } else {
+      if (!event) {
+        throw new Error("Event not found.");
+      }
+      if (reqBody.stake < event.minStake || reqBody.stake > event.maxStake) {
+        throw new Error("Invalid stake.");
+      }
     }
 
     const newBetObj = {
@@ -101,7 +131,7 @@ const addBet = async ({ user: loggedInUser, ...reqBody }) => {
 
     const newBet = await Bet.create(newBetObj);
 
-    user.exposure = Number(user.exposure) - totalPotentialLoss + requiredExposure;
+    user.exposure = user.exposure - totalPotentialLoss + requiredExposure;
     await user.save();
     io.user.emit(`user:${user._id}`, getTrimmedUser(user));
 

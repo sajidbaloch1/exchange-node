@@ -19,6 +19,8 @@ const eventSchema = new mongoose.Schema({
     required: [true, "Competition is Required!"],
   },
 
+  betDelay: { type: Number, default: 1 },
+
   // API identifier for the competition (if applicable)
   apiCompetitionId: { type: String, default: null },
 
@@ -75,6 +77,9 @@ const eventSchema = new mongoose.Schema({
 
   // Indicates the time of event settlement
   settledTime: { type: Date, default: null },
+
+  // Indicates if the event is visible to players
+  betLock: { type: Boolean, default: false },
 });
 
 eventSchema.plugin(timestampPlugin);

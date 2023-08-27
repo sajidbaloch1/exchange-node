@@ -68,6 +68,8 @@ async function createEventRequest(req) {
     maxStake: Yup.number(),
     minStakeSession: Yup.number(),
     maxStakeSession: Yup.number(),
+    betLock: Yup.boolean(),
+    betDelay: Yup.number(),
     matchDate: Yup.date().required("Match Date is required!"),
     matchTime: Yup.string()
       .required("Match Time is required!")
@@ -90,6 +92,8 @@ async function updateEventRequest(req) {
       .required("Match Time is required!")
       .test("matchTime", "Invalid matchTime!", (v) => isValidTime(v, "HH:mm")),
     oddsLimit: Yup.number(),
+    betLock: Yup.boolean(),
+    betDelay: Yup.number(),
     volumeLimit: Yup.number(),
     minStake: Yup.number(),
     maxStake: Yup.number(),

@@ -11,6 +11,11 @@ export const emitMarketData = async (socket, market) => {
   if (getter) {
     const result = await getter(market.id);
     const data = result[0];
+    if (!data) {
+      clearInterval(marketEmitters.get(market.id));
+      marketEmitters.delete(market.id);
+      return;
+    }
     socket.to(`market:${market.id}`).emit(`market:data:${market.id}`, data);
   }
 };
@@ -20,18 +25,20 @@ export async function startBroadcast(socket, market) {
 
   if (!marketEmitters.has(market.id)) {
     // TODO: Add a check to see if the market is open and set the interval accordingly
-    const emitter = setInterval(async () => await emitMarketData(socket, market), 1000);
+    const emitter = setInterval(async () => {
+      await emitMarketData(socket, market);
+    }, 1000);
     marketEmitters.set(market.id, emitter);
   }
 }
 
-export function clearEmptyEmitters(socket) {
-  for (const [marketId, emitter] of marketEmitters.entries()) {
-    const clients = socket.adapter.rooms.get(`market:${marketId}`)?.size;
+// export function clearEmptyEmitters(socket) {
+//   for (const [marketId, emitter] of marketEmitters.entries()) {
+//     const clients = socket.adapter.rooms.get(`market:${marketId}`)?.size;
 
-    if (clients === 0) {
-      clearInterval(emitter);
-      marketEmitters.delete(marketId);
-    }
-  }
-}
+//     if (clients === 0) {
+//       clearInterval(emitter);
+//       marketEmitters.delete(marketId);
+//     }
+//   }
+// }

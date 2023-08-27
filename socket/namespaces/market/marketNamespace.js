@@ -1,4 +1,4 @@
-import { clearEmptyEmitters, emitMarketData, startBroadcast } from "./broadcast.js";
+import { emitMarketData, startBroadcast } from "./broadcast.js";
 
 async function handleConnection(socket) {
   // console.log("A user connected", socket.id);
@@ -18,7 +18,7 @@ async function handleConnection(socket) {
 
 const connect = (socket) => {
   socket.on("connection", handleConnection);
-  socket.on("disconnect", () => clearEmptyEmitters(socket));
+  // socket.on("disconnect", () => clearEmptyEmitters(socket));
 };
 
 export default {

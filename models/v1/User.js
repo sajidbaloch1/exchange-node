@@ -161,7 +161,7 @@ const userSchema = new mongoose.Schema({
   exposureLimit: { type: Number, default: 0 },
 
   // User's exposure percentage. This is the percentage of the user's total capital that is at risk.
-  exposurePercentage: { type: Number, min: 0, max: 100, default: 0 },
+  exposurePercentage: { type: Number, min: 0, max: 100, default: 100 },
 
   // User's stake limit. This is the maximum amount the user is allowed to bet on a single event.
   stakeLimit: { type: Number, default: 0 },

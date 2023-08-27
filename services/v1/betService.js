@@ -1,16 +1,175 @@
 import mongoose from "mongoose";
 import ErrorResponse from "../../lib/error-handling/error-response.js";
+import { getTrimmedUser } from "../../lib/helpers/auth.js";
 import { generatePaginationQueries, generateSearchFilters } from "../../lib/helpers/pipeline.js";
 import { decryptTransactionCode } from "../../lib/helpers/transaction-code.js";
 import Bet, { BET_ORDER_STATUS, BET_RESULT_STATUS } from "../../models/v1/Bet.js";
+import Event from "../../models/v1/Event.js";
 import Market from "../../models/v1/Market.js";
+import MarketRunner from "../../models/v1/MarketRunner.js";
 import User, { USER_ROLE } from "../../models/v1/User.js";
+import { io } from "../../socket/index.js";
+import marketService from "./marketService.js";
+
+const fetchRunnerPls = async ({ user, ...reqBody }) => {
+  try {
+    const { eventId, marketId } = reqBody;
+
+    const bets = await Bet.aggregate([
+      {
+        $match: {
+          eventId: new mongoose.Types.ObjectId(eventId),
+          marketId: new mongoose.Types.ObjectId(marketId),
+          userId: new mongoose.Types.ObjectId(user._id),
+          betOrderStatus: BET_ORDER_STATUS.PLACED,
+          betResultStatus: BET_RESULT_STATUS.RUNNING,
+        },
+      },
+      { $sort: { createdAt: 1 } },
+    ]);
+
+    const marketRunners = await MarketRunner.find({ marketId: new mongoose.Types.ObjectId(marketId) });
+    const runner1 = marketRunners[0]._id;
+    const runner2 = marketRunners[1]._id;
+
+    const runners = {
+      [marketRunners[0]._id]: {
+        _id: marketRunners[0]._id,
+        marketId: marketRunners[0].marketId,
+        runnerName: marketRunners[0].runnerName,
+        pl: 0,
+      },
+      [marketRunners[1]._id]: {
+        _id: marketRunners[1]._id,
+        marketId: marketRunners[1].marketId,
+        runnerName: marketRunners[1].runnerName,
+        pl: 0,
+      },
+    };
+
+    bets.forEach((bet) => {
+      if (bet.isBack) {
+        if (bet.runnerId.toString() === runner1.toString()) {
+          runners[runner1].pl += bet.potentialWin;
+          runners[runner2].pl += bet.potentialLoss;
+        } else {
+          runners[runner1].pl += bet.potentialLoss;
+          runners[runner2].pl += bet.potentialWin;
+        }
+      } else {
+        if (bet.runnerId.toString() === runner1.toString()) {
+          runners[runner1].pl += bet.potentialLoss;
+          runners[runner2].pl += bet.potentialWin;
+        } else {
+          runners[runner1].pl += bet.potentialWin;
+          runners[runner2].pl += bet.potentialLoss;
+        }
+      }
+    });
+
+    return Object.values(runners);
+  } catch (e) {
+    throw new Error(e);
+  }
+};
 
 /**
  * create Bet in the database
  */
-const addBet = async ({ user, ...reqBody }) => {
+const addBet = async ({ user: loggedInUser, ...reqBody }) => {
   try {
+    // Market Validation
+    const data = await marketService.getMatchOdds(reqBody.apiMarketId);
+    if (!data) {
+      throw new Error("Market not found.");
+    }
+
+    const [{ matchOdds }] = data;
+    const runner = matchOdds.find((runner) => runner.selectionId === reqBody.runnerSelectionId);
+    if (!runner) {
+      throw new Error("Runner not found.");
+    }
+
+    const oddPrices = reqBody.isBack ? runner.back.map((o) => o.price) : runner.lay.map((o) => o.price);
+    if (!oddPrices.includes(reqBody.odds)) {
+      throw new Error("Bet not confirmed, Odds changed!");
+    }
+
+    // User Validation
+    const user = await User.findById(loggedInUser._id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+    if (!(user.role === USER_ROLE.USER && user.isActive && !user?.isDeleted && !user.isBetLock)) {
+      throw new Error("Invalid request.");
+    }
+
+    const potentialWin = reqBody.isBack ? reqBody.stake * reqBody.odds - reqBody.stake : reqBody.stake;
+    const potentialLoss = reqBody.isBack ? -reqBody.stake : -(reqBody.stake * reqBody.odds - reqBody.stake);
+
+    const runnerPls = await fetchRunnerPls({ user, ...reqBody });
+
+    let totalPreviousLoss = 0;
+    let requiredExposure = 0;
+
+    const pl = [0, 0];
+    runnerPls.forEach((runner) => {
+      if (runner.pl < 0) {
+        totalPreviousLoss += runner.pl;
+      }
+      if (runner._id.toString() === reqBody.runnerId) {
+        pl[0] = runner.pl;
+      } else {
+        pl[1] = runner.pl;
+      }
+    });
+
+    if (reqBody.isBack) {
+      pl[0] = pl[0] + potentialWin;
+      pl[1] = pl[1] + potentialLoss;
+    } else {
+      pl[0] = pl[0] + potentialLoss;
+      pl[1] = pl[1] + potentialWin;
+    }
+
+    requiredExposure = Math.min(...pl);
+
+    const newExposure = user.exposure + totalPreviousLoss + Math.abs(requiredExposure);
+
+    if (user.balance < Math.abs(requiredExposure)) {
+      throw new Error("Insufficient balance.");
+    }
+
+    if (newExposure > user.exposureLimit) {
+      throw new Error("Exposure limit reached.");
+    }
+
+    const event = await Event.findById(reqBody.eventId, {
+      maxStake: 1,
+      minStake: 1,
+      isActive: 1,
+      isDeleted: 1,
+      betLock: 1,
+    });
+    if (!(event && event.isActive && !event?.isDeleted && !event.betLock)) {
+      throw new Error("Event closed.");
+    }
+
+    const market = await Market.findById(reqBody.marketId, { maxStake: 1, minStake: 1 });
+    if (!market) {
+      throw new Error("Market not found.");
+    }
+
+    if (market.maxStake > 0 && market.minStake > 0) {
+      if (reqBody.stake < market.minStake || reqBody.stake > market.maxStake) {
+        throw new Error("Invalid stake.");
+      }
+    } else {
+      if (reqBody.stake < event.minStake || reqBody.stake > event.maxStake) {
+        throw new Error("Invalid stake.");
+      }
+    }
+
     const newBetObj = {
       userId: user._id,
       marketId: reqBody.marketId,
@@ -24,9 +183,28 @@ const addBet = async ({ user, ...reqBody }) => {
       deviceInfo: reqBody.deviceInfo,
       ipAddress: reqBody.ipAddress,
       runnerId: reqBody.runnerId,
+      potentialWin: potentialWin,
+      potentialLoss: potentialLoss,
     };
 
     const newBet = await Bet.create(newBetObj);
+
+    user.exposure = newExposure < 0 ? 0 : newExposure;
+    await user.save();
+    io.user.emit(`user:${user._id}`, getTrimmedUser(user));
+
+    // let parentId = user.parentId;
+    // while (parentId !== null) {
+    //   const parentUser = await User.findOne({ _id: parentId });
+    //   if (!parentUser) {
+    //     break;
+    //   }
+
+    //   parentUser.exposure = Number(parentUser.exposure) + Number(requiredExposure);
+    //   await parentUser.save();
+
+    //   parentId = parentUser.parentId;
+    // }
 
     return newBet;
   } catch (e) {
@@ -179,6 +357,72 @@ async function updateUserPl(userId, profitLoss) {
   }
 }
 
+const fetchUserEventBets = async ({ ...reqBody }) => {
+  try {
+    const { eventId, userId } = reqBody;
+
+    const eventBets = await Bet.aggregate([
+      {
+        $match: {
+          eventId: new mongoose.Types.ObjectId(eventId),
+          userId: new mongoose.Types.ObjectId(userId),
+        },
+      },
+      {
+        $lookup: {
+          from: "market_runners",
+          localField: "runnerId",
+          foreignField: "_id",
+          as: "marketRunner",
+          pipeline: [{ $project: { runnerName: 1 } }],
+        },
+      },
+      { $unwind: "$marketRunner" },
+      {
+        $lookup: {
+          from: "markets",
+          localField: "marketId",
+          foreignField: "_id",
+          as: "market",
+          pipeline: [{ $project: { name: 1 } }],
+        },
+      },
+      {
+        $unwind: "$market",
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $group: {
+          _id: "$market",
+          bets: {
+            $push: {
+              _id: "$_id",
+              runner: "$marketRunner.runnerName",
+              stake: "$stake",
+              odds: "$odds",
+              isBack: "$isBack",
+              createdAt: "$createdAt",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          market: "$_id",
+          bets: 1,
+        },
+      },
+    ]);
+
+    return eventBets;
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+
 const completeBet = async ({ ...reqBody }) => {
   try {
     const { marketId, winRunnerId } = reqBody;
@@ -233,8 +477,10 @@ const completeBet = async ({ ...reqBody }) => {
 const settlement = async ({ ...reqBody }) => {
   try {
     const { settlementData, loginUserId, transactionCode } = reqBody;
+
     let findLoginUser = await User.findOne({ _id: loginUserId });
     const loginUsertransactionCode = decryptTransactionCode(findLoginUser.transactionCode);
+
     if (transactionCode == loginUsertransactionCode) {
       for (var i = 0; i < settlementData.length; i++) {
         let findUser = await User.findOne({ _id: settlementData[i].userId });
@@ -319,8 +565,10 @@ const getChildUserData = async ({ userId, filterUserId }) => {
 };
 
 export default {
+  fetchRunnerPls,
   addBet,
   fetchAllBet,
+  fetchUserEventBets,
   completeBet,
   settlement,
   getChildUserData,

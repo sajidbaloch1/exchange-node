@@ -177,6 +177,7 @@ const addUser = async ({ user, ...reqBody }) => {
     settlementDay,
     settlementTime,
     city,
+    forcePasswordChange,
 
     // Super Admin Params
     domainUrl,
@@ -205,6 +206,7 @@ const addUser = async ({ user, ...reqBody }) => {
       currencyId: loggedInUser.currencyId,
       parentId: loggedInUser.cloneParentId ? loggedInUser.cloneParentId : loggedInUser._id,
       countryCode,
+      forcePasswordChange,
     };
 
     // For Role = User add other params

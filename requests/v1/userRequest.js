@@ -114,6 +114,8 @@ async function createUserRequest(req) {
     isCasinoAvailable: Yup.boolean().nullable(true),
 
     isAutoSettlement: Yup.boolean().nullable(true),
+
+    forcePasswordChange: Yup.boolean(),
   });
 
   await validationSchema.validate(req.body);
@@ -209,7 +211,6 @@ async function userActivityRequest(req) {
   req.body.filterUserId = req.body?.filterUserId ? req.body.filterUserId?.trim() : null;
 
   const validationSchema = Yup.object().shape({
-
     page: Yup.number().nullable(true),
     perPage: Yup.number(),
     sortBy: Yup.string().oneOf(Object.keys(UserActivity.schema.paths), "Invalid sortBy key."),
@@ -233,5 +234,5 @@ export default {
   updateUserRequest,
   fetchUserBalanceRequest,
   cloneUserRequest,
-  userActivityRequest
+  userActivityRequest,
 };

@@ -75,43 +75,47 @@ const sportWiseMatchList = async (sportId) => {
       },
       { _id: 0, marketId: 1, eventId: 1 }
     ).sort({ startDate: 1 });
+    if (findMarketIds.length > 0) {
+      let allMarketId = findMarketIds
+        .map((item) => item.marketId)
+        .toString()
+        .replace(/["']/g, "");
+      var marketUrl = `${appConfig.BASE_URL}?action=matchodds&market_id=${allMarketId}`;
+      const { statusCode, data } = await commonService.fetchData(marketUrl);
+      let allData = [];
+      if (statusCode === 200) {
+        for (const market of data) {
+          let eventId = findMarketIds.filter((item) => item.marketId == Number(market.marketId));
+          let eventInfo = findEvents.filter((item) => item._id == eventId[0].eventId.toString());
+          let findCompetition = await Competition.findOne(
+            {
+              apiCompetitionId: eventInfo[0].apiCompetitionId,
+            },
+            { name: 1 }
+          );
+          if (eventInfo.length > 0 && findCompetition) {
+            allData.push({
+              eventName: eventInfo[0].name,
+              competitionName: findCompetition.name,
+              matchDate: eventInfo[0].matchDate,
+              matchOdds: market["runners"].map(function (item) {
+                delete item.ex;
+                delete item.selectionId;
+                delete item.status;
+                delete item.lastPriceTraded;
+                delete item.removalDate;
 
-    let allMarketId = findMarketIds
-      .map((item) => item.marketId)
-      .toString()
-      .replace(/["']/g, "");
-    var marketUrl = `${appConfig.BASE_URL}?action=matchodds&market_id=${allMarketId}`;
-    const { statusCode, data } = await commonService.fetchData(marketUrl);
-    let allData = [];
-    if (statusCode === 200) {
-      for (const market of data) {
-        let eventId = findMarketIds.filter((item) => item.marketId == Number(market.marketId));
-        let eventInfo = findEvents.filter((item) => item._id == eventId[0].eventId.toString());
-        let findCompetition = await Competition.findOne(
-          {
-            apiCompetitionId: eventInfo[0].apiCompetitionId,
-          },
-          { name: 1 }
-        );
-        if (eventInfo.length > 0 && findCompetition) {
-          allData.push({
-            eventName: eventInfo[0].name,
-            competitionName: findCompetition.name,
-            matchDate: eventInfo[0].matchDate,
-            matchOdds: market["runners"].map(function (item) {
-              delete item.ex;
-              delete item.selectionId;
-              delete item.status;
-              delete item.lastPriceTraded;
-              delete item.removalDate;
-
-              return item;
-            }),
-          });
+                return item;
+              }),
+            });
+          }
         }
       }
+      return allData;
     }
-    return allData;
+    else {
+      return [];
+    }
   } catch (e) {
     throw new Error(e);
   }

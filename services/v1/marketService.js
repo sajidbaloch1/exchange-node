@@ -5,6 +5,7 @@ import Event from "../../models/v1/Event.js";
 import Market from "../../models/v1/Market.js";
 import Sport from "../../models/v1/Sport.js";
 import commonService from "./commonService.js";
+import ErrorResponse from "../../lib/error-handling/error-response.js";
 
 const syncMarkets = async (data) => {
   //Get Bet Categories
@@ -123,7 +124,93 @@ const getMatchOdds = async (markeId) => {
   }
 };
 
+/**
+ * Create market in the database
+ */
+const addMarket = async ({ ...reqBody }) => {
+  const {
+    name,
+    typeId,
+    eventId,
+    competitionId,
+    sportId,
+    isManual,
+    betDelay,
+    visibleToPlayer,
+    positionIndex,
+    minStake,
+    maxStake,
+    maxBetLiability,
+    maxMarketLiability,
+    maxMarketProfit,
+    startDate
+  } = reqBody;
+
+  try {
+    const newMarketObj = {
+      name,
+      typeId,
+      eventId,
+      competitionId,
+      sportId,
+      isManual,
+      betDelay,
+      visibleToPlayer,
+      positionIndex,
+      minStake,
+      maxStake,
+      maxBetLiability,
+      maxMarketLiability,
+      maxMarketProfit,
+      startDate
+    };
+
+    const newMarket = await Market.create(newMarketObj);
+
+    return newMarket;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
+/**
+ * update market in the database
+ */
+const modifyMarket = async ({ ...reqBody }) => {
+  try {
+    const market = await Market.findById(reqBody._id);
+
+    if (!market) {
+      throw new Error("Market not found.");
+    }
+
+    market.name = reqBody.name,
+      market.typeId = reqBody.typeId,
+      market.eventId = reqBody.eventId,
+      market.competitionId = reqBody.competitionId,
+      market.sportId = reqBody.sportId,
+      market.isManual = reqBody.isManual,
+      market.betDelay = reqBody.betDelay,
+      market.visibleToPlayer = reqBody.visibleToPlayer,
+      market.positionIndex = reqBody.positionIndex,
+      market.minStake = reqBody.minStake,
+      market.maxStake = reqBody.maxStake,
+      market.maxBetLiability = reqBody.maxBetLiability,
+      market.maxMarketLiability = reqBody.maxMarketLiability,
+      market.maxMarketProfit = reqBody.maxMarketProfit,
+      market.startDate = reqBody.startDate,
+
+      await market.save();
+
+    return market;
+  } catch (e) {
+    throw new ErrorResponse(e.message).status(200);
+  }
+};
+
 export default {
   syncMarkets,
   getMatchOdds,
+  addMarket,
+  modifyMarket
 };

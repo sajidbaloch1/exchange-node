@@ -23,6 +23,7 @@ import withdrawGroupRoutes from "./routes/withdrawGroupRoutes.js";
 import scriptRoutes from "./routes/scriptRoutes.js";
 import casinoRoutes from "./routes/casinoRoutes.js";
 import casinoGameRoutes from "./routes/casinoGameRoutes.js";
+import marketRoutes from "./routes/marketRoutes.js";
 
 const app = express();
 
@@ -50,5 +51,6 @@ app.use("/transferRequest", transferRequestRoutes);
 app.use("/script", scriptRoutes);
 app.use("/casino", casinoRoutes);
 app.use("/casinoGame", casinoGameRoutes);
+app.use("/market", marketRoutes);
 
 export default app;

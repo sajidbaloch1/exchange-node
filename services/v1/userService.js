@@ -264,12 +264,9 @@ const addUser = async ({ user, ...reqBody }) => {
     } else {
       if (reqBody.transactionCode === decryptedTransactionCode) {
         // Create the user only if the role is ADMIN and transaction codes match
-        console.log("Transaction Codes Match. Creating User...");
          newUser = await User.create(newUserObj);
-        console.log("User Successfully Created.");
       } else {
         // Throw an error if the role is ADMIN but transaction codes don't match
-        console.log("Transaction Codes Do Not Match.");
         throw new Error("Transaction Code is not the same");
       }
     }

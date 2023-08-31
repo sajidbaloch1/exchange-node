@@ -441,18 +441,18 @@ const completeBet = async ({ ...reqBody }) => {
         let loss = 0;
         if (findBet[i].isBack == true) {
           if (winRunnerId == findBet[i].marketRunnerId) {
-            profit = (findBet[i].odds - 1).toFixed(2) * findBet[i].stake;
+            profit = findBet[i].potentialWin;
             newFindBet.betPl = profit;
           } else {
-            loss = findBet[i].stake * -1;
+            loss = findBet[i].potentialLoss;
             newFindBet.betPl = loss;
           }
         } else {
           if (winRunnerId != findBet[i].marketRunnerId) {
-            profit = findBet[i].stake;
+            profit = findBet[i].potentialWin;
             newFindBet.betPl = profit;
           } else {
-            loss = (findBet[i].odds - 1).toFixed(2) * findBet[i].stake * -1;
+            loss = findBet[i].potentialLoss;
             newFindBet.betPl = loss;
           }
         }
